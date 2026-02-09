@@ -1,0 +1,13 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /dashboard/admin/
+
+# Allow specific API routes for public access
+Allow: /api/og
+
+# Sitemap location
+Sitemap: https://studio-santana.vercel.app/sitemap.xml

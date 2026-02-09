@@ -1,0 +1,498 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============= ENUMS =============
+
+enum UserRole {
+  CLIENT
+  PARTNER
+  ADMIN
+}
+
+enum ProjectStatus {
+  ANALYSIS              // Em análise pelo admin (aguardando "debocheque")
+  AWAITING_SIGNATURE    // Aprovado, aguardando assinatura do contrato
+  AWAITING_PAYMENT      // Assinado, aguardando pagamento
+  IN_PROGRESS           // Pagamento confirmado, em desenvolvimento
+  REVIEW                // Aguardando revisão/aceite do cliente
+  COMPLETED             // Aceito pelo cliente
+  CANCELLED             // Cancelado
+}
+
+enum ContractStatus {
+  DRAFT                 // Rascunho
+  SENT                  // Enviado para assinatura
+  SIGNED                // Assinado pelo cliente
+  EXPIRED               // Expirado (30 dias sem assinatura)
+  CANCELLED             // Cancelado
+}
+
+enum PaymentStatus {
+  PENDING               // Aguardando pagamento
+  PROCESSING            // Processando
+  COMPLETED             // Pago
+  REFUNDED              // Reembolsado
+  FAILED                // Falhou
+}
+
+enum CommissionStatus {
+  PENDING               // Aguardando conclusão do projeto
+  PROCESSING            // Processando pagamento
+  PAID                  // Paga
+}
+
+// ============= MODELS =============
+
+model User {
+  id                String          @id @default(cuid())
+  email             String          @unique
+  name              String
+  phone             String
+  avatar            String?
+  role              UserRole        @default(CLIENT)
+  emailVerified     DateTime?
+  
+  // Relations
+  projects          Project[]
+  contracts         Contract[]
+  partnerProfile    Partner?
+  payments          Payment[]
+  notifications     Notification[]
+  messagesReceived  Message[]       @relation("MessageReceiver")
+  messagesSent      Message[]       @relation("MessageSender")
+  projectAcceptances ProjectAcceptance[]
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model Partner {
+  id                String          @id @default(cuid())
+  userId            String          @unique
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Dados do parceiro
+  companyName       String?
+  cpfCnpj           String?
+  bankAccount       Json?           // Dados bancários { banco, agencia, conta, tipo }
+  
+  // Comissões
+  commissionRate    Float           @default(0.05)  // 5% padrão
+  totalEarned       Float           @default(0)
+  pendingBalance    Float           @default(0)
+  
+  // Relations
+  referrals         Referral[]
+  commissions       Commission[]
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model Lead {
+  id                String          @id @default(cuid())
+  name              String
+  email             String
+  phone             String
+  company           String?
+  message           String?
+  
+  // Tipo de serviço solicitado
+  serviceType       String          // "website", "system", "app", "consulting", "other"
+  budget            Float?
+  timeline          String?
+  
+  // Fonte da lead
+  source            String          @default("website") // "website", "partner", "direct", "ads"
+  partnerId         String?
+  partner           Partner?        @relation(fields: [partnerId], references: [id])
+  
+  // Status
+  status            String          @default("new") // "new", "contacted", "qualified", "converted", "lost"
+  notes             Json?           // Anotações internas
+  
+  // Diagnóstico de AI (se aplicável)
+  diagnosticData    Json?           // Resultados da calculadora de potencial
+  
+  // Relations
+  project           Project?
+  referral          Referral?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([status])
+  @@index([partnerId])
+  @@index([email])
+}
+
+model Project {
+  id                String          @id @default(cuid())
+  leadId            String?         @unique
+  lead              Lead?           @relation(fields: [leadId], references: [id])
+  
+  clientId          String
+  client            User            @relation(fields: [clientId], references: [id])
+  
+  // Dados do projeto
+  title             String
+  description       String          @db.Text
+  requirements      Json?           // Requisitos detalhados
+  deliverables      Json?           // Entregáveis acordados
+  
+  // Orçamento
+  estimatedHours    Float
+  hourlyRate        Float           @default(200.00)
+  totalValue        Float
+  includesSourceCode Boolean        @default(false)
+  sourceCodeRate    Float?          // R$ 600/hora se incluir código fonte
+  
+  // Custos de IA
+  aiTokenBudget     Float?
+  aiTokensUsed      Float           @default(0)
+  aiCostTotal       Float           @default(0)
+  
+  // Prazo
+  deliveryDays      Int             @default(5)
+  startDate         DateTime?       // Inicia após pagamento
+  dueDate           DateTime?       // Calculado após startDate
+  completedAt       DateTime?
+  
+  // Status
+  status            ProjectStatus   @default(ANALYSIS)
+  priority          String          @default("normal") // "low", "normal", "high", "urgent"
+  
+  // Aprovação do Admin ("Debocheque")
+  approvedByAdmin   Boolean         @default(false)
+  approvedAt        DateTime?
+  approvalNotes     String?         @db.Text
+  
+  // Relations
+  contract          Contract?
+  payments          Payment[]
+  tasks             Task[]
+  aiUsageLogs       AIUsageLog[]
+  milestones        Milestone[]
+  messages          Message[]
+  commissions       Commission[]
+  acceptance        ProjectAcceptance?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([clientId])
+  @@index([status])
+  @@index([approvedByAdmin])
+}
+
+model Contract {
+  id                String          @id @default(cuid())
+  projectId         String          @unique
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  clientId          String
+  client            User            @relation(fields: [clientId], references: [id])
+  
+  // Documento
+  template          String          @default("standard") // "standard", "premium", "source_code"
+  content           Json            // Conteúdo dinâmico do contrato
+  clauses           Json            // Cláusulas específicas
+  pdfUrl            String?         // URL do PDF gerado
+  
+  // Valores contratuais
+  totalValue        Float
+  paymentSchedule   Json            // Cronograma de pagamentos
+  installments      Int             @default(1)
+  
+  // Regras de cancelamento
+  cancellationRetentionRate Float   @default(0.30) // 30% de retenção
+  maxRefundRate     Float           @default(0.70) // Máximo 70% de devolução
+  
+  // Código fonte
+  includesSourceCode Boolean        @default(false)
+  sourceCodeMultiplier Float        @default(3.0)  // 3x hora base
+  
+  // Assinatura Digital (ZapSign/Clicksign)
+  status            ContractStatus  @default(DRAFT)
+  signatureProvider String?         // "zapsign", "clicksign"
+  externalId        String?         // ID do documento na plataforma
+  signatureUrl      String?         // URL para o cliente assinar
+  
+  signedByClient    Boolean         @default(false)
+  signedByAdmin     Boolean         @default(false)
+  signedAt          DateTime?
+  
+  // Cancelamento
+  cancelledAt       DateTime?
+  cancellationReason String?        @db.Text
+  refundAmount      Float?
+  
+  // Validade
+  expiresAt         DateTime        @default(dbgenerated("NOW() + INTERVAL '30 days'"))
+  
+  payments          Payment[]
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model Payment {
+  id                String          @id @default(cuid())
+  contractId        String
+  contract          Contract        @relation(fields: [contractId], references: [id])
+  
+  projectId         String
+  project           Project         @relation(fields: [projectId], references: [id])
+  
+  clientId          String
+  client            User            @relation(fields: [clientId], references: [id])
+  
+  // Dados do pagamento
+  amount            Float
+  installment       Int             // Parcela 1, 2, 3...
+  totalInstallments Int
+  
+  // Método de pagamento
+  method            String          // "pix", "credit_card", "boleto"
+  provider          String?         // "stripe", "mercadopago"
+  externalId        String?         // ID na plataforma de pagamento
+  
+  // Status
+  status            PaymentStatus   @default(PENDING)
+  paidAt            DateTime?
+  
+  // Liberação do projeto
+  projectReleased   Boolean         @default(false)
+  releasedAt        DateTime?
+  
+  // Comissões de parceiros
+  commissionPaid    Boolean         @default(false)
+  commissions       Commission[]
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([contractId])
+  @@index([projectId])
+  @@index([status])
+  @@index([paidAt])
+}
+
+model Commission {
+  id                String          @id @default(cuid())
+  paymentId         String
+  payment           Payment         @relation(fields: [paymentId], references: [id])
+  
+  partnerId         String
+  partner           Partner         @relation(fields: [partnerId], references: [id])
+  
+  projectId         String
+  project           Project         @relation(fields: [projectId], references: [id])
+  
+  // Cálculo da comissão
+  amount            Float
+  rate              Float           // 0.05, 0.10, 0.15, 0.20, 0.25
+  
+  // Status
+  status            CommissionStatus @default(PENDING)
+  
+  // Pagamento
+  paidAt            DateTime?
+  transactionId     String?
+  paymentMethod     String?         // "transfer", "pix"
+  
+  // Observações
+  notes             String?         @db.Text
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([projectId])
+}
+
+model Referral {
+  id                String          @id @default(cuid())
+  partnerId         String
+  partner           Partner         @relation(fields: [partnerId], references: [id])
+  
+  leadId            String          @unique
+  lead              Lead            @relation(fields: [leadId], references: [id])
+  
+  // Status da indicação
+  status            String          @default("referred") // "referred", "contacted", "converted", "paid"
+  convertedAt       DateTime?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([partnerId])
+  @@index([status])
+}
+
+model AIUsageLog {
+  id                String          @id @default(cuid())
+  projectId         String
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  // Metadados de uso
+  provider          String          // "gemini", "copilot", "openai"
+  tokensUsed        Int
+  cost              Float
+  purpose           String          // "development", "planning", "code_generation"
+  details           Json?           // Detalhes adicionais
+  
+  createdAt         DateTime        @default(now())
+
+  @@index([projectId])
+  @@index([provider])
+}
+
+model Task {
+  id                String          @id @default(cuid())
+  projectId         String
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  title             String
+  description       String?         @db.Text
+  status            String          @default("todo") // "todo", "in_progress", "review", "done"
+  
+  // Tempo gasto
+  hoursSpent        Float           @default(0)
+  
+  // Assistência de IA
+  aiAssisted        Boolean         @default(false)
+  aiToolsUsed       String[]        @default([])
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model Milestone {
+  id                String          @id @default(cuid())
+  projectId         String
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  title             String
+  description       String          @db.Text
+  dueDate           DateTime
+  completedAt       DateTime?
+  
+  // Aprovação do cliente
+  approvedByClient  Boolean         @default(false)
+  approvalNotes     String?         @db.Text
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([dueDate])
+}
+
+model ProjectAcceptance {
+  id                String          @id @default(cuid())
+  projectId         String          @unique
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  clientId          String
+  client            User            @relation(fields: [clientId], references: [id])
+  
+  // Aceite
+  accepted          Boolean         @default(false)
+  acceptedAt        DateTime?
+  
+  // Prazo para aceite (7 dias após entrega)
+  acceptanceDeadline DateTime
+  
+  // Feedback
+  feedback          String?         @db.Text
+  rating            Int?            // 1 a 5
+  
+  // Pendências
+  hasPendencies     Boolean         @default(false)
+  pendencies        Json?           // Lista de pendências
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([projectId])
+  @@index([accepted])
+}
+
+model Notification {
+  id                String          @id @default(cuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type              String          // "payment", "contract", "project", "commission", "message"
+  title             String
+  message           String          @db.Text
+  
+  read              Boolean         @default(false)
+  actionUrl         String?
+  metadata          Json?
+  
+  createdAt         DateTime        @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([type])
+}
+
+model Message {
+  id                String          @id @default(cuid())
+  projectId         String
+  project           Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  senderId          String
+  sender            User            @relation("MessageSender", fields: [senderId], references: [id])
+  
+  receiverId        String
+  receiver          User            @relation("MessageReceiver", fields: [receiverId], references: [id])
+  
+  content           String          @db.Text
+  attachments       Json?           // URLs de arquivos anexos
+  
+  read              Boolean         @default(false)
+  readAt            DateTime?
+  
+  createdAt         DateTime        @default(now())
+
+  @@index([projectId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([read])
+}
+
+// Configurações globais do sistema
+model Settings {
+  id                String          @id @default(cuid())
+  key               String          @unique
+  value             Json
+  description       String?
+  
+  updatedAt         DateTime        @updatedAt
+
+  @@index([key])
+}

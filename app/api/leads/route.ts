@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
+import { parseReferralCookieValue, REFERRAL_COOKIE_KEY } from '@/lib/referral-tracking'
 
 const leadSchema = z.object({
   name: z.string().min(2),
@@ -19,6 +21,27 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const validatedData = leadSchema.parse(body)
+    const referralCookie = request.cookies.get(REFERRAL_COOKIE_KEY)?.value
+    const referralAttribution = parseReferralCookieValue(referralCookie)
+
+    let partnerId = validatedData.partnerId
+    let source = validatedData.source
+    let notes = undefined as Prisma.InputJsonValue | undefined
+
+    if (referralAttribution?.referralCode) {
+      partnerId = partnerId || referralAttribution.partnerId || undefined
+      source = partnerId ? 'partner' : source
+      notes = {
+        referralAttribution: {
+          referralCode: referralAttribution.referralCode,
+          partnerId: referralAttribution.partnerId ?? null,
+          partnerName: referralAttribution.partnerName ?? null,
+          capturedAt: referralAttribution.capturedAt,
+          updatedAt: referralAttribution.updatedAt,
+          lastLandingPath: referralAttribution.lastLandingPath ?? null,
+        },
+      }
+    }
 
     const lead = await prisma.lead.create({
       data: {
@@ -29,9 +52,10 @@ export async function POST(request: NextRequest) {
         message: validatedData.message,
         company: validatedData.company,
         budget: validatedData.budget,
-        source: validatedData.source,
-        partnerId: validatedData.partnerId,
+        source,
+        partnerId,
         diagnosticData: validatedData.diagnosticData,
+        notes,
         status: 'new',
       },
     })

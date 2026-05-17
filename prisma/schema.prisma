@@ -48,6 +48,11 @@ enum CommissionStatus {
   PAID                  // Paga
 }
 
+enum ReferralTrackingEventType {
+  NEW_ACCESS
+  RETURN
+}
+
 // ============= MODELS =============
 
 model User {
@@ -84,6 +89,7 @@ model Partner {
   // Dados do parceiro
   companyName       String?
   cpfCnpj           String?
+  referralCode      String?         @unique
   bankAccount       Json?           // Dados bancários { banco, agencia, conta, tipo }
   
   // Comissões
@@ -95,11 +101,32 @@ model Partner {
   referrals         Referral[]
   commissions       Commission[]
   leads             Lead[]
+  trackingEvents    ReferralTrackingEvent[]
   
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   @@index([userId])
+  @@index([referralCode])
+}
+
+model ReferralTrackingEvent {
+  id                String                    @id @default(cuid())
+  eventKey          String                    @unique
+  eventType         ReferralTrackingEventType
+  referralCode      String
+  visitorKey        String
+  sessionKey        String
+  landingPath       String?
+  partnerId         String?
+  partner           Partner?                  @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+  partnerName       String?
+  createdAt         DateTime                  @default(now())
+
+  @@index([partnerId])
+  @@index([referralCode])
+  @@index([visitorKey])
+  @@index([createdAt])
 }
 
 model Lead {

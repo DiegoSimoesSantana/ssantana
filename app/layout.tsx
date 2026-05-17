@@ -1,9 +1,11 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
 import LoadingOverlay from '@/components/layout/LoadingOverlay'
+import ReferralAttributionManager from '@/components/tracking/ReferralAttributionManager'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -152,6 +154,9 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <LoadingOverlay />
+        <Suspense fallback={null}>
+          <ReferralAttributionManager />
+        </Suspense>
         {children}
         <Toaster position="top-right" richColors />
       </body>

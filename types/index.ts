@@ -150,6 +150,9 @@ export interface PartnerStats {
   totalEarned: number
   pendingCommissions: number
   thisMonthEarnings: number
+  newProspects?: number
+  returnVisits?: number
+  totalTrackedEvents?: number
 }
 
 export interface CommissionData {

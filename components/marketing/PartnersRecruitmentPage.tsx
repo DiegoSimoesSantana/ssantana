@@ -12,6 +12,14 @@ type ComparisonData = {
   netPF: number
 }
 
+// Tabela de alíquotas educativas para RPA (Recibo de Pagamento Autônomo) - PF
+const RPA_TAX_BRACKETS = [
+  { range: 'Até R$ 1.903,98', inss: 0.08, irrf: 0, total: 0.08 },
+  { range: 'R$ 1.903,99 a R$ 2.826,65', inss: 0.09, irrf: 0, total: 0.09 },
+  { range: 'R$ 2.826,66 a R$ 3.751,05', inss: 0.11, irrf: 0, total: 0.11 },
+  { range: 'Acima de R$ 3.751,05', inss: 0.11, irrf: 0.015, total: 0.125 },
+]
+
 function formatBRL(value: number): string {
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -110,6 +118,63 @@ export default function PartnersRecruitmentPage() {
         </div>
       </section>
 
+      <section className="px-4 py-16 sm:py-24">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="mb-12 text-center text-2xl font-semibold text-white sm:text-3xl">
+            Por que ser Parceiro SSANTANA?
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: '🎯',
+                title: 'Comissao Recorrente',
+                description:
+                  'Ganhe 15% mensalmente enquanto o cliente pagar. Construa renda passiva crescente com cada indicacao.',
+              },
+              {
+                icon: '📊',
+                title: 'Dashboard Proprio',
+                description:
+                  'Acompanhe todas as suas indicacoes, comissoes acumuladas e saques em tempo real e transparente.',
+              },
+              {
+                icon: '🚀',
+                title: 'Zero Esforco Operacional',
+                description:
+                  'Compartilhe seu link e pronto. Nos cuidamos da venda, suporte e relacionamento com o cliente.',
+              },
+              {
+                icon: '💰',
+                title: 'Saque Facil e Rapido',
+                description: 'PIX automatizado, sem burocracia. Saque minimo de R$ 200, creditado em sua conta rapidamente.',
+              },
+              {
+                icon: '🛡️',
+                title: 'Protecao Garantida',
+                description:
+                  'Sua comissao esta garantida. Saque liberado 30 dias apos o cliente pagar, com total transparencia.',
+              },
+              {
+                icon: '🤝',
+                title: 'Suporte Dedicado',
+                description:
+                  'Time SSANTANA disponivel para ajudar no acompanhamento, conversoes e otimizacao de suas indicacoes.',
+              },
+            ].map((benefit) => (
+              <div
+                key={benefit.title}
+                className="rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur"
+              >
+                <div className="mb-3 text-2xl">{benefit.icon}</div>
+                <h3 className="mb-2 font-semibold text-white">{benefit.title}</h3>
+                <p className="text-sm leading-relaxed text-slate-300">{benefit.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section id="calculator" className="scroll-mt-28 px-4 pb-20 sm:scroll-mt-32 sm:pb-24">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.1fr,0.9fr]">
           <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_10px_45px_rgba(15,23,42,0.55)] sm:p-8">
@@ -194,14 +259,34 @@ export default function PartnersRecruitmentPage() {
 
               <div className="rounded-xl border border-amber-300/25 bg-amber-400/10 p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-semibold text-amber-200">Opcao B: Pessoa Fisica (CPF)</p>
+                  <p className="font-semibold text-amber-200">Opcao B: Pessoa Fisica (CPF - RPA)</p>
                   <span className="rounded-full bg-amber-300/20 px-2.5 py-1 text-xs font-medium text-amber-100">
-                    Retencao didatica de {Math.round(PF_TAX_RATE * 100)}%
+                    Imposto na fonte
                   </span>
                 </div>
                 <p className="mt-2 text-sm text-amber-100">Bruto: {formatBRL(comparison.gross)}</p>
                 <p className="text-sm text-amber-100">Liquido: {formatBRL(comparison.netPF)}</p>
-                <p className="mt-2 text-xs text-amber-100/90">Sujeito a retencao de impostos (RPA).</p>
+                <p className="mt-2 text-xs text-amber-100/90">Sujeito a retencao INSS + IRRF (RPA).</p>
+              </div>
+
+              <div className="mt-6 rounded-xl border border-cyan-300/15 bg-cyan-400/5 p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-cyan-200">
+                  Tabela de aliquotas RPA (Pessoa Fisica)
+                </p>
+                <div className="space-y-2 text-xs text-cyan-100">
+                  {RPA_TAX_BRACKETS.map((bracket, idx) => (
+                    <div key={idx} className="flex items-center justify-between border-b border-cyan-300/10 pb-2">
+                      <span>{bracket.range}</span>
+                      <span className="font-mono">
+                        INSS {Math.round(bracket.inss * 100)}% + IRRF {Math.round(bracket.irrf * 100)}% = {Math.round(bracket.total * 100)}% total
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-cyan-100/80">
+                  <strong>Nota:</strong> Estas aliquotas sao informativas. O calculo acima usa {Math.round(PF_TAX_RATE * 100)}% como estimativa media.
+                  Consulte um contador para sua situacao especifica.
+                </p>
               </div>
             </div>
 

@@ -49,7 +49,7 @@ export default function CTASection() {
             <p className="text-xl mb-8 text-primary-100">
               Comece com uma <strong>reunião gratuita de 15 minutos</strong> — sem compromisso.
               Setup a partir de <strong>R$ 400</strong> com 50% OFF até 05/05/2026.
-              Promoção: <strong>50% OFF</strong> em consultorias até o final do ano!
+              Promoção: <strong>50% OFF</strong> em consultorias até 30/07/2026!
             </p>
 
             <div className="space-y-4 mb-8">

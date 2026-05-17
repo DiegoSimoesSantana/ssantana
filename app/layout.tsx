@@ -130,12 +130,12 @@ export default function RootLayout({
                   {
                     "@type": "Offer",
                     "name": "Consultoria de Diagnóstico e Plano de Ação",
-                    "description": "Reunião de 30-60min para entendimento de escopo e orçamento imediato. Promoção: 50% de desconto até o final do ano.",
+                    "description": "Reunião de 30-60min para entendimento de escopo e orçamento imediato. Promoção: 50% de desconto até 30/07/2026.",
                     "price": "100.00",
                     "priceCurrency": "BRL",
-                    "validThrough": "2026-12-31",
+                    "validThrough": "2026-07-30",
                     "availability": "https://schema.org/InStock",
-                    "priceValidUntil": "2026-12-31"
+                    "priceValidUntil": "2026-07-30"
                   },
                   {
                     "@type": "Offer",

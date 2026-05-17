@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ArrowRight, BadgeCheck, Link2, ShieldCheck, Wallet } from 'lucide-react'
+import { ArrowRight, BadgeCheck, Clock3, Link2, RefreshCcw, ShieldCheck, Wallet } from 'lucide-react'
 
 const PARTNER_COMMISSION_RATE = 0.15
 const PF_TAX_RATE = 0.11
@@ -80,7 +80,7 @@ export default function PartnersRecruitmentPage() {
             </p>
           </div>
 
-          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
             {[
               {
                 icon: Link2,
@@ -97,6 +97,18 @@ export default function PartnersRecruitmentPage() {
                 icon: Wallet,
                 title: 'Pagamento rapido',
                 description: 'Receba direto na sua conta via PIX automatizado, sem burocracia operacional.',
+              },
+              {
+                icon: Clock3,
+                title: 'Compras futuras garantidas',
+                description:
+                  'Salvamos o rastreio em cookie e armazenamento local. Se o lead voltar depois direto ao site, a indicacao continua protegida.',
+              },
+              {
+                icon: RefreshCcw,
+                title: 'Regra do ultimo clique',
+                description:
+                  'Se houver mais de uma indicacao, vale a ultima registrada antes da compra. Follow-up e persistencia contam a seu favor.',
               },
             ].map((rule) => {
               const Icon = rule.icon
@@ -151,15 +163,27 @@ export default function PartnersRecruitmentPage() {
               },
               {
                 icon: '🛡️',
-                title: 'Protecao Garantida',
+                title: 'Comissao Protegida',
                 description:
-                  'Sua comissao esta garantida. Saque liberado 30 dias apos o cliente pagar, com total transparencia.',
+                  'Se o lead clicar no seu link hoje e voltar semanas depois direto ao site, o rastreio salvo no navegador continua defendendo sua comissao.',
               },
               {
                 icon: '🤝',
                 title: 'Suporte Dedicado',
                 description:
                   'Time SSANTANA disponivel para ajudar no acompanhamento, conversoes e otimizacao de suas indicacoes.',
+              },
+              {
+                icon: '🔥',
+                title: 'Persistencia Premiada',
+                description:
+                  'No nosso modelo de atribuicao, a ultima indicacao valida antes do fechamento vence. Quem faz follow-up melhor fecha mais.',
+              },
+              {
+                icon: '📈',
+                title: 'Inteligencia de Prospeccao',
+                description:
+                  'O parceiro acompanha novos acessos unicos e retornos ao site para saber quando insistir no contato e acelerar o fechamento.',
               },
             ].map((benefit) => (
               <div
@@ -171,6 +195,45 @@ export default function PartnersRecruitmentPage() {
                 <p className="text-sm leading-relaxed text-slate-300">{benefit.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-4 pb-12 sm:pb-20">
+        <div className="mx-auto max-w-6xl rounded-3xl border border-cyan-300/15 bg-gradient-to-r from-cyan-400/10 via-slate-900 to-indigo-400/10 p-6 sm:p-8">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr,0.8fr] lg:items-start">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-200">Rastreio que joga a seu favor</p>
+              <h2 className="mt-3 text-2xl font-semibold text-white sm:text-3xl">
+                Seu link nao morre no primeiro clique.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
+                Quando um prospect entra com seu codigo, o sistema guarda a indicacao em cookie e armazenamento local.
+                Se ele sair, pensar melhor e voltar depois digitando o endereco direto, continuamos reconhecendo que veio por voce.
+              </p>
+              <p className="mt-4 text-sm leading-7 text-slate-300 sm:text-base">
+                E se outro parceiro entrar na conversa? A regra e objetiva: vale a ultima indicacao registrada antes da compra.
+                Isso torna follow-up, relacionamento e insistencia comercial parte real da sua vantagem competitiva.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
+              <p className="text-sm font-semibold text-white">O que o parceiro enxerga no painel</p>
+              <div className="mt-4 space-y-3 text-sm text-slate-300">
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="font-medium text-cyan-200">Novos prospectos unicos</p>
+                  <p className="mt-1">Contamos apenas a primeira entrada valida por navegador para evitar duplicidade artificial.</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="font-medium text-cyan-200">Retornos ao site</p>
+                  <p className="mt-1">Cada volta organica do indicado vira sinal de aquecimento para orientar o proximo contato comercial.</p>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="font-medium text-cyan-200">Fila prioritaria para o indicado</p>
+                  <p className="mt-1">Quem chega por indicacao recebe atendimento prioritario e entra no funil com contexto comercial mais forte.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

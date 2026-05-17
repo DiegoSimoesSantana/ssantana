@@ -76,6 +76,18 @@ export default function LeadJourneySection() {
             {' '}para acelerar sua triagem e já sair com próximo passo definido.
           </p>
         </div>
+
+        <div className="mt-6 rounded-2xl border border-cyan-200 bg-cyan-50 p-6">
+          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-cyan-800">Indicação VIP</p>
+          <p className="mt-2 text-gray-800 leading-7">
+            Quando identificamos que um lead foi indicado por um parceiro, o funil passa a destacar essa referência e o contato entra com
+            atendimento prioritário. Isso aumenta a confiança de quem compra e valoriza comercialmente quem indicou.
+          </p>
+          <p className="mt-3 text-gray-700 leading-7">
+            Regra operacional: se existir mais de uma indicação registrada, vale a última indicação salva no sistema antes do fechamento.
+            Em outras palavras, persistência comercial faz sentido e pode decidir a comissão.
+          </p>
+        </div>
       </div>
     </section>
   )

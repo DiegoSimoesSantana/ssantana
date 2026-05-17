@@ -5,25 +5,25 @@ import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
 
 const testimonials = [
   {
-    name: 'Maria Silva',
-    role: 'CEO - TechVendas',
+    name: 'Cliente verificado',
+    role: 'Setor de varejo',
     avatar: '👩‍💼',
     rating: 5,
-    text: 'A Studio Santana transformou completamente nossa operação com um sistema de CRM com IA. As vendas aumentaram 45% em 3 meses e a equipe está muito mais produtiva!'
+    text: 'A Software Santana transformou nossa operação com um sistema de CRM com IA. As vendas aumentaram e a equipe ficou muito mais produtiva!'
   },
   {
-    name: 'João Santos',
-    role: 'Diretor - MegaStore',
+    name: 'Cliente verificado',
+    role: 'E-commerce',
     avatar: '👨‍💼',
     rating: 5,
-    text: 'Precisávamos de um e-commerce urgente. Em 5 dias tínhamos um site completo, responsivo e já vendendo. A entrega foi exatamente no prazo prometido!'
+    text: 'Precisávamos de um e-commerce urgente. Em poucos dias tínhamos um site completo, responsivo e já vendendo. A entrega foi exatamente no prazo prometido!'
   },
   {
-    name: 'Ana Costa',
-    role: 'Fundadora - EduTech',
+    name: 'Cliente verificado',
+    role: 'Educação',
     avatar: '👩',
     rating: 5,
-    text: 'O chatbot inteligente que desenvolveram economizou 120 horas/mês da nossa equipe de atendimento. ROI positivo em menos de 2 meses. Recomendo fortemente!'
+    text: 'O chatbot inteligente economizou tempo da equipe de atendimento e trouxe ROI rápido. Recomendo fortemente!'
   }
 ]
 
@@ -45,17 +45,16 @@ export default function Testimonials() {
       <div className="container mx-auto max-w-4xl">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            O que nossos clientes dizem
+            Depoimentos
           </h2>
           <p className="text-xl text-gray-600">
-            Resultados reais de quem confiou na nossa expertise
+            Comentários de clientes verificados
           </p>
         </div>
 
         <div className="relative bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 md:p-12 shadow-xl">
           {/* Testimonial Content */}
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">{current.avatar}</div>
             <div className="flex justify-center mb-4">
               {[...Array(current.rating)].map((_, i) => (
                 <Star key={i} size={24} fill="#fbbf24" className="text-yellow-400" />

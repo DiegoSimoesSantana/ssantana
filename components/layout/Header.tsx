@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import AnimatedLogo from './AnimatedLogo'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -13,7 +14,7 @@ export default function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold text-primary-600">
-            Studio Santana
+            <AnimatedLogo />
           </Link>
 
           {/* Desktop Navigation */}
@@ -23,6 +24,9 @@ export default function Header() {
             </Link>
             <Link href="/#pricing" className="text-gray-700 hover:text-primary-600 transition">
               Preços
+            </Link>
+            <Link href="/education" className="text-gray-700 hover:text-primary-600 transition">
+              Educação
             </Link>
             <Link href="/#projects" className="text-gray-700 hover:text-primary-600 transition">
               Projetos
@@ -37,12 +41,6 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/sign-in"
-              className="text-gray-700 hover:text-primary-600 transition"
-            >
-              Entrar
-            </Link>
             <Link
               href="/#diagnostic"
               className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition font-semibold"
@@ -78,6 +76,13 @@ export default function Header() {
               Preços
             </Link>
             <Link
+              href="/education"
+              className="block text-gray-700 hover:text-primary-600 transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Educação
+            </Link>
+            <Link
               href="/#projects"
               className="block text-gray-700 hover:text-primary-600 transition"
               onClick={() => setMobileMenuOpen(false)}
@@ -97,13 +102,6 @@ export default function Header() {
               onClick={() => setMobileMenuOpen(false)}
             >
               Contato
-            </Link>
-            <Link
-              href="/sign-in"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Entrar
             </Link>
             <Link
               href="/#diagnostic"

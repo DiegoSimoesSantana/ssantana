@@ -130,7 +130,7 @@ Crie o dashboard do admin completo em /app/dashboard/admin/page.tsx com:
 
 1. Estatísticas gerais (leads, projetos, receita)
 2. Lista de leads pendentes de aprovação
-3. Sistema de "debocheque" (aprovar/rejeitar)
+3. Sistema de aprovação (aprovar/rejeitar)
 4. Lista de projetos em andamento
 5. Notificações importantes
 

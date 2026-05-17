@@ -162,11 +162,11 @@ export default async function ClientDashboard() {
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
                           <div
                             className="bg-primary-600 h-2 rounded-full transition-all"
-                            style={{ width: `${project.progress || 0}%` }}
+                            style={{ width: `${(project as any).progress || 0}%` }}
                           />
                         </div>
                         <span className="text-xs font-semibold">
-                          {project.progress || 0}%
+                          {(project as any).progress || 0}%
                         </span>
                       </div>
                     </div>

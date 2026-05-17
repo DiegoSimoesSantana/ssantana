@@ -8,7 +8,7 @@ const services = [
     title: 'Sites & Sistemas Web',
     description: 'Desenvolvimento de sites profissionais e sistemas web personalizados com foco em performance e UX.',
     features: ['Responsivo', 'SEO Otimizado', 'Alta Performance'],
-    price: 'A partir de R$ 2.000'
+    price: 'Setup a partir de R$ 400'
   },
   {
     icon: Smartphone,
@@ -22,28 +22,28 @@ const services = [
     title: 'Automação com IA',
     description: 'Chatbots inteligentes, análise preditiva e automação de processos com Machine Learning.',
     features: ['LLMs', 'Análise Preditiva', 'Automação'],
-    price: 'A partir de R$ 2.500'
+    price: 'Sob consulta'
   },
   {
     icon: Code,
     title: 'Sistemas Personalizados',
-    description: 'ERPs, CRMs e sistemas sob medida para otimizar gestão e produtividade.',
+    description: 'ERPs, CRMs e sistemas sob medida. Suporte promocional de R$ 70/mês por 12 meses após assinatura.',
     features: ['Escalável', 'Integrações', 'Cloud-native'],
-    price: 'A partir de R$ 4.000'
+    price: 'Suporte: R$ 70/mês (valor real R$ 200)'
   },
   {
     icon: LineChart,
-    title: 'Business Intelligence',
-    description: 'Dashboards e análise de dados em tempo real para decisões baseadas em métricas.',
-    features: ['Dashboards', 'Relatórios', 'KPIs'],
-    price: 'A partir de R$ 2.800'
+    title: 'E-mail Profissional',
+    description: 'Configuração de e-mail no seu domínio .com.br. Parceria Google, Microsoft e Zoho disponível.',
+    features: ['@seudominio.com.br', 'Servidor dedicado', 'R$ 5/mês por e-mail'],
+    price: 'Setup: R$ 200 (sem validade expressa)'
   },
   {
     icon: Zap,
-    title: 'Consultoria Tech',
-    description: 'Reunião de diagnóstico, planejamento e plano de ação imediato. Promoção: 50% OFF!',
-    features: ['30-60 minutos', 'Orçamento imediato', 'Plano de ação'],
-    price: 'R$ 100 (De R$ 200)'
+    title: 'Reunião Gratuita (15 min)',
+    description: 'Conversa rápida para entender seu projeto antes de qualquer pagamento.',
+    features: ['15 minutos', 'Sem compromisso', 'Orçamento estimado'],
+    price: 'Gratuito'
   }
 ]
 

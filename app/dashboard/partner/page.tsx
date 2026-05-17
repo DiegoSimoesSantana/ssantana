@@ -3,8 +3,10 @@ import { currentUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/DashboardShell'
 import { formatCurrency } from '@/lib/business-rules'
-import { Users, DollarSign, TrendingUp, Link as LinkIcon } from 'lucide-react'
+import { Users, DollarSign, TrendingUp, Link as LinkIcon, Calendar, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+
+const CALENDAR_LINK = 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3BnznimDnHVolTPdHCTHYPbixuhHbl2tGq23RzwYGSA2NvW2h5fgxOWi-vU9H_Nrnfh3YCOl52'
 
 export const metadata = {
   title: 'Dashboard Parceiro',
@@ -12,268 +14,116 @@ export const metadata = {
 }
 
 export default async function PartnerDashboard() {
-  const user = await currentUser()
-  
-  if (!user) {
-    redirect('/sign-in')
+  // TEMPORÁRIO: Sem autenticação Clerk, simulando usuário parceiro pendente
+  const mockUser = {
+    id: 'temp-partner-001',
+    email: 'parceiro@teste.com',
+    name: 'Parceiro Teste',
+    role: 'PARTNER',
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.emailAddresses[0].emailAddress },
-  })
-
-  if (!dbUser || dbUser.role !== 'PARTNER') {
-    redirect('/')
-  }
-
-  // Buscar dados do parceiro
-  const partner = await prisma.partner.findUnique({
-    where: { userId: dbUser.id },
-    include: {
-      referrals: {
-        include: {
-          lead: true,
-          project: {
-            select: {
-              title: true,
-              totalValue: true,
-              status: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      },
-      commissions: {
-        include: {
-          project: {
-            select: {
-              title: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      },
-    },
-  })
-
-  if (!partner) {
-    redirect('/')
-  }
-
-  const stats = {
-    totalReferrals: partner.referrals.length,
-    convertedProjects: partner.referrals.filter(r => r.converted).length,
-    pendingCommissions: partner.commissions.filter(c => c.status === 'PENDING').reduce((sum, c) => sum + c.amount, 0),
-    paidCommissions: partner.commissions.filter(c => c.status === 'PAID').reduce((sum, c) => sum + c.amount, 0),
-  }
-
-  const conversionRate = stats.totalReferrals > 0 
-    ? ((stats.convertedProjects / stats.totalReferrals) * 100).toFixed(1)
-    : '0'
+  // Verificar se o parceiro já foi validado
+  const isValidated = false // Temporariamente sempre falso para mostrar aviso
 
   return (
-    <DashboardShell user={dbUser}>
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Olá, {dbUser.name}!
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Acompanhe suas indicações e ganhos
-          </p>
-        </div>
-
-        {/* Link de Indicação */}
-        <div className="bg-gradient-to-r from-primary-600 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold mb-2">Seu Link de Indicação</h2>
-              <p className="text-primary-100 mb-4">
-                Compartilhe e ganhe até 25% de comissão
+    <DashboardShell
+      user={{ name: 'Parceiro', email: 'parceiro@teste.com', role: 'PARTNER' as any }}
+    >
+      {/* Aviso de Validação Pendente */}
+      {!isValidated && (
+        <div className="mb-8 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-200 rounded-xl p-6 shadow-lg">
+          <div className="flex items-start gap-4">
+            <div className="bg-orange-100 rounded-full p-3">
+              <AlertCircle className="w-8 h-8 text-orange-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                🎯 Cadastro em Análise
+              </h3>
+              <p className="text-gray-700 mb-4 text-lg">
+                Para ativar sua conta como parceiro, precisamos nos conhecer e validar seu perfil!
               </p>
-              <div className="bg-white/20 backdrop-blur rounded-lg px-4 py-3 flex items-center space-x-3">
-                <code className="text-sm flex-1">
-                  {process.env.NEXT_PUBLIC_URL}/?ref={partner.referralCode}
-                </code>
-                <button
-                  onClick={() => navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_URL}/?ref=${partner.referralCode}`)}
-                  className="bg-white text-primary-600 px-4 py-2 rounded-lg hover:bg-primary-50 transition font-semibold text-sm"
-                >
-                  Copiar
-                </button>
+              
+              <div className="bg-white rounded-lg p-4 mb-4 border border-orange-100">
+                <h4 className="font-semibold text-gray-900 mb-3">Na reunião vamos:</h4>
+                <ul className="space-y-2 text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Conhecer você e seu perfil profissional</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Explicar como funciona nossa parceria</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Validar se o perfil está alinhado com nossos valores</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-500 mt-1">✓</span>
+                    <span>Ativar sua conta e liberar todas as funcionalidades</span>
+                  </li>
+                </ul>
+              </div>
+
+              <a
+                href={CALENDAR_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-3 bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition-all duration-200 font-semibold shadow-lg hover:shadow-xl hover:scale-105"
+              >
+                <Calendar className="w-5 h-5" />
+                Agendar Reunião de Validação
+              </a>
+              
+              <p className="mt-3 text-sm text-gray-600">
+                ⏱️ Reunião online via Google Meet • Duração: 30 minutos
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dashboard Content - Bloqueado se não validado */}
+      {isValidated ? (
+        <div>
+          {/* Conteúdo original do dashboard aqui */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Indicações Ativas</p>
+                  <h3 className="text-2xl font-bold">0</h3>
+                </div>
+                <Users className="w-8 h-8 text-blue-500" />
               </div>
             </div>
-            <LinkIcon size={60} className="opacity-20" />
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Indicações</p>
-              <Users className="text-blue-600" size={24} />
-            </div>
-            <p className="text-3xl font-bold text-gray-900">{stats.totalReferrals}</p>
-            <p className="text-xs text-gray-500 mt-1">
-              {stats.convertedProjects} convertidas
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Taxa de Conversão</p>
-              <TrendingUp className="text-green-600" size={24} />
-            </div>
-            <p className="text-3xl font-bold text-gray-900">{conversionRate}%</p>
-            <p className="text-xs text-gray-500 mt-1">
-              Média: 15-20%
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">A Receber</p>
-              <DollarSign className="text-orange-600" size={24} />
-            </div>
-            <p className="text-3xl font-bold text-orange-600">
-              {formatCurrency(stats.pendingCommissions)}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Pendente
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-sm text-gray-600">Total Ganho</p>
-              <DollarSign className="text-green-600" size={24} />
-            </div>
-            <p className="text-3xl font-bold text-green-600">
-              {formatCurrency(partner.totalEarnings)}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Histórico total
-            </p>
-          </div>
-        </div>
-
-        {/* Referrals */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
-            Últimas Indicações
-          </h2>
-          
-          {partner.referrals.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">Nenhuma indicação ainda</p>
-              <p className="text-sm text-gray-400">
-                Compartilhe seu link para começar a ganhar!
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {partner.referrals.slice(0, 10).map((referral) => (
-                <div
-                  key={referral.id}
-                  className="border border-gray-200 rounded-lg p-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">
-                        {referral.lead.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        {referral.lead.email}
-                      </p>
-                      {referral.project && (
-                        <p className="text-sm text-primary-600 mt-2">
-                          Projeto: {referral.project.title}
-                        </p>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      {referral.converted ? (
-                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                          Convertido
-                        </span>
-                      ) : (
-                        <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold">
-                          Aguardando
-                        </span>
-                      )}
-                      {referral.project && (
-                        <p className="text-sm font-bold text-gray-900 mt-2">
-                          {formatCurrency(referral.project.totalValue)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+            
+            <div className="bg-white p-6 rounded-lg shadow">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Comissão Total</p>
+                  <h3 className="text-2xl font-bold">R$ 0,00</h3>
                 </div>
-              ))}
+                <DollarSign className="w-8 h-8 text-green-500" />
+              </div>
             </div>
-          )}
+          </div>
         </div>
-
-        {/* Commissions */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">
-            Comissões
-          </h2>
-          
-          {partner.commissions.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <p>Nenhuma comissão ainda</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                      Projeto
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                      Taxa
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                      Valor
-                    </th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {partner.commissions.map((commission) => (
-                    <tr key={commission.id} className="border-b border-gray-100">
-                      <td className="py-3 px-4 text-sm">
-                        {commission.project.title}
-                      </td>
-                      <td className="py-3 px-4 text-sm">
-                        {(commission.rate * 100).toFixed(0)}%
-                      </td>
-                      <td className="py-3 px-4 text-sm font-semibold">
-                        {formatCurrency(commission.amount)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          commission.status === 'PAID' 
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-orange-100 text-orange-700'
-                        }`}>
-                          {commission.status === 'PAID' ? 'Pago' : 'Pendente'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+      ) : (
+        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-200 rounded-full mb-4">
+            <LinkIcon className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Dashboard Bloqueado
+          </h3>
+          <p className="text-gray-600">
+            Agende sua reunião de validação para desbloquear todas as funcionalidades
+          </p>
         </div>
-      </div>
+      )}
     </DashboardShell>
   )
 }
+

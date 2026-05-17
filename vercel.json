@@ -1,18 +1,9 @@
 {
-  "buildCommand": "prisma generate && next build",
+  "buildCommand": "next build",
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
   "regions": ["gru1"],
-  "env": {
-    "DATABASE_URL": "@database-url",
-    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk-publishable-key",
-    "CLERK_SECRET_KEY": "@clerk-secret-key",
-    "STRIPE_SECRET_KEY": "@stripe-secret-key",
-    "STRIPE_WEBHOOK_SECRET": "@stripe-webhook-secret",
-    "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "@stripe-publishable-key",
-    "NEXT_PUBLIC_URL": "@next-public-url"
-  },
   "headers": [
     {
       "source": "/api/webhooks/(.*)",

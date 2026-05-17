@@ -103,7 +103,7 @@ Acesse: http://localhost:3000
 
 #### 1. Dashboard do Admin (`/app/dashboard/admin`)
 - [ ] Lista de todos os leads
-- [ ] Sistema de aprovação de projetos ("Debocheque")
+- [ ] Sistema de aprovação de projetos
 - [ ] Geração de contratos
 - [ ] Acompanhamento de pagamentos
 - [ ] Gestão de parceiros

@@ -4,7 +4,7 @@ import Stripe from 'stripe'
 import { calculateCommissionAmount, STANDARD_DELIVERY_DAYS } from '@/lib/business-rules'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2023-10-16',
 })
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -69,7 +69,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     data: {
       status: 'COMPLETED',
       paidAt: new Date(),
-      stripePaymentIntentId: session.payment_intent as string,
+      externalId: session.payment_intent as string,
     },
   })
 
@@ -82,34 +82,49 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     data: {
       status: 'IN_PROGRESS',
       startDate: new Date(),
-      estimatedDeliveryDate: deliveryDate,
+      dueDate: deliveryDate,
     },
     include: {
       client: true,
-      partner: true,
+      lead: {
+        include: {
+          partner: {
+            select: {
+              id: true,
+              userId: true,
+            },
+          },
+        },
+      },
     },
   })
 
-  // Calcular e criar comissão se houver parceiro
-  if (project.partnerId) {
+  // Calcular e criar comissão se houver parceiro via lead
+  const partnerId = project.lead?.partner?.id
+  const partnerUserId = project.lead?.partner?.userId
+
+  if (partnerId && partnerUserId) {
     const commissionAmount = calculateCommissionAmount(project.totalValue)
     
     await prisma.commission.create({
       data: {
-        partnerId: project.partnerId,
+        paymentId: payment.id,
+        partnerId,
         projectId: project.id,
         amount: commissionAmount,
         rate: commissionAmount / project.totalValue,
         status: 'PENDING',
-        dueDate: deliveryDate, // Pagar comissão após entrega
       },
     })
 
     // Atualizar estatísticas do parceiro
     await prisma.partner.update({
-      where: { userId: project.partnerId },
+      where: { id: partnerId },
       data: {
-        totalEarnings: {
+        totalEarned: {
+          increment: commissionAmount,
+        },
+        pendingBalance: {
           increment: commissionAmount,
         },
       },
@@ -118,7 +133,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     // Notificar parceiro
     await prisma.notification.create({
       data: {
-        userId: project.partnerId,
+        userId: partnerUserId,
         type: 'commission',
         title: 'Nova Comissão Gerada!',
         message: `Você ganhou R$ ${commissionAmount.toFixed(2)} pela indicação do projeto "${project.title}"`,
@@ -169,7 +184,7 @@ async function handlePaymentFailed(paymentIntent: Stripe.PaymentIntent) {
   console.log('Payment failed:', paymentIntent.id)
   
   const payment = await prisma.payment.findFirst({
-    where: { stripePaymentIntentId: paymentIntent.id },
+    where: { externalId: paymentIntent.id },
     include: { project: true },
   })
 

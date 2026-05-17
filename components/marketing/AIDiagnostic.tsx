@@ -1,210 +1,112 @@
 'use client'
 
-import { useState } from 'react'
-import { Calculator, TrendingUp, Clock, DollarSign } from 'lucide-react'
-import { BUSINESS_RULES, formatCurrency } from '@/lib/business-rules'
+import { Calendar, Clock, CheckCircle, Video } from 'lucide-react'
+
+const CALENDAR_LINK = 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3BnznimDnHVolTPdHCTHYPbixuhHbl2tGq23RzwYGSA2NvW2h5fgxOWi-vU9H_Nrnfh3YCOl52'
 
 export default function AIDiagnostic() {
-  const [formData, setFormData] = useState({
-    businessType: '',
-    challenge: '',
-    budget: '',
-  })
-  const [result, setResult] = useState<any>(null)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // Lógica simplificada de diagnóstico
-    const diagnostics: Record<string, any> = {
-      'atendimento': {
-        title: 'Sistema de Chatbot Inteligente com LLMs',
-        efficiency: 60,
-        timeSaved: 120,
-        estimatedCost: 2500,
-        deliveryDays: 5,
-        description: 'Automatize respostas e libere sua equipe para atividades estratégicas.'
-      },
-      'vendas': {
-        title: 'CRM com IA Preditiva e Automação de Vendas',
-        efficiency: 45,
-        timeSaved: 80,
-        estimatedCost: 3500,
-        deliveryDays: 5,
-        description: 'Previsão de vendas, lead scoring e follow-ups automatizados.'
-      },
-      'processos': {
-        title: 'Sistema de Gestão Empresarial com Automação',
-        efficiency: 70,
-        timeSaved: 150,
-        estimatedCost: 4000,
-        deliveryDays: 7,
-        description: 'Integre processos, elimine tarefas manuais e tenha visão 360° do negócio.'
-      },
-      'dados': {
-        title: 'Dashboard de BI com Análise Preditiva',
-        efficiency: 50,
-        timeSaved: 60,
-        estimatedCost: 2800,
-        deliveryDays: 5,
-        description: 'Transforme dados em insights acionáveis com IA.'
-      }
-    }
-
-    const diagnostic = diagnostics[formData.challenge] || diagnostics['processos']
-    setResult(diagnostic)
-  }
-
   return (
-    <section id="diagnostic" className="py-20 px-4 bg-white">
+    <section id="diagnostic" className="py-20 px-4 bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <div className="container mx-auto max-w-5xl">
         <div className="text-center mb-12">
-          <div className="inline-flex items-center space-x-2 bg-secondary-100 text-secondary-700 px-4 py-2 rounded-full mb-4">
-            <Calculator size={16} />
-            <span className="text-sm font-medium">Análise Gratuita em 60 Segundos</span>
+          <div className="inline-flex items-center space-x-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-4">
+            <Calendar size={16} />
+            <span className="text-sm font-medium">Agende sua Reunião</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Descubra o Potencial de IA para seu Negócio
+            Conheça Seu Projeto e Receba Orçamento Personalizado
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Responda 3 perguntas rápidas e veja como a IA pode transformar seus resultados
+            Agende uma reunião online de 30-60 minutos. Entendemos suas necessidades e fornecemos orçamento detalhado.
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 shadow-xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Tipo de Negócio */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                1. Qual é o seu tipo de negócio?
-              </label>
-              <select
-                required
-                value={formData.businessType}
-                onChange={(e) => setFormData({ ...formData, businessType: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="">Selecione...</option>
-                <option value="ecommerce">E-commerce</option>
-                <option value="servicos">Serviços</option>
-                <option value="saas">SaaS/Tech</option>
-                <option value="industria">Indústria</option>
-                <option value="saude">Saúde</option>
-                <option value="educacao">Educação</option>
-                <option value="outro">Outro</option>
-              </select>
-            </div>
-
-            {/* Principal Desafio */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                2. Qual é o seu principal desafio?
-              </label>
-              <select
-                required
-                value={formData.challenge}
-                onChange={(e) => setFormData({ ...formData, challenge: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="">Selecione...</option>
-                <option value="atendimento">Atendimento ao Cliente Lento</option>
-                <option value="vendas">Vendas Estagnadas</option>
-                <option value="processos">Processos Manuais e Demorados</option>
-                <option value="dados">Falta de Análise de Dados</option>
-              </select>
-            </div>
-
-            {/* Orçamento */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                3. Qual é o seu orçamento aproximado?
-              </label>
-              <select
-                required
-                value={formData.budget}
-                onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-              >
-                <option value="">Selecione...</option>
-                <option value="2000">Até R$ 2.000</option>
-                <option value="5000">R$ 2.000 - R$ 5.000</option>
-                <option value="10000">R$ 5.000 - R$ 10.000</option>
-                <option value="10000+">Acima de R$ 10.000</option>
-              </select>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-primary-600 text-white px-8 py-4 rounded-lg hover:bg-primary-700 transition font-semibold text-lg shadow-lg hover:shadow-xl"
-            >
-              Ver Meu Diagnóstico Personalizado
-            </button>
-          </form>
-
-          {/* Result */}
-          {result && (
-            <div className="mt-8 bg-white rounded-xl p-6 shadow-lg animate-slide-up">
+        <div className="bg-white rounded-2xl p-8 md:p-12 shadow-2xl border border-gray-100">
+          {/* Benefícios da Reunião */}
+          <div className="grid md:grid-cols-2 gap-8 mb-10">
+            <div className="space-y-6">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">
-                🎯 Sua Solução Ideal: {result.title}
+                O que você ganha na reunião:
               </h3>
-              <p className="text-gray-600 mb-6">{result.description}</p>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-green-50 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 text-green-600 mb-2">
-                    <TrendingUp size={20} />
-                    <span className="font-semibold">Eficiência</span>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900">+{result.efficiency}%</p>
-                  <p className="text-sm text-gray-600">Redução de custos</p>
-                </div>
-
-                <div className="bg-blue-50 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 text-blue-600 mb-2">
-                    <Clock size={20} />
-                    <span className="font-semibold">Tempo Liberado</span>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900">{result.timeSaved}h</p>
-                  <p className="text-sm text-gray-600">Por mês</p>
-                </div>
-
-                <div className="bg-purple-50 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 text-purple-600 mb-2">
-                    <DollarSign size={20} />
-                    <span className="font-semibold">Investimento</span>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(result.estimatedCost)}</p>
-                  <p className="text-sm text-gray-600">Valor estimado</p>
-                </div>
-
-                <div className="bg-orange-50 rounded-lg p-4">
-                  <div className="flex items-center space-x-2 text-orange-600 mb-2">
-                    <Clock size={20} />
-                    <span className="font-semibold">Prazo</span>
-                  </div>
-                  <p className="text-2xl font-bold text-gray-900">{result.deliveryDays} dias</p>
-                  <p className="text-sm text-gray-600">Úteis</p>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Orçamento Detalhado</h4>
+                  <p className="text-gray-600 text-sm">Preço final personalizado para seu projeto</p>
                 </div>
               </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <a
-                  href="/#contact"
-                  className="flex-1 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition font-semibold text-center"
-                >
-                  Quero Implementar Esta Solução
-                </a>
-                <a
-                  href={`https://wa.me/${BUSINESS_RULES.CONTACT.phoneRaw}?text=Olá! Vi o diagnóstico de IA e quero saber mais sobre: ${result.title}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold text-center"
-                >
-                  Falar no WhatsApp
-                </a>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Planejamento Completo</h4>
+                  <p className="text-gray-600 text-sm">Escopo, cronograma e próximos passos definidos</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Material Resumido</h4>
+                  <p className="text-gray-600 text-sm">Documento completo enviado após a reunião</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Consultoria Especializada</h4>
+                  <p className="text-gray-600 text-sm">Tire todas suas dúvidas com nossos experts</p>
+                </div>
               </div>
             </div>
-          )}
+
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">
+                Detalhes da Reunião:
+              </h3>
+              <div className="flex items-start gap-3">
+                <Video className="w-6 h-6 text-purple-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">100% Online</h4>
+                  <p className="text-gray-600 text-sm">Via Google Meet, de onde você estiver</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Clock className="w-6 h-6 text-blue-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">30-60 Minutos</h4>
+                  <p className="text-gray-600 text-sm">Tempo suficiente para entender tudo</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Calendar className="w-6 h-6 text-orange-500 flex-shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-semibold text-gray-900">Horário Flexível</h4>
+                  <p className="text-gray-600 text-sm">Escolha o melhor dia e horário para você</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Principal */}
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl p-8 text-center text-white">
+            <h3 className="text-2xl font-bold mb-4">
+              Pronto para Transformar Seu Negócio?
+            </h3>
+            <p className="text-lg mb-6 text-purple-100">
+              Agende agora sua reunião gratuita e receba seu orçamento personalizado
+            </p>
+            <a
+              href={CALENDAR_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 bg-white text-purple-600 px-8 py-4 rounded-lg hover:bg-gray-100 transition-all duration-200 font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105"
+            >
+              <Calendar className="w-6 h-6" />
+              Agendar Minha Reunião Gratuita
+            </a>
+            <p className="mt-4 text-sm text-purple-200">
+              Resposta em até 24 horas • Sem compromisso
+            </p>
+          </div>
         </div>
       </div>
     </section>

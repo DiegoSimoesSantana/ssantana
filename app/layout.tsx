@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
+import LoadingOverlay from '@/components/layout/LoadingOverlay'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -81,15 +82,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <ClerkProvider>
-      <html lang="pt-BR">
-        <head>
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
+  // ClerkProvider condicional - só ativa se houver chaves configuradas
+  const hasClerkKeys = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY && 
+                       process.env.CLERK_SECRET_KEY
+  
+  const content = (
+    <html lang="pt-BR">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
                 "@type": "ProfessionalService",
                 "name": "Studio Santana - Engenharia de Software e AI",
                 "image": "https://studio-santana.vercel.app/logo.png",
@@ -143,14 +147,22 @@ export default function RootLayout({
                   }
                 ]
               })
-            }}
-          />
-        </head>
-        <body className={inter.className}>
-          {children}
-          <Toaster position="top-right" richColors />
-        </body>
-      </html>
-    </ClerkProvider>
+          }}
+        />
+      </head>
+      <body className={inter.className}>
+        <LoadingOverlay />
+        {children}
+        <Toaster position="top-right" richColors />
+      </body>
+    </html>
   )
+  
+  // Se tiver chaves do Clerk, usa o provider
+  if (hasClerkKeys) {
+    return <ClerkProvider>{content}</ClerkProvider>
+  }
+  
+  // Caso contrário, retorna sem autenticação
+  return content
 }

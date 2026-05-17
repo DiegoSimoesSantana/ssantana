@@ -94,6 +94,7 @@ model Partner {
   // Relations
   referrals         Referral[]
   commissions       Commission[]
+  leads             Lead[]
   
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt

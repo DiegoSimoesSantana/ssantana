@@ -6,6 +6,7 @@ import StatsGrid from '@/components/dashboard/StatsGrid'
 import LeadsTable from '@/components/dashboard/LeadsTable'
 import ProjectsTable from '@/components/dashboard/ProjectsTable'
 import RecentActivity from '@/components/dashboard/RecentActivity'
+import DiscountPanel from '@/components/dashboard/DiscountPanel'
 
 export const metadata = {
   title: 'Admin Dashboard',
@@ -123,6 +124,9 @@ export default async function AdminDashboard() {
 
         {/* Stats Grid */}
         <StatsGrid stats={stats} />
+
+        {/* Discount Panel */}
+        <DiscountPanel />
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -25,7 +25,7 @@
 - ✅ Sitemap e robots.txt
 
 ### Gestão de Projetos
-- ✅ Sistema de análise e aprovação ("Debocheque")
+- ✅ Sistema de análise e aprovação
 - ✅ Contratos online com assinatura digital
 - ✅ Gestão de pagamentos e parcelas
 - ✅ Acompanhamento de prazos de entrega

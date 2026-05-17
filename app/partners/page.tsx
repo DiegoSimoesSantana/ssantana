@@ -91,14 +91,14 @@ export default function PartnersPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {BUSINESS_RULES.COMMISSION_TIERS.map((tier, index) => {
-                    const exampleValue = tier.max || 60000
+                    const exampleValue = ('max' in tier ? (tier as any).max : 60000)
                     const commission = calculateCommissionAmount(exampleValue)
                     
                     return (
                       <tr key={index} className="hover:bg-gray-50">
                         <td className="px-6 py-4">
-                          {tier.max
-                            ? `${formatCurrency(tier.min)} - ${formatCurrency(tier.max)}`
+                          {('max' in tier)
+                            ? `${formatCurrency(tier.min)} - ${formatCurrency((tier as any).max)}`
                             : `Acima de ${formatCurrency(tier.min)}`}
                         </td>
                         <td className="px-6 py-4 font-bold text-primary-600">{tier.label}</td>

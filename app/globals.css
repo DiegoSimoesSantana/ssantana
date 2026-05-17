@@ -51,10 +51,10 @@
  
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-200;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-white text-gray-900;
   }
 }
 
@@ -78,4 +78,129 @@
     #f6f7f8 100%
   );
   background-size: 1000px 100%;
+}
+
+/* Logo Animation - Studio -> Software -> SSantana */
+.logo-animate {
+  --logo-cycle: 30s;
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.logo-animate--compact {
+  letter-spacing: 0;
+}
+
+.logo-prefix {
+  position: relative;
+  display: inline-block;
+  min-width: 9.2ch;
+  height: 1em;
+}
+
+.logo-word {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation-duration: var(--logo-cycle);
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+.logo-software {
+  animation-name: logoSoftware;
+}
+
+.logo-s {
+  animation-name: logoS;
+}
+
+.logo-santana {
+  display: inline-block;
+  margin-left: 0.35em;
+  animation: logoSantanaGap var(--logo-cycle) infinite ease-in-out;
+}
+
+.logo-letter {
+  display: inline-block;
+}
+
+.logo-letter-fade {
+  animation: logoLetterFade var(--logo-cycle) infinite ease-in-out;
+  --gear-x: 0.4em;
+  --gear-y: -0.3em;
+  --gear-rot: 60deg;
+}
+
+
+.logo-letter-fade:nth-child(2) { animation-delay: calc(var(--logo-cycle) * 0.01); --gear-x: 0.55em; --gear-y: -0.2em; --gear-rot: 45deg; }
+.logo-letter-fade:nth-child(3) { animation-delay: calc(var(--logo-cycle) * 0.02); --gear-x: 0.4em; --gear-y: -0.55em; --gear-rot: 90deg; }
+.logo-letter-fade:nth-child(4) { animation-delay: calc(var(--logo-cycle) * 0.03); --gear-x: 0.05em; --gear-y: -0.6em; --gear-rot: 120deg; }
+.logo-letter-fade:nth-child(5) { animation-delay: calc(var(--logo-cycle) * 0.04); --gear-x: -0.3em; --gear-y: -0.45em; --gear-rot: 160deg; }
+.logo-letter-fade:nth-child(6) { animation-delay: calc(var(--logo-cycle) * 0.05); --gear-x: -0.45em; --gear-y: -0.1em; --gear-rot: 200deg; }
+.logo-letter-fade:nth-child(7) { animation-delay: calc(var(--logo-cycle) * 0.06); --gear-x: -0.25em; --gear-y: 0.25em; --gear-rot: 240deg; }
+.logo-letter-fade:nth-child(8) { animation-delay: calc(var(--logo-cycle) * 0.07); --gear-x: 0.2em; --gear-y: 0.35em; --gear-rot: 300deg; }
+
+@keyframes logoSoftware {
+  0%, 40% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  44%, 64% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  68%, 100% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes logoS {
+  0%, 56% {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  58%, 70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  74%, 100% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes logoSantanaGap {
+  0%, 56% {
+    margin-left: 0.35em;
+  }
+  58%, 70% {
+    margin-left: 0;
+  }
+  74%, 100% {
+    margin-left: 0.35em;
+  }
+}
+
+@keyframes logoLetterFade {
+  0%, 40% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  44%, 56% {
+    opacity: 1;
+    transform: translate(var(--gear-x), var(--gear-y)) rotate(var(--gear-rot));
+  }
+  60%, 72% {
+    opacity: 0;
+    transform: translate(calc(var(--gear-x) * 1.2), calc(var(--gear-y) * 1.2)) rotate(calc(var(--gear-rot) * 1.2));
+  }
+  73%, 100% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(0deg);
+  }
 }

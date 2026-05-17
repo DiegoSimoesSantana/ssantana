@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { currentUser } from '@clerk/nextjs'
-import { formatCurrency, CANCELLATION_RETENTION, MAX_REFUND_NOT_STARTED } from '@/lib/business-rules'
+import { BUSINESS_RULES, formatCurrency, CANCELLATION_RETENTION, MAX_REFUND_NOT_STARTED } from '@/lib/business-rules'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         projectId: project.id,
         clientId: project.clientId,
         totalValue: project.totalValue,
-        status: 'PENDING',
+        status: 'DRAFT',
         template: project.includesSourceCode ? 'source_code' : 'standard',
         content: {
           html: contractHtml,
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
           projectTitle: project.title,
           projectDescription: project.description,
         },
-        status: 'PENDING',
+        status: 'DRAFT',
       },
     })
 
@@ -275,7 +275,10 @@ function generateContractHTML(project: any): string {
     <ul>
       <li><strong>Suporte gratuito:</strong> 30 dias para correção de bugs</li>
       <li><strong>Novas funcionalidades:</strong> Cotadas separadamente</li>
-      <li><strong>Manutenção mensal:</strong> Opcional a partir de R$ 500/mês</li>
+      <li><strong>Plano promocional de manutenção:</strong> ${formatCurrency(BUSINESS_RULES.MANUTENCAO_MENSAL)}/mês pelos primeiros ${BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses após a assinatura</li>
+      <li><strong>Valor de referência do plano:</strong> ${formatCurrency(BUSINESS_RULES.MANUTENCAO_MENSAL_REAL)}/mês (desconto promocional atual de ${formatCurrency(BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO)}/mês)</li>
+      <li><strong>Condição comercial:</strong> o desconto promocional é política comercial vinculada a meta interna da CONTRATADA e pode ser encerrado sem data pública pré-definida para novos ciclos</li>
+      <li><strong>Infraestrutura e escalabilidade:</strong> em caso de aumento relevante de uso, tráfego, integrações ou custos operacionais, a mensalidade poderá ser ajustada mediante aviso prévio e alinhamento entre as partes</li>
     </ul>
   </div>
 

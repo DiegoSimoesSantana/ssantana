@@ -44,14 +44,27 @@ export default function CTASection() {
           {/* Left: CTA */}
           <div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Pronto para transformar seu negócio com IA?
+              Pronto para transformar seu negócio?
             </h2>
             <p className="text-xl mb-8 text-primary-100">
-              Entre em contato agora e receba um diagnóstico personalizado em 24h.
+              Comece com uma <strong>reunião gratuita de 15 minutos</strong> — sem compromisso.
+              Setup a partir de <strong>R$ 400</strong> com 50% OFF até 05/05/2026.
               Promoção: <strong>50% OFF</strong> em consultorias até o final do ano!
             </p>
 
             <div className="space-y-4 mb-8">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                  �
+                </div>
+                <div>
+                  <p className="font-semibold">Reunião Grátis (15 min)</p>
+                  <a href={BUSINESS_RULES.SCHEDULING.FREE_15MIN_URL || '/#contact'} className="text-lg hover:underline">
+                    Agendar agora — sem compromisso
+                  </a>
+                </div>
+              </div>
+
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
                   📞
@@ -78,11 +91,11 @@ export default function CTASection() {
 
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  📍
+                  💳
                 </div>
                 <div>
-                  <p className="font-semibold">Localização</p>
-                  <p className="text-lg">{BUSINESS_RULES.CONTACT.address.city}, {BUSINESS_RULES.CONTACT.address.state}</p>
+                  <p className="font-semibold">Pagamento</p>
+                  <p className="text-base">PIX · Cartão · PicPay</p>
                 </div>
               </div>
             </div>

@@ -1,74 +1,154 @@
 'use client'
 
-import { Check, Star } from 'lucide-react'
-import { BUSINESS_RULES, formatCurrency } from '@/lib/business-rules'
+import { Check, Star, Mail, Globe, Wrench } from 'lucide-react'
+import { BUSINESS_RULES } from '@/lib/business-rules'
 
 const pricingPlans = [
   {
-    name: 'Consultoria',
-    description: 'Ideal para quem quer entender viabilidade e custos',
-    originalPrice: BUSINESS_RULES.CONSULTATION_PRICE,
-    price: BUSINESS_RULES.CONSULTATION_PRICE_PROMO,
-    discount: '50% OFF',
+    icon: Wrench,
+    name: 'Manutenção Mensal',
+    description: 'Suporte com valor promocional por 12 meses após assinatura do contrato.',
+    price: BUSINESS_RULES.MANUTENCAO_MENSAL,
+    priceLabel: `R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL}/mês`,
+    originalPrice: BUSINESS_RULES.MANUTENCAO_MENSAL_REAL,
+    badge: null,
+    popular: false,
     features: [
-      'Reunião de 30-60 minutos',
-      'Análise de requisitos',
-      'Orçamento imediato',
-      'Plano de ação detalhado',
-      'Válido até Dez/2026'
+      `${BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO} reais de desconto sobre o valor real`,
+      `Valor promocional por ${BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses após assinatura`,
+      'Hospedagem em servidor dedicado Linux',
+      'Monitoramento de disponibilidade',
+      'Pequenas correções e reparos',
+      'Suporte via WhatsApp / e-mail',
+      'Pode haver ajuste por ampliação: tráfego, disco, memória, CPU e necessidades específicas',
+      'Após atingir meta interna de clientes, valor retorna ao preço normal de R$ 200/mês',
     ],
-    cta: 'Agendar Consultoria',
-    popular: false
+    cta: 'Contratar Manutenção',
+    href: '/#contact',
   },
   {
-    name: 'Projeto Simples',
-    description: 'Sites, landing pages e sistemas básicos',
-    price: 2000,
+    icon: Globe,
+    name: 'Setup do Sistema',
+    description: 'Configuração inicial de site, aplicativo ou sistema. Inclui 2h de programação + IA.',
+    price: BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO,
+    priceLabel: `R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO}`,
+    originalPrice: BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL,
+    badge: '50% OFF',
+    popular: true,
     features: [
-      'Entrega em 5 dias úteis',
-      'Design responsivo',
-      'SEO otimizado',
-      'Hospedagem inclusa (1 mês)',
-      'Suporte pós-entrega (30 dias)',
-      'Documentação completa',
-      'Código compilado'
+      '2h de programação inclusas',
+      `${BUSINESS_RULES.SETUP_SISTEMA_TOKENS_DIA.toLocaleString('pt-BR')} tokens/dia de IA`,
+      `~${BUSINESS_RULES.SETUP_SISTEMA_PAGINAS_APROX} páginas de programação interligada`,
+      'Deploy em produção (Vercel / servidor)',
+      'Configuração de domínio .com.br',
+      'Responsável técnico no registro.br',
+      `Valor real de referência: R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL}`,
+      'Sem validade expressa: condição promocional por meta interna',
     ],
-    cta: 'Começar Projeto',
-    popular: true
+    cta: 'Começar Setup',
+    href: '/#contact',
   },
   {
-    name: 'Projeto Completo',
-    description: 'Sistemas robustos com IA e integrações',
+    icon: Mail,
+    name: 'Configuração de E-mail',
+    description: 'Setup completo de e-mail profissional apontando para o domínio da empresa.',
+    price: BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO,
+    priceLabel: `R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
+    originalPrice: BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL,
+    badge: '50% OFF',
+    popular: false,
+    features: [
+      'Por sistema / por domínio',
+      'E-mail profissional no domínio próprio',
+      'Servidor e-mail Studio Santana',
+      `Manutenção: R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/mês por e-mail`,
+      'Parceria Google / Microsoft / Zoho (consultar)',
+      'Domínio .com.br = mais credibilidade',
+      `Valor real de referência: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL}`,
+      'Sem validade expressa: condição promocional por meta interna',
+    ],
+    cta: 'Configurar E-mail',
+    href: '/#contact',
+  },
+  {
+    icon: Mail,
+    name: 'E-mail Próprio (Servidor)',
+    description: 'E-mail profissional com IMAP/POP/SMTP/Webmail em servidor próprio Studio Santana.',
+    price: BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL,
+    priceLabel: `R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/e-mail mês`,
+    originalPrice: null,
+    badge: null,
+    popular: false,
+    features: [
+      '5GB por conta de e-mail',
+      'IMAP, POP, SMTP e Webmail',
+      'Compatível com Outlook, Gmail e similares',
+      'Regras de encaminhamento ilimitadas',
+      'Adicionar/remover e-mail: R$ 15 por alteração',
+      `Setup obrigatório: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
+    ],
+    cta: 'Solicitar E-mail Próprio',
+    href: '/education#email',
+  },
+  {
+    icon: Globe,
+    name: 'Google / Microsoft / Zoho',
+    description: 'Configuração corporativa cloud com setup idêntico e mensalidade variável por dólar.',
     price: null,
-    priceLabel: 'Sob consulta',
+    priceLabel: 'Mensal sob consulta (USD)',
+    originalPrice: null,
+    badge: null,
+    popular: false,
     features: [
-      'Prazo conforme escopo',
-      'Inteligência Artificial',
-      'Integrações diversas',
-      'Escalabilidade garantida',
-      'Suporte estendido',
-      'Documentação técnica',
-      'Código fonte (opcional +3x)'
+      `Setup igual: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
+      'Preço mensal depende de usuários e armazenamento',
+      'Inclui avaliação de funcionalidades (Meet, Office, etc.)',
+      'Pode variar com oscilação BRL/USD',
+      'Recomendado para times em escala',
     ],
-    cta: 'Falar com Especialista',
-    popular: false
-  }
+    cta: 'Calcular Cloud E-mail',
+    href: '/education#email',
+  },
+  {
+    icon: Wrench,
+    name: 'Setup de Tráfego Pago',
+    description: 'Planejamento e configuração inicial para Meta, Google, TikTok, Kwai, Waze e outros.',
+    price: null,
+    priceLabel: 'Estimativa via calculadora',
+    originalPrice: null,
+    badge: 'PNL + UX',
+    popular: false,
+    features: [
+      'Coleta de orçamento por plataforma (dia/semana/mês)',
+      'Definição de funil com reuniões estratégicas',
+      'Preço estimado inicial + ajuste após reunião',
+      'Uso de IA para análise e produtividade',
+      'Preço final depende da complexidade real',
+    ],
+    cta: 'Abrir Calculadora de Tráfego',
+    href: '/education#trafego',
+  },
 ]
 
 export default function PricingSection() {
   return (
     <section id="pricing" className="py-20 px-4 bg-white">
       <div className="container mx-auto">
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Preços Transparentes
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
             Sem surpresas. Você sabe exatamente o que vai pagar.
+            <br />
+            Suporte mensal com preço promocional de <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL}/mês</strong> por 12 meses.
           </p>
+          <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
+            Desconto ativo por meta interna de clientes. Validade indeterminada.
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {pricingPlans.map((plan, index) => (
             <div
               key={index}
@@ -87,31 +167,33 @@ export default function PricingSection() {
                 </div>
               )}
 
-              {plan.discount && (
+              {plan.badge && (
                 <div className="absolute -top-4 right-4">
                   <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    {plan.discount}
+                    {plan.badge}
                   </div>
                 </div>
               )}
 
               <div className="mb-6">
+                <div className="bg-primary-100 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
+                  <plan.icon className="text-primary-600" size={24} />
+                </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-600">{plan.description}</p>
+                <p className="text-gray-600 text-sm">{plan.description}</p>
               </div>
 
               <div className="mb-6">
                 {plan.originalPrice && (
                   <p className="text-gray-400 line-through text-lg">
-                    {formatCurrency(plan.originalPrice)}
+                    R$ {plan.originalPrice}
                   </p>
                 )}
-                {plan.price ? (
-                  <p className="text-4xl font-bold text-gray-900">
-                    {formatCurrency(plan.price)}
+                <p className="text-4xl font-bold text-gray-900">{plan.priceLabel}</p>
+                {plan.badge && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
+                    Promoção sem validade expressa (sujeita a meta interna)
                   </p>
-                ) : (
-                  <p className="text-3xl font-bold text-gray-900">{plan.priceLabel}</p>
                 )}
               </div>
 
@@ -119,13 +201,13 @@ export default function PricingSection() {
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-start">
                     <Check className="text-green-500 mr-2 flex-shrink-0 mt-0.5" size={20} />
-                    <span className="text-gray-700">{feature}</span>
+                    <span className="text-gray-700 text-sm">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <a
-                href="/#contact"
+                href={plan.href}
                 className={`block w-full text-center px-6 py-3 rounded-lg font-semibold transition ${
                   plan.popular
                     ? 'bg-primary-600 text-white hover:bg-primary-700'
@@ -138,13 +220,45 @@ export default function PricingSection() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <p className="text-gray-600 mb-4">
-            <strong>Código Fonte:</strong> Disponível mediante pagamento de 3x o valor/hora base (R$ 600/hora)
-          </p>
-          <p className="text-sm text-gray-500">
-            Todos os preços incluem documentação completa e código compilado
-          </p>
+        {/* Notas e extras */}
+        <div className="mt-12 max-w-3xl mx-auto space-y-4">
+          <div className="bg-blue-50 rounded-xl p-6">
+            <h4 className="font-bold text-gray-900 mb-2">📧 Parceria Google / Microsoft / Zoho</h4>
+            <p className="text-gray-600 text-sm">
+              Para empresas que precisam de ferramentas avançadas além do e-mail (Drive, Meet, Teams, etc.),
+              trabalhamos em parceria. O custo é superior ao e-mail básico, mas as funcionalidades extras
+              podem valer muito dependendo da empresa.{' '}
+              <strong>Solicite uma análise personalizada.</strong>
+            </p>
+          </div>
+          <div className="bg-yellow-50 rounded-xl p-6">
+            <h4 className="font-bold text-gray-900 mb-2">🌐 Por que usar .com.br?</h4>
+            <p className="text-gray-600 text-sm">
+              O domínio .com.br exige CPF ou CNPJ cadastrado no{' '}
+              <a href="https://registro.br" target="_blank" rel="noreferrer" className="underline">registro.br</a>.
+              O WHOIS brasileiro mostra quem é o dono — isso gera <strong>confiança real</strong> para seus clientes.
+              Recomendamos que o cliente registre diretamente, com o Studio Santana como{' '}
+              <strong>responsável técnico</strong> para facilitar manutenção e mudanças de servidor.
+            </p>
+          </div>
+          <div className="bg-gray-50 rounded-xl p-6">
+            <h4 className="font-bold text-gray-900 mb-2">💳 Formas de pagamento</h4>
+            <p className="text-gray-600 text-sm">
+              Aceitamos <strong>PIX, Cartão de Crédito e PicPay</strong>. O pagamento confirma o agendamento
+              imediatamente. Reuniões de 15 minutos (pré-venda) são gratuitas — basta agendar pelo link.
+              Reuniões de 30 ou 60 minutos são pagas e confirmadas após o pagamento.
+            </p>
+          </div>
+          <div className="bg-red-50 rounded-xl p-6">
+            <h4 className="font-bold text-gray-900 mb-2">📌 Regra do Suporte Mensal</h4>
+            <p className="text-gray-600 text-sm">
+              O valor de <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL}/mês</strong> é promocional por{' '}
+              <strong>{BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses</strong> após assinatura.
+              O valor real é <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/mês</strong>, com desconto atual de{' '}
+              <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO}</strong>.
+              Pode haver reajuste por ampliação de servidor, tráfego, dados, disco, memória, CPU e requisitos específicos.
+            </p>
+          </div>
         </div>
       </div>
     </section>

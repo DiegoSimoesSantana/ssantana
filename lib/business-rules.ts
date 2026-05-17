@@ -6,17 +6,69 @@ export const BUSINESS_RULES = {
   HOURLY_RATE_BASE: 200, // R$ 200/hora base
   HOURLY_RATE_SOURCE_CODE: 600, // R$ 600/hora para código fonte (3x)
   SOURCE_CODE_MULTIPLIER: 3, // Multiplicador para código fonte
-  
-  // Consultoria e Planejamento
+
+  // ========== PLANOS E SERVIÇOS ==========
+
+  // Manutenção Mensal (hospedagem + suporte + reparos pequenos)
+  MANUTENCAO_MENSAL: 70, // R$ 70/mês
+  MANUTENCAO_MENSAL_REAL: 200, // R$ 200/mês (valor real)
+  MANUTENCAO_MENSAL_DESCONTO: 130, // R$ 130 de desconto sobre o valor real
+  MANUTENCAO_DESCONTO_MESES: 12, // Válido por 12 meses após assinatura
+  MANUTENCAO_PROMO_LABEL: 'Promoção sem validade expressa (sujeita a meta interna)', // Label para flag de promoção
+
+  // Setup Inicial do Sistema (site, app, qualquer sistema)
+  SETUP_SISTEMA_PRECO_REAL: 800, // R$ 800 (preço cheio)
+  SETUP_SISTEMA_PRECO_PROMO: 400, // R$ 400 (50% OFF – promoção ativa)
+  SETUP_SISTEMA_DESCONTO: 0.5, // 50% de desconto
+  SETUP_SISTEMA_PROMO_EXPIRY: '', // Sem validade expressa (promoção por meta interna)
+  SETUP_SISTEMA_HORAS: 2, // 2 horas de programação inclusas
+  SETUP_SISTEMA_TOKENS_DIA: 1000, // 1000 tokens/dia de IA inclusos
+  SETUP_SISTEMA_PAGINAS_APROX: 10, // ~10 páginas de programação interligada
+
+  // Configuração de E-mail (por domínio)
+  EMAIL_SETUP_PRECO_REAL: 400, // R$ 400 (preço cheio)
+  EMAIL_SETUP_PRECO_PROMO: 200, // R$ 200 (50% OFF – promoção ativa)
+  EMAIL_SETUP_DESCONTO: 0.5, // 50% de desconto
+  EMAIL_SETUP_PROMO_EXPIRY: '', // Sem validade expressa (promoção por meta interna)
+
+  // E-mail Mensal (por endereço de e-mail / por domínio)
+  EMAIL_MENSAL_POR_EMAIL: 5, // R$ 5/mês por e-mail
+
+  // Reunião Rápida (pré-venda)
+  REUNIAO_RAPIDA_MINUTOS: 15,
+  REUNIAO_RAPIDA_PRECO: 0, // Gratuita
+
+  // Consultoria (reunião paga – 30 ou 60 minutos)
   CONSULTATION_PRICE: 200, // R$ 200 (preço normal)
   CONSULTATION_PRICE_PROMO: 100, // R$ 100 (promoção atual)
   CONSULTATION_DISCOUNT: 0.5, // 50% de desconto até fim do ano
   CONSULTATION_DURATION_MIN: 30, // 30 minutos
   CONSULTATION_DURATION_MAX: 60, // 60 minutos
-  
+
   // Projeto Simples (Padrão)
   SIMPLE_PROJECT_PRICE: 2000, // R$ 2.000 média
   SIMPLE_PROJECT_DELIVERY_DAYS: 5, // 5 dias úteis
+
+  // ========== AGENDAMENTO ==========
+  SCHEDULING: {
+    FREE_15MIN_URL: '', // TODO: inserir link Calendly/Google 15min gratuito
+    PAID_30MIN_URL: '', // TODO: inserir link Calendly/Google 30min pago
+    PAID_60MIN_URL: '', // TODO: inserir link Calendly/Google 60min pago
+  },
+
+  // ========== PAGAMENTO ==========
+  PAYMENT: {
+    PICPAY_URL: '', // TODO: inserir link PicPay
+    PIX_KEY: '', // TODO: inserir chave Pix
+    METHODS: ['PIX', 'Cartão de Crédito', 'PicPay'],
+  },
+
+  // ========== DOMÍNIO ==========
+  DOMAIN: {
+    REGISTRO_BR_URL: 'https://registro.br',
+    RECOMMENDED_TLD: '.com.br',
+    RESPONSAVEL_TECNICO: 'Studio Santana',
+  },
   
   // ========== CANCELAMENTOS E REEMBOLSOS ==========
   CANCELLATION_RETENTION: 0.30, // 30% de retenção mínima
@@ -149,6 +201,10 @@ export const BUSINESS_RULES = {
   }
 } as const
 
+export const CANCELLATION_RETENTION = BUSINESS_RULES.CANCELLATION_RETENTION
+export const MAX_REFUND_NOT_STARTED = BUSINESS_RULES.MAX_REFUND_NOT_STARTED
+export const STANDARD_DELIVERY_DAYS = BUSINESS_RULES.STANDARD_DELIVERY_DAYS
+
 // ========== HELPER FUNCTIONS ==========
 
 /**
@@ -156,7 +212,7 @@ export const BUSINESS_RULES = {
  */
 export function calculateCommissionRate(projectValue: number): number {
   const tier = BUSINESS_RULES.COMMISSION_TIERS.find(
-    (t) => projectValue >= t.min && (!t.max || projectValue <= t.max)
+    (t) => projectValue >= t.min && (!('max' in t) || projectValue <= (t as any).max)
   )
   return tier?.rate || 0.05
 }

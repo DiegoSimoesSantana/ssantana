@@ -8,7 +8,7 @@ export default function ProcessSection() {
     },
     {
       number: '2',
-      title: 'Aprovação ("Debocheque")',
+      title: 'Aprovação',
       description: 'Análise interna e aprovação do escopo. Geração e envio do contrato para assinatura digital.',
       duration: '24h'
     },

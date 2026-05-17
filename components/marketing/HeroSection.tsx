@@ -14,7 +14,7 @@ export default function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center space-x-2 bg-primary-100 text-primary-700 px-4 py-2 rounded-full mb-6 animate-fade-in">
             <Sparkles size={16} />
-            <span className="text-sm font-medium">Promoção: 50% OFF em Consultorias até Dezembro/2026</span>
+            <span className="text-sm font-medium">🔥 50% OFF no Setup — R$ 400 (de R$ 800) até 05/05/2026</span>
           </div>
 
           {/* Headline */}
@@ -63,6 +63,13 @@ export default function HeroSection() {
               className="bg-white text-primary-600 px-8 py-4 rounded-lg hover:bg-gray-50 transition font-semibold text-lg border-2 border-primary-600"
             >
               Falar com Especialista
+            </Link>
+
+            <Link
+              href="/education"
+              className="bg-gray-900 text-white px-8 py-4 rounded-lg hover:bg-gray-800 transition font-semibold text-lg border-2 border-gray-900"
+            >
+              Como Projetamos
             </Link>
           </div>
 

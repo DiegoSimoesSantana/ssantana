@@ -1,9 +1,7 @@
 import HeroSection from '@/components/marketing/HeroSection'
 import AIDiagnostic from '@/components/marketing/AIDiagnostic'
-import ServicesShowcase from '@/components/marketing/ServicesShowcase'
 import PricingSection from '@/components/marketing/PricingSection'
-import ProcessSection from '@/components/marketing/ProcessSection'
-import Testimonials from '@/components/marketing/Testimonials'
+import LeadJourneySection from '@/components/marketing/LeadJourneySection'
 import CTASection from '@/components/marketing/CTASection'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
@@ -13,23 +11,17 @@ export default function HomePage() {
     <>
       <Header />
       <main className="min-h-screen">
-        {/* Hero com proposta de valor clara */}
+        {/* Hero curto e direto: isca de valor */}
         <HeroSection />
         
-        {/* Calculadora Interativa de Potencial de IA */}
+        {/* Diagnóstico para detectar necessidade */}
         <AIDiagnostic />
         
-        {/* Showcase de Serviços */}
-        <ServicesShowcase />
-        
-        {/* Preços Transparentes */}
+        {/* Oferta inicial com preços e opções diretas */}
         <PricingSection />
-        
-        {/* Processo de 5 dias */}
-        <ProcessSection />
-        
-        {/* Depoimentos */}
-        <Testimonials />
+
+        {/* Fluxo operacional: cliente, parceiro e admin */}
+        <LeadJourneySection />
         
         {/* CTA Final */}
         <CTASection />

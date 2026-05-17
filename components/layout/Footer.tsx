@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { BUSINESS_RULES } from '@/lib/business-rules'
+import AnimatedLogo from './AnimatedLogo'
 
 export default function Footer() {
   const { CONTACT, SOCIAL } = BUSINESS_RULES
@@ -10,7 +11,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* About */}
           <div>
-            <h3 className="text-white text-lg font-bold mb-4">Studio Santana</h3>
+            <h3 className="text-white text-lg font-bold mb-4">
+              <AnimatedLogo className="text-white" />
+            </h3>
             <p className="text-sm">
               Desenvolvemos soluções digitais personalizadas com IA que transformam negócios e impulsionam resultados.
             </p>
@@ -103,7 +106,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-8 text-sm text-center">
-          <p>© {new Date().getFullYear()} Studio Santana. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Software Santana. Todos os direitos reservados.</p>
           <div className="mt-2 space-x-4">
             <Link href="/privacy" className="hover:text-primary-400 transition">
               Política de Privacidade

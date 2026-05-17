@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { UserRole } from '@prisma/client'
+import AnimatedLogo from '@/components/layout/AnimatedLogo'
 
 interface DashboardShellProps {
   children: React.ReactNode
@@ -67,7 +68,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
       {/* Mobile Header */}
       <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <Link href="/" className="text-xl font-bold text-primary-600">
-          Studio Santana
+          <AnimatedLogo compact />
         </Link>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -91,7 +92,7 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
             {/* Logo */}
             <div className="hidden lg:flex items-center px-6 py-4 border-b border-gray-200">
               <Link href="/" className="text-xl font-bold text-primary-600">
-                Studio Santana
+                <AnimatedLogo compact />
               </Link>
             </div>
 

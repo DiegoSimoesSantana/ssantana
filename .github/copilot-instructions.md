@@ -60,7 +60,7 @@ Main models:
 ## Project Workflow
 
 1. **Lead Capture**: Client fills form or uses AI calculator
-2. **Analysis**: Admin reviews and approves ("Debocheque")
+2. **Analysis**: Admin reviews and approves
 3. **Contract**: Generated and sent for digital signature
 4. **Payment**: First installment triggers project start
 5. **Development**: 5-day delivery with AI assistance

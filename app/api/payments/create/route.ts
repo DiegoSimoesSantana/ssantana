@@ -5,7 +5,7 @@ import { z } from 'zod'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
+  apiVersion: '2023-10-16',
 })
 
 const createPaymentSchema = z.object({
@@ -51,20 +51,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
     }
 
-    // Calcular valor das parcelas
-    const installmentAmount = project.totalValue / installments
+    if (!project.contract) {
+      return NextResponse.json(
+        { error: 'Contrato não encontrado para este projeto' },
+        { status: 400 }
+      )
+    }
 
-    // Criar pagamento no banco
+    // Criar pagamento no banco (parcela única por enquanto)
     const payment = await prisma.payment.create({
       data: {
+        contractId: project.contract.id,
         projectId: project.id,
         clientId: project.clientId,
         amount: project.totalValue,
-        installments,
-        installmentAmount,
+        installment: 1,
+        totalInstallments: 1,
         method,
+        provider: 'stripe',
         status: 'PENDING',
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
       },
     })
 
@@ -99,7 +104,7 @@ export async function POST(request: NextRequest) {
     await prisma.payment.update({
       where: { id: payment.id },
       data: {
-        stripeSessionId: session.id,
+        externalId: session.id,
       },
     })
 

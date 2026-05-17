@@ -1,0 +1,220 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+import { ArrowRight, BadgeCheck, Link2, ShieldCheck, Wallet } from 'lucide-react'
+
+const PARTNER_COMMISSION_RATE = 0.15
+const PF_TAX_RATE = 0.11
+
+type ComparisonData = {
+  gross: number
+  netPJ: number
+  netPF: number
+}
+
+function formatBRL(value: number): string {
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+// Calcula o ganho recorrente mensal do parceiro com base nos clientes indicados.
+function calculateMonthlyEarnings(indicatedClients: number, avgMonthlyTicket: number): number {
+  return indicatedClients * avgMonthlyTicket * PARTNER_COMMISSION_RATE
+}
+
+// Separa os valores de saque para educar sobre retenções no modelo PF.
+function calculateWithdrawComparison(totalCommission: number): ComparisonData {
+  const netPF = totalCommission * (1 - PF_TAX_RATE)
+
+  return {
+    gross: totalCommission,
+    netPJ: totalCommission,
+    netPF,
+  }
+}
+
+export default function PartnersRecruitmentPage() {
+  const [indicatedClients, setIndicatedClients] = useState(10)
+  const [avgMonthlyTicket, setAvgMonthlyTicket] = useState(500)
+
+  const monthlyEarnings = useMemo(
+    () => calculateMonthlyEarnings(indicatedClients, avgMonthlyTicket),
+    [indicatedClients, avgMonthlyTicket],
+  )
+
+  const comparison = useMemo(
+    () => calculateWithdrawComparison(monthlyEarnings),
+    [monthlyEarnings],
+  )
+
+  return (
+    <main className="min-h-screen bg-slate-950 pt-24 text-slate-100">
+      <section className="relative overflow-hidden px-4 pb-16 pt-14 sm:pb-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),_transparent_42%),radial-gradient(circle_at_80%_35%,_rgba(168,85,247,0.12),_transparent_38%)]" />
+
+        <div className="relative mx-auto max-w-6xl">
+          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200">
+            <BadgeCheck className="h-4 w-4" />
+            Programa de Parceiros B2B SSANTANA
+          </div>
+
+          <div className="mt-6 max-w-4xl">
+            <h1 className="text-3xl font-semibold leading-tight text-white sm:text-5xl">
+              Indique clientes e ganhe 15% de comissao recorrente.
+              <span className="mt-2 block text-cyan-200">Enquanto o cliente pagar, voce recebe.</span>
+            </h1>
+            <p className="mt-5 max-w-3xl text-sm text-slate-300 sm:text-lg">
+              Para profissionais de TI, agencias e consultores que querem monetizar sua rede com infraestrutura
+              gerenciada de alta performance, sem aumentar a operacao.
+            </p>
+          </div>
+
+          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {[
+              {
+                icon: Link2,
+                title: 'Link unico e rastreio seguro',
+                description: 'Cada parceiro recebe identificacao exclusiva com cookies + codigo de indicacao.',
+              },
+              {
+                icon: ShieldCheck,
+                title: 'Saque minimo e protecao',
+                description:
+                  'Acumule R$ 200 em comissoes e saque 30 dias apos o pagamento confirmado do cliente.',
+              },
+              {
+                icon: Wallet,
+                title: 'Pagamento rapido',
+                description: 'Receba direto na sua conta via PIX automatizado, sem burocracia operacional.',
+              },
+            ].map((rule) => {
+              const Icon = rule.icon
+
+              return (
+                <article
+                  key={rule.title}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-[0_12px_40px_rgba(2,6,23,0.45)] backdrop-blur"
+                >
+                  <div className="mb-4 inline-flex rounded-xl bg-cyan-400/15 p-2.5 text-cyan-200">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h2 className="text-base font-semibold text-white">{rule.title}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-300">{rule.description}</p>
+                </article>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="calculator" className="scroll-mt-28 px-4 pb-20 sm:scroll-mt-32 sm:pb-24">
+        <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.1fr,0.9fr]">
+          <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 shadow-[0_10px_45px_rgba(15,23,42,0.55)] sm:p-8">
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-cyan-200">Calculadora de Ganhos</p>
+              <h3 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Projete sua renda passiva mensal</h3>
+              <p className="mt-3 text-sm text-slate-300 sm:text-base">
+                Ajuste os parametros e veja em tempo real quanto seu canal pode gerar com comissao recorrente.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm text-slate-300">
+                  <label htmlFor="clients">Quantidade de Clientes Indicados</label>
+                  <span className="font-semibold text-white">{indicatedClients}</span>
+                </div>
+                <input
+                  id="clients"
+                  type="range"
+                  min={1}
+                  max={100}
+                  value={indicatedClients}
+                  onChange={(e) => setIndicatedClients(Number(e.target.value))}
+                  className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-cyan-400"
+                />
+                <input
+                  type="number"
+                  min={1}
+                  value={indicatedClients}
+                  onChange={(e) => setIndicatedClients(Math.max(1, Number(e.target.value) || 1))}
+                  className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2.5 text-white outline-none ring-cyan-400 transition focus:ring-2"
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between text-sm text-slate-300">
+                  <label htmlFor="ticket">Ticket Medio Mensal do Cliente</label>
+                  <span className="font-semibold text-white">{formatBRL(avgMonthlyTicket)}</span>
+                </div>
+                <input
+                  id="ticket"
+                  type="range"
+                  min={100}
+                  max={20000}
+                  step={50}
+                  value={avgMonthlyTicket}
+                  onChange={(e) => setAvgMonthlyTicket(Number(e.target.value))}
+                  className="h-2 w-full cursor-pointer appearance-none rounded-full bg-slate-700 accent-cyan-400"
+                />
+                <input
+                  type="number"
+                  min={100}
+                  step={50}
+                  value={avgMonthlyTicket}
+                  onChange={(e) => setAvgMonthlyTicket(Math.max(100, Number(e.target.value) || 100))}
+                  className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2.5 text-white outline-none ring-cyan-400 transition focus:ring-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-cyan-300/20 bg-gradient-to-b from-slate-900 to-slate-950 p-5 shadow-[0_12px_55px_rgba(8,47,73,0.35)] sm:p-8">
+            <p className="text-sm text-slate-300">Ganhos totais estimados</p>
+            <p className="mt-2 text-4xl font-bold tracking-tight text-cyan-200 sm:text-5xl">{formatBRL(monthlyEarnings)}</p>
+            <p className="mt-2 text-sm text-slate-300">por mes de renda passiva recorrente</p>
+
+            <div className="mt-6 space-y-4">
+              <h4 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-300">Comparativo de Saque</h4>
+
+              <div className="rounded-xl border border-emerald-300/25 bg-emerald-400/10 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-emerald-200">Opcao A: PJ / MEI (Recomendado)</p>
+                  <span className="rounded-full bg-emerald-300/20 px-2.5 py-1 text-xs font-medium text-emerald-100">
+                    100% liquido
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-emerald-100">Bruto: {formatBRL(comparison.gross)}</p>
+                <p className="text-sm text-emerald-100">Liquido: {formatBRL(comparison.netPJ)}</p>
+                <p className="mt-2 text-xs text-emerald-100/90">Sem descontos retidos. Receba via PIX.</p>
+              </div>
+
+              <div className="rounded-xl border border-amber-300/25 bg-amber-400/10 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="font-semibold text-amber-200">Opcao B: Pessoa Fisica (CPF)</p>
+                  <span className="rounded-full bg-amber-300/20 px-2.5 py-1 text-xs font-medium text-amber-100">
+                    Retencao didatica de {Math.round(PF_TAX_RATE * 100)}%
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-amber-100">Bruto: {formatBRL(comparison.gross)}</p>
+                <p className="text-sm text-amber-100">Liquido: {formatBRL(comparison.netPF)}</p>
+                <p className="mt-2 text-xs text-amber-100/90">Sujeito a retencao de impostos (RPA).</p>
+              </div>
+            </div>
+
+            <a
+              href="/criar-conta-parceiro"
+              className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-300 px-4 py-3 font-semibold text-slate-950 transition hover:bg-cyan-200"
+            >
+              Quero me tornar um Parceiro SSANTANA
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}

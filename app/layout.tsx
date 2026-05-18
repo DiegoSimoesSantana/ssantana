@@ -6,6 +6,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
 import LoadingOverlay from '@/components/layout/LoadingOverlay'
 import ReferralAttributionManager from '@/components/tracking/ReferralAttributionManager'
+import CookieConsentBanner from '@/components/tracking/CookieConsentBanner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -157,6 +158,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ReferralAttributionManager />
         </Suspense>
+        <CookieConsentBanner />
         {children}
         <Toaster position="top-right" richColors />
       </body>

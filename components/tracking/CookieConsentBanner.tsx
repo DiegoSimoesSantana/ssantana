@@ -12,7 +12,7 @@ export default function CookieConsentBanner() {
 
   useEffect(() => {
     const stored = window.localStorage.getItem(COOKIE_CONSENT_KEY)
-    if (!stored) {
+    if (stored !== COOKIE_CONSENT_ACCEPTED) {
       setVisible(true)
     }
   }, [])
@@ -46,6 +46,7 @@ export default function CookieConsentBanner() {
             type="button"
             onClick={() => {
               window.localStorage.setItem(COOKIE_CONSENT_KEY, COOKIE_CONSENT_ACCEPTED)
+              window.localStorage.setItem('ssantana_cookie_consent_accepted_at', new Date().toISOString())
               setVisible(false)
             }}
             className="rounded-lg bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-cyan-200"

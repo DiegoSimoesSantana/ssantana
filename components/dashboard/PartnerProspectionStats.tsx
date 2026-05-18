@@ -37,6 +37,15 @@ export default function PartnerProspectionStats({ defaultRefCode = '' }: Partner
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [stats, setStats] = useState<ReferralStatsResponse | null>(null)
+  const [origin, setOrigin] = useState('')
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin)
+    }
+  }, [])
+
+  const referralUrl = activeRefCode && origin ? `${origin}/?ref=${activeRefCode}` : ''
 
   useEffect(() => {
     if (!activeRefCode) {
@@ -164,6 +173,26 @@ export default function PartnerProspectionStats({ defaultRefCode = '' }: Partner
           )
         })}
       </div>
+
+      {activeRefCode && referralUrl && (
+        <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-[0.1em] text-blue-700">URL do parceiro para indicar</p>
+          <p className="mt-2 break-all text-sm text-blue-900">{referralUrl}</p>
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(referralUrl)
+              } catch {
+                // no-op
+              }
+            }}
+            className="mt-3 rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+          >
+            Copiar URL
+          </button>
+        </div>
+      )}
     </section>
   )
 }

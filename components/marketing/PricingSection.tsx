@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { Check, Star, Mail, Globe, Wrench } from 'lucide-react'
 import { BUSINESS_RULES } from '@/lib/business-rules'
+import { parseReferralCookieValue, REFERRAL_STORAGE_KEY } from '@/lib/referral-tracking'
 
 const pricingPlans = [
   {
@@ -131,6 +133,54 @@ const pricingPlans = [
 ]
 
 export default function PricingSection() {
+  const [couponInput, setCouponInput] = useState('')
+  const [activeCode, setActiveCode] = useState('')
+  const [partnerName, setPartnerName] = useState('')
+
+  useEffect(() => {
+    const stored = typeof window !== 'undefined' ? window.localStorage.getItem(REFERRAL_STORAGE_KEY) : null
+    if (!stored) {
+      return
+    }
+
+    try {
+      const parsed = JSON.parse(stored)
+      const attribution = parseReferralCookieValue(encodeURIComponent(JSON.stringify(parsed)))
+      const code = attribution?.referralCode || parsed?.referralCode
+      const name = attribution?.partnerName || parsed?.partnerName
+      if (code) {
+        setActiveCode(String(code).toUpperCase())
+        setCouponInput(String(code).toUpperCase())
+      }
+      if (name) {
+        setPartnerName(String(name))
+      }
+    } catch {
+      // no-op
+    }
+  }, [])
+
+  const hasVipCoupon = !!activeCode
+
+  const setupDisplay = useMemo(() => {
+    const fullPrice = BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL
+    const discounted = BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO
+    return {
+      fullPrice,
+      discounted,
+      final: hasVipCoupon ? discounted : fullPrice,
+      applied: hasVipCoupon,
+    }
+  }, [hasVipCoupon])
+
+  const applyCoupon = () => {
+    const normalized = couponInput.trim().toUpperCase()
+    if (!normalized) {
+      return
+    }
+    setActiveCode(normalized)
+  }
+
   return (
     <section id="pricing" className="py-20 px-4 bg-white">
       <div className="container mx-auto">
@@ -145,6 +195,30 @@ export default function PricingSection() {
           </p>
           <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
             Desconto ativo por meta interna de clientes. Validade indeterminada.
+          </div>
+
+          <div className="mx-auto mt-2 max-w-3xl rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-left">
+            <p className="text-sm font-semibold text-cyan-800">Indicacao VIP e Cupom de Parceiro</p>
+            <p className="mt-2 text-sm text-cyan-900">
+              {hasVipCoupon
+                ? `Cupom ${activeCode} ativo. 50% OFF no Setup liberado${partnerName ? ` por indicacao de ${partnerName}` : ''}.`
+                : 'Sem cupom ativo: exibimos o preco cheio de ancoragem. Com indicacao VIP ou codigo do parceiro, liberamos 50% OFF no Setup.'}
+            </p>
+            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+              <input
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                placeholder="Digite codigo de cupom/parceiro"
+                className="w-full rounded-lg border border-cyan-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-cyan-500"
+              />
+              <button
+                type="button"
+                onClick={applyCoupon}
+                className="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700"
+              >
+                Aplicar cupom
+              </button>
+            </div>
           </div>
         </div>
 
@@ -184,12 +258,35 @@ export default function PricingSection() {
               </div>
 
               <div className="mb-6">
-                {plan.originalPrice && (
+                {plan.name === 'Setup do Sistema' ? (
+                  <>
+                    <p className={`text-lg ${setupDisplay.applied ? 'text-gray-400 line-through' : 'text-gray-900 font-bold'}`}>
+                      R$ {setupDisplay.fullPrice}
+                    </p>
+                    {setupDisplay.applied && (
+                      <p className="text-4xl font-bold text-green-600">R$ {setupDisplay.discounted}</p>
+                    )}
+                    {!setupDisplay.applied && (
+                      <p className="text-sm text-red-500 font-medium mt-1">
+                        Cupom de parceiro necessario para liberar 50% OFF
+                      </p>
+                    )}
+                    {setupDisplay.applied && (
+                      <p className="text-xs text-green-600 font-medium mt-1">
+                        Cupom {activeCode} aplicado com sucesso (50% OFF)
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {plan.originalPrice && (
                   <p className="text-gray-400 line-through text-lg">
                     R$ {plan.originalPrice}
                   </p>
                 )}
                 <p className="text-4xl font-bold text-gray-900">{plan.priceLabel}</p>
+                  </>
+                )}
                 {plan.badge && (
                   <p className="text-xs text-red-500 font-medium mt-1">
                     Promoção sem validade expressa (sujeita a meta interna)

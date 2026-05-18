@@ -22,6 +22,12 @@ export default function CreatePartnerAccountPage() {
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
   const [companyName, setCompanyName] = useState('')
+  const [personType, setPersonType] = useState<'PF' | 'PJ'>('PF')
+  const [document, setDocument] = useState('')
+  const [cpfResponsible, setCpfResponsible] = useState('')
+  const [birthDate, setBirthDate] = useState('')
+  const [pixKey, setPixKey] = useState('')
+  const [acceptTerms, setAcceptTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [result, setResult] = useState<RegisterResponse | null>(null)
@@ -40,6 +46,12 @@ export default function CreatePartnerAccountPage() {
           email,
           phone,
           companyName: companyName || undefined,
+          personType,
+          document,
+          cpfResponsible: personType === 'PJ' ? cpfResponsible : undefined,
+          birthDate,
+          pixKey,
+          acceptTerms,
         }),
       })
 
@@ -106,11 +118,70 @@ export default function CreatePartnerAccountPage() {
               className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-400"
             />
 
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <select
+                value={personType}
+                onChange={(e) => setPersonType(e.target.value as 'PF' | 'PJ')}
+                className="rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-400"
+              >
+                <option value="PF">Pessoa Fisica (CPF)</option>
+                <option value="PJ">Pessoa Juridica (CNPJ)</option>
+              </select>
+              <input
+                value={document}
+                onChange={(e) => setDocument(e.target.value)}
+                required
+                placeholder={personType === 'PJ' ? 'CNPJ' : 'CPF'}
+                className="rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+
+            {personType === 'PJ' && (
+              <input
+                value={cpfResponsible}
+                onChange={(e) => setCpfResponsible(e.target.value)}
+                required
+                placeholder="CPF do responsavel legal"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            )}
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <input
+                value={birthDate}
+                onChange={(e) => setBirthDate(e.target.value)}
+                type="date"
+                required
+                className="rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+              <input
+                value={pixKey}
+                onChange={(e) => setPixKey(e.target.value)}
+                required
+                placeholder="Chave PIX para comissoes"
+                className="rounded-xl border border-slate-700 bg-slate-950/70 px-4 py-3 text-white outline-none focus:ring-2 focus:ring-cyan-400"
+              />
+            </div>
+
+            <label className="flex items-start gap-3 rounded-xl border border-slate-700 bg-slate-900/50 p-3 text-sm text-slate-200">
+              <input
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                className="mt-1"
+                required
+              />
+              <span>
+                Li e aceito os termos de parceria, tratamento de dados, politica de comissoes e responsabilidades legais.
+                Em caso de nova versao contratual, concordo em revisar e aceitar para manter acesso ativo ao programa.
+              </span>
+            </label>
+
             {error && <p className="text-sm text-rose-300">{error}</p>}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !acceptTerms}
               className="inline-flex w-full items-center justify-center rounded-xl bg-cyan-300 px-4 py-3 font-semibold text-slate-900 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'Cadastrando...' : 'Gerar meu link de indicacao'}

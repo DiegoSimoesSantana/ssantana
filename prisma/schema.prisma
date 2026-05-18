@@ -48,6 +48,16 @@ enum CommissionStatus {
   PAID                  // Paga
 }
 
+enum PersonType {
+  PF
+  PJ
+}
+
+enum PartnerContractAcceptanceStatus {
+  ACCEPTED
+  REJECTED
+}
+
 enum ReferralTrackingEventType {
   NEW_ACCESS
   RETURN
@@ -88,9 +98,15 @@ model Partner {
   
   // Dados do parceiro
   companyName       String?
+  personType        PersonType?
+  document          String?
+  cpfResponsible    String?
+  birthDate         DateTime?
   cpfCnpj           String?
+  pixKey            String?
   referralCode      String?         @unique
   bankAccount       Json?           // Dados bancários { banco, agencia, conta, tipo }
+  isActive          Boolean         @default(true)
   
   // Comissões
   commissionRate    Float           @default(0.05)  // 5% padrão
@@ -102,12 +118,46 @@ model Partner {
   commissions       Commission[]
   leads             Lead[]
   trackingEvents    ReferralTrackingEvent[]
+  contractAcceptances PartnerContractAcceptance[]
   
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   @@index([userId])
   @@index([referralCode])
+}
+
+model PartnerContractTerm {
+  id                String          @id @default(cuid())
+  version           String          @unique
+  title             String
+  contractText      String          @db.Text
+  startsAt          DateTime
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  acceptances       PartnerContractAcceptance[]
+
+  @@index([isActive])
+  @@index([startsAt])
+}
+
+model PartnerContractAcceptance {
+  id                String                          @id @default(cuid())
+  partnerId         String
+  partner           Partner                         @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  contractId        String
+  contract          PartnerContractTerm             @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  status            PartnerContractAcceptanceStatus
+  acceptedAt        DateTime                        @default(now())
+  ipAddress         String?
+  createdAt         DateTime                        @default(now())
+
+  @@unique([partnerId, contractId])
+  @@index([partnerId])
+  @@index([contractId])
+  @@index([status])
 }
 
 model ReferralTrackingEvent {

@@ -6,6 +6,7 @@ import { formatCurrency } from '@/lib/business-rules'
 import { Users, DollarSign, TrendingUp, Link as LinkIcon, Calendar, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import PartnerProspectionStats from '@/components/dashboard/PartnerProspectionStats'
+import PartnerContractsPanel from '@/components/dashboard/PartnerContractsPanel'
 
 const CALENDAR_LINK = 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3BnznimDnHVolTPdHCTHYPbixuhHbl2tGq23RzwYGSA2NvW2h5fgxOWi-vU9H_Nrnfh3YCOl52'
 
@@ -31,6 +32,7 @@ export default async function PartnerDashboard() {
       user={{ name: 'Parceiro', email: 'parceiro@teste.com', role: 'PARTNER' as any }}
     >
       <PartnerProspectionStats defaultRefCode="TESTE123" />
+      <PartnerContractsPanel defaultRefCode="TESTE123" />
 
       {/* Aviso de Validação Pendente */}
       {!isValidated && (

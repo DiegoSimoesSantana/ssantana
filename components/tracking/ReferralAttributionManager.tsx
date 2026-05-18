@@ -5,6 +5,8 @@ import { Crown, X } from 'lucide-react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import {
   buildReferralCookieValue,
+  COOKIE_CONSENT_ACCEPTED,
+  COOKIE_CONSENT_KEY,
   normalizeReferralCode,
   parseReferralCookieValue,
   type ReferralAttribution,
@@ -69,6 +71,11 @@ export default function ReferralAttributionManager() {
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
+    const consent = window.localStorage.getItem(COOKIE_CONSENT_KEY)
+    if (consent !== COOKIE_CONSENT_ACCEPTED) {
+      return
+    }
+
     const refFromQuery = searchParams.get('ref')
     const visitorKey = ensurePersistentKey(REFERRAL_VISITOR_KEY)
     const sessionKey = ensureSessionKey()

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/db'
 import {
   buildReferralCookieValue,
+  getFirstName,
   normalizeReferralCode,
   REFERRAL_COOKIE_KEY,
   REFERRAL_TTL_DAYS,
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest) {
         update: {
           landingPath: validatedData.landingPath,
           partnerId: partner?.id,
-          partnerName: partner?.companyName || partner?.user.name,
+          partnerName: getFirstName(partner?.user.name),
         },
         create: {
           eventKey,
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
           sessionKey: validatedData.sessionKey,
           landingPath: validatedData.landingPath,
           partnerId: partner?.id,
-          partnerName: partner?.companyName || partner?.user.name,
+          partnerName: getFirstName(partner?.user.name),
         },
       })
 
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     const now = new Date().toISOString()
     const attribution = {
       partnerId: partner?.id ?? null,
-      partnerName: partner?.companyName || partner?.user.name || null,
+      partnerName: getFirstName(partner?.user.name) || null,
       referralCode: refCode,
       capturedAt: now,
       updatedAt: now,

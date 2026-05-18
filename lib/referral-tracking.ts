@@ -5,6 +5,9 @@ export const REFERRAL_SESSION_KEY = 'ssantana_partner_session'
 export const REFERRAL_RETURN_TRACKED_PREFIX = 'ssantana_partner_return_tracked'
 export const REFERRAL_BANNER_DISMISSED_PREFIX = 'ssantana_partner_banner_dismissed'
 export const REFERRAL_TTL_DAYS = 90
+export const COOKIE_CONSENT_KEY = 'ssantana_cookie_consent'
+export const COOKIE_CONSENT_ACCEPTED = 'accepted'
+export const COOKIE_CONSENT_REJECTED = 'rejected'
 
 export type ReferralAttribution = {
   partnerId?: string | null
@@ -33,4 +36,13 @@ export function parseReferralCookieValue(value?: string | null): ReferralAttribu
 
 export function normalizeReferralCode(value: string): string {
   return value.trim().toUpperCase()
+}
+
+export function getFirstName(fullName?: string | null): string | null {
+  if (!fullName) {
+    return null
+  }
+
+  const first = fullName.trim().split(/\s+/)[0]
+  return first || null
 }

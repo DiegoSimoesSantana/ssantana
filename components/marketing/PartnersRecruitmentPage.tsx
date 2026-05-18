@@ -99,6 +99,12 @@ export default function PartnersRecruitmentPage() {
                 description: 'Receba direto na sua conta via PIX automatizado, sem burocracia operacional.',
               },
               {
+                icon: BadgeCheck,
+                title: 'Indicacao com 50% OFF no setup',
+                description:
+                  'Seu link exclusivo ativa automaticamente cupom de 50% no setup para seu indicado, facilitando o fechamento.',
+              },
+              {
                 icon: Clock3,
                 title: 'Compras futuras garantidas',
                 description:

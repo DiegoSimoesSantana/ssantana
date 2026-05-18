@@ -7,6 +7,20 @@ const registerPartnerSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(8),
   companyName: z.string().optional(),
+  personType: z.enum(['PF', 'PJ']),
+  document: z.string().min(11),
+  cpfResponsible: z.string().optional(),
+  birthDate: z.string().min(8),
+  pixKey: z.string().min(3),
+  acceptTerms: z.literal(true),
+}).superRefine((data, ctx) => {
+  if (data.personType === 'PJ' && !data.cpfResponsible) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['cpfResponsible'],
+      message: 'CPF do responsável é obrigatório para PJ',
+    })
+  }
 })
 
 function toCodeSeed(name: string) {
@@ -59,6 +73,54 @@ export async function POST(request: NextRequest) {
 
     if (existingUser?.partnerProfile?.referralCode) {
       const existingCode = existingUser.partnerProfile.referralCode
+
+      await prisma.partner.update({
+        where: { id: existingUser.partnerProfile.id },
+        data: {
+          companyName: data.companyName,
+          personType: data.personType,
+          document: data.document,
+          cpfResponsible: data.cpfResponsible,
+          birthDate: new Date(data.birthDate),
+          pixKey: data.pixKey,
+          cpfCnpj: data.document,
+          isActive: true,
+        },
+      })
+
+      const activeContract = await prisma.partnerContractTerm.findFirst({
+        where: { isActive: true },
+        orderBy: [{ startsAt: 'desc' }, { createdAt: 'desc' }],
+      })
+
+      if (activeContract) {
+        const ipAddress =
+          request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+          request.headers.get('x-real-ip') ||
+          null
+
+        await prisma.partnerContractAcceptance.upsert({
+          where: {
+            partnerId_contractId: {
+              partnerId: existingUser.partnerProfile.id,
+              contractId: activeContract.id,
+            },
+          },
+          update: {
+            status: 'ACCEPTED',
+            acceptedAt: new Date(),
+            ipAddress,
+          },
+          create: {
+            partnerId: existingUser.partnerProfile.id,
+            contractId: activeContract.id,
+            status: 'ACCEPTED',
+            acceptedAt: new Date(),
+            ipAddress,
+          },
+        })
+      }
+
       return NextResponse.json({
         success: true,
         alreadyExists: true,
@@ -102,9 +164,37 @@ export async function POST(request: NextRequest) {
       data: {
         userId,
         companyName: data.companyName,
+        personType: data.personType,
+        document: data.document,
+        cpfResponsible: data.cpfResponsible,
+        birthDate: new Date(data.birthDate),
+        pixKey: data.pixKey,
+        cpfCnpj: data.document,
         referralCode,
       },
     })
+
+    const activeContract = await prisma.partnerContractTerm.findFirst({
+      where: { isActive: true },
+      orderBy: [{ startsAt: 'desc' }, { createdAt: 'desc' }],
+    })
+
+    if (activeContract) {
+      const ipAddress =
+        request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+        request.headers.get('x-real-ip') ||
+        null
+
+      await prisma.partnerContractAcceptance.create({
+        data: {
+          partnerId: partner.id,
+          contractId: activeContract.id,
+          status: 'ACCEPTED',
+          acceptedAt: new Date(),
+          ipAddress,
+        },
+      })
+    }
 
     return NextResponse.json({
       success: true,

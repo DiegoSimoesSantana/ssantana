@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import AnimatedLogo from './AnimatedLogo'
-import ConsentStatusBadge from '@/components/tracking/ConsentStatusBadge'
+import AccountLauncher from './AccountLauncher'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -43,24 +43,12 @@ export default function Header() {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             <Link
-              href="/dashboard/partner"
-              className="border border-primary-600 text-primary-700 px-4 py-2 rounded-lg hover:bg-primary-50 transition font-semibold"
-            >
-              Area Logada
-            </Link>
-            <Link
-              href="/admin/login"
-              className="border border-slate-500 text-slate-700 px-4 py-2 rounded-lg hover:bg-slate-100 transition font-semibold"
-            >
-              Admin
-            </Link>
-            <Link
               href="/#diagnostic"
               className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition font-semibold"
             >
               Começar Agora
             </Link>
-            <ConsentStatusBadge />
+            <AccountLauncher />
           </div>
 
           {/* Mobile Menu Button */}
@@ -124,20 +112,9 @@ export default function Header() {
             >
               Começar Agora
             </Link>
-            <Link
-              href="/dashboard/partner"
-              className="block border border-primary-600 text-primary-700 px-6 py-2 rounded-lg transition font-semibold text-center"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Area Logada
-            </Link>
-            <Link
-              href="/admin/login"
-              className="block border border-slate-500 text-slate-700 px-6 py-2 rounded-lg transition font-semibold text-center"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Admin
-            </Link>
+            <div className="pt-2">
+              <AccountLauncher />
+            </div>
           </div>
         )}
       </nav>

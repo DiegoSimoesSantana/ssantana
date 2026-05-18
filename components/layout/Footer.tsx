@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { BUSINESS_RULES } from '@/lib/business-rules'
 import AnimatedLogo from './AnimatedLogo'
-import ConsentStatusBadge from '@/components/tracking/ConsentStatusBadge'
 
 export default function Footer() {
   const { CONTACT, SOCIAL } = BUSINESS_RULES
@@ -62,17 +61,6 @@ export default function Footer() {
 
         <div className="mt-8 border-t border-gray-800 pt-8 text-center text-sm">
           <p>© {new Date().getFullYear()} Software Santana. Todos os direitos reservados.</p>
-          <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/dashboard/partner" className="rounded border border-gray-600 px-3 py-1 transition hover:text-primary-400">
-              Area Logada
-            </Link>
-            <Link href="/admin/login" className="rounded border border-gray-600 px-3 py-1 transition hover:text-primary-400">
-              Admin
-            </Link>
-          </div>
-          <div className="mt-3 flex justify-center">
-            <ConsentStatusBadge />
-          </div>
           <div className="mt-2 space-x-4">
             <Link href="/privacy" className="transition hover:text-primary-400">Política de Privacidade</Link>
             <Link href="/terms" className="transition hover:text-primary-400">Termos de Uso</Link>

@@ -10,4 +10,7 @@ Disallow: /dashboard/admin/
 Allow: /api/og
 
 # Sitemap location
-Sitemap: https://studio-santana.vercel.app/sitemap.xml
+Sitemap: https://ssantana.com.br/sitemap.xml
+
+# LLMs discovery file
+LLMS: https://ssantana.com.br/llms.txt

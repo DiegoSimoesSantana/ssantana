@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { 
   LayoutDashboard, 
   Users, 
@@ -12,13 +12,14 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  RefreshCw,
 } from 'lucide-react'
 import { useState } from 'react'
 import { UserRole } from '@prisma/client'
 import AnimatedLogo from '@/components/layout/AnimatedLogo'
 
-interface DashboardShellProps {
+export interface DashboardShellProps {
   children: React.ReactNode
   user: {
     name: string
@@ -26,11 +27,34 @@ interface DashboardShellProps {
     role: UserRole
     avatar?: string | null
   }
+  /** Roles disponíveis para troca de perfil (CLIENT, PARTNER) */
+  availableRoles?: string[]
 }
 
-export default function DashboardShell({ children, user }: DashboardShellProps) {
+export default function DashboardShell({ children, user, availableRoles }: DashboardShellProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [switchingProfile, setSwitchingProfile] = useState(false)
+
+  const otherRole = availableRoles?.find((r) => r !== user.role)
+
+  async function switchProfile(role: string) {
+    setSwitchingProfile(true)
+    try {
+      const res = await fetch('/api/account/auth/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedRole: role }),
+      })
+      if (res.ok) {
+        router.push(role === 'PARTNER' ? '/dashboard/partner' : '/dashboard/client')
+        router.refresh()
+      }
+    } finally {
+      setSwitchingProfile(false)
+    }
+  }
 
   const getNavItems = () => {
     switch (user.role) {
@@ -49,14 +73,15 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
           { href: '/dashboard/partner', icon: LayoutDashboard, label: 'Dashboard' },
           { href: '/dashboard/partner/referrals', icon: Users, label: 'Indicações' },
           { href: '/dashboard/partner/commissions', icon: DollarSign, label: 'Comissões' },
+          { href: '/partners/kit-comercial', icon: FileText, label: 'Kit Comercial' },
           { href: '/dashboard/partner/settings', icon: Settings, label: 'Configurações' },
         ]
       default:
         return [
-          { href: '/dashboard/client', icon: LayoutDashboard, label: 'Dashboard' },
-          { href: '/dashboard/client/projects', icon: FolderKanban, label: 'Meus Projetos' },
-          { href: '/dashboard/client/payments', icon: DollarSign, label: 'Pagamentos' },
-          { href: '/dashboard/client/settings', icon: Settings, label: 'Configurações' },
+          { href: '/dashboard/client', icon: LayoutDashboard, label: 'Meus Serviços' },
+          { href: '/dashboard/client/payments', icon: DollarSign, label: 'Assinaturas Mensais' },
+          { href: '/precos', icon: FolderKanban, label: 'Solicitar Novo Serviço' },
+          { href: '/dashboard/client/settings', icon: Settings, label: 'Configurações da Conta' },
         ]
     }
   }
@@ -142,7 +167,19 @@ export default function DashboardShell({ children, user }: DashboardShellProps) 
             </nav>
 
             {/* Logout */}
-            <div className="px-3 py-4 border-t border-gray-200">
+            <div className="px-3 py-4 border-t border-gray-200 space-y-1">
+              {otherRole && (
+                <button
+                  onClick={() => switchProfile(otherRole)}
+                  disabled={switchingProfile}
+                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-indigo-700 hover:bg-indigo-50 transition disabled:opacity-60"
+                >
+                  <RefreshCw size={20} className={switchingProfile ? 'animate-spin' : ''} />
+                  <span>
+                    Trocar para {otherRole === 'PARTNER' ? 'Parceiro' : 'Cliente'}
+                  </span>
+                </button>
+              )}
               <Link
                 href="/"
                 className="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition"

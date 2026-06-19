@@ -5,6 +5,7 @@ import './globals.css'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Toaster } from 'sonner'
 import LoadingOverlay from '@/components/layout/LoadingOverlay'
+import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import ReferralAttributionManager from '@/components/tracking/ReferralAttributionManager'
 import CookieConsentBanner from '@/components/tracking/CookieConsentBanner'
 
@@ -90,7 +91,7 @@ export default function RootLayout({
                        process.env.CLERK_SECRET_KEY
   
   const content = (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -133,12 +134,10 @@ export default function RootLayout({
                   {
                     "@type": "Offer",
                     "name": "Consultoria de Diagnóstico e Plano de Ação",
-                    "description": "Reunião de 30-60min para entendimento de escopo e orçamento imediato. Promoção: 50% de desconto até 30/07/2026.",
-                    "price": "100.00",
+                    "description": "Reunião de 30-60min para entendimento de escopo e orçamento imediato.",
+                    "price": "200.00",
                     "priceCurrency": "BRL",
-                    "validThrough": "2026-07-30",
-                    "availability": "https://schema.org/InStock",
-                    "priceValidUntil": "2026-07-30"
+                    "availability": "https://schema.org/InStock"
                   },
                   {
                     "@type": "Offer",
@@ -154,13 +153,15 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <LoadingOverlay />
-        <Suspense fallback={null}>
-          <ReferralAttributionManager />
-        </Suspense>
-        <CookieConsentBanner />
-        {children}
-        <Toaster position="top-right" richColors />
+        <ThemeProvider>
+          <LoadingOverlay />
+          <Suspense fallback={null}>
+            <ReferralAttributionManager />
+          </Suspense>
+          <CookieConsentBanner />
+          {children}
+          <Toaster position="top-right" richColors />
+        </ThemeProvider>
       </body>
     </html>
   )

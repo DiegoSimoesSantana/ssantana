@@ -1,0 +1,15 @@
+RESUMO DE OFERTA - SETUP INICIAL
+
+Escopo resumido:
+- organizacao tecnica do projeto
+- configuracao para desempenho
+- base para estabilidade operacional
+- suporte inicial de acompanhamento
+
+Beneficios para o cliente:
+- menos risco de queda
+- melhor experiencia para o usuario final
+- suporte com responsavel tecnico
+
+Observacao:
+Este texto e um modelo e pode ser ajustado ao contexto de cada proposta.

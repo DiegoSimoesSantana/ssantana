@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { currentUser } from '@clerk/nextjs'
 import { prisma } from '@/lib/db'
 import { getAdminSession } from '@/lib/admin-auth'
+import { getAccountSession } from '@/lib/account-auth'
 
 function buildMenu(role: 'ADMIN' | 'PARTNER' | 'CLIENT') {
   if (role === 'ADMIN') {
@@ -32,16 +33,49 @@ function buildMenu(role: 'ADMIN' | 'PARTNER' | 'CLIENT') {
 
 export async function GET() {
   const adminSession = await getAdminSession()
-  if (adminSession) {
+  const accountSession = await getAccountSession()
+  const sessionEmail = adminSession?.email || accountSession?.email
+
+  if (sessionEmail) {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: sessionEmail },
+      include: { partnerProfile: { select: { id: true } } },
+    })
+
+    if (!dbUser) {
+      return NextResponse.json({ authenticated: false })
+    }
+
+    const availableProfiles: Array<'ADMIN' | 'PARTNER' | 'CLIENT'> = []
+    if (adminSession) {
+      availableProfiles.push('ADMIN')
+    }
+    if (accountSession?.roles?.includes('PARTNER')) {
+      availableProfiles.push('PARTNER')
+    }
+    if (accountSession?.roles?.includes('CLIENT')) {
+      availableProfiles.push('CLIENT')
+    }
+
+    const role: 'ADMIN' | 'PARTNER' | 'CLIENT' = adminSession
+      ? 'ADMIN'
+      : accountSession?.selectedRole === 'PARTNER'
+        ? 'PARTNER'
+        : 'CLIENT'
+
+    const dashboardHref =
+      role === 'ADMIN' ? '/admin/dashboard' : role === 'PARTNER' ? '/dashboard/partner' : '/dashboard/client'
+
     return NextResponse.json({
       authenticated: true,
       user: {
-        name: 'Admin Santana',
-        email: adminSession.email,
-        role: 'ADMIN',
-        avatar: null,
-        dashboardHref: '/admin/dashboard',
-        menu: buildMenu('ADMIN'),
+        name: dbUser.name || 'Usuario Santana',
+        email: dbUser.email,
+        role,
+        avatar: dbUser.avatar || null,
+        dashboardHref,
+        menu: buildMenu(role),
+        profiles: Array.from(new Set(availableProfiles)),
       },
     })
   }
@@ -74,6 +108,7 @@ export async function GET() {
         avatar: dbUser?.avatar || clerkUser.imageUrl || null,
         dashboardHref,
         menu: buildMenu(role),
+        profiles: [role],
       },
     })
   } catch {

@@ -24,7 +24,7 @@ const steps = [
       'Visão central de clientes, parceiros e indicações, com status de pipeline para operação comercial completa.',
     bullets: ['Status: fechado, perdido, concluído, em andamento', 'Gestão de abordagem e follow-up', 'Visão consolidada de conversão'],
     ctaLabel: 'Ver Estratégia Completa',
-    href: '/education',
+    href: '/metodologia',
   },
 ]
 

@@ -10,7 +10,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-200">
+    <header className="fixed top-0 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-50 border-b border-gray-200 dark:border-white/10">
       <nav className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -20,34 +20,31 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/#services" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/#services" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
               Serviços
             </Link>
-            <Link href="/#pricing" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/#pricing" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
               Preços
             </Link>
-            <Link href="/education" className="text-gray-700 hover:text-primary-600 transition">
-              Educação
+            <Link href="/metodologia" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
+              Metodologia
             </Link>
-            <Link href="/#projects" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/#projects" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
               Projetos
             </Link>
-            <Link href="/partners" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/partners" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
               Parceiros
             </Link>
-            <Link href="/#contact" className="text-gray-700 hover:text-primary-600 transition">
+            <Link href="/blog" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
+              Blog
+            </Link>
+            <Link href="/#contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
               Contato
             </Link>
           </div>
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link
-              href="/#diagnostic"
-              className="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition font-semibold"
-            >
-              Começar Agora
-            </Link>
             <AccountLauncher />
           </div>
 
@@ -78,11 +75,11 @@ export default function Header() {
               Preços
             </Link>
             <Link
-              href="/education"
+              href="/metodologia"
               className="block text-gray-700 hover:text-primary-600 transition"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Educação
+              Metodologia
             </Link>
             <Link
               href="/#projects"
@@ -99,18 +96,18 @@ export default function Header() {
               Parceiros
             </Link>
             <Link
+              href="/blog"
+              className="block text-gray-700 hover:text-primary-600 transition"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Blog
+            </Link>
+            <Link
               href="/#contact"
               className="block text-gray-700 hover:text-primary-600 transition"
               onClick={() => setMobileMenuOpen(false)}
             >
               Contato
-            </Link>
-            <Link
-              href="/#diagnostic"
-              className="block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition font-semibold text-center"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Começar Agora
             </Link>
             <div className="pt-2">
               <AccountLauncher />

@@ -5,37 +5,52 @@ import { Check, Star, Mail, Globe, Wrench } from 'lucide-react'
 import { BUSINESS_RULES } from '@/lib/business-rules'
 import { parseReferralCookieValue, REFERRAL_STORAGE_KEY } from '@/lib/referral-tracking'
 
-const pricingPlans = [
+type PublicPricingService = {
+  key: 'MANUTENCAO_MENSAL' | 'SETUP_SISTEMA' | 'EMAIL_SETUP' | 'CONSULTORIA_30_60'
+  label: string
+  currentPrice: number
+  referencePrice: number
+  updatedAt: string
+}
+
+function buildPricingPlans(serviceMap: Record<string, PublicPricingService>, hasVipCoupon: boolean) {
+  const manutencaoMensal = serviceMap.MANUTENCAO_MENSAL?.currentPrice ?? BUSINESS_RULES.MANUTENCAO_MENSAL
+  const manutencaoPrecoFinal = hasVipCoupon ? 70 : manutencaoMensal
+  const setupComercial = serviceMap.SETUP_SISTEMA?.currentPrice ?? BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO
+  const setupReferencia = serviceMap.SETUP_SISTEMA?.referencePrice ?? BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL
+  const emailSetupComercial = serviceMap.EMAIL_SETUP?.currentPrice ?? BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO
+
+  return [
   {
     icon: Wrench,
     name: 'Manutenção Mensal',
-    description: 'Suporte com valor promocional por 12 meses após assinatura do contrato.',
-    price: BUSINESS_RULES.MANUTENCAO_MENSAL,
-    priceLabel: `R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL}/mês`,
-    originalPrice: BUSINESS_RULES.MANUTENCAO_MENSAL_REAL,
-    badge: null,
+    description: 'Hospedagem e sustentação contínua do seu sistema com preço base flexível.',
+    price: manutencaoPrecoFinal,
+    priceLabel: `R$ ${manutencaoPrecoFinal}/mês`,
+    originalPrice: hasVipCoupon ? manutencaoMensal : null,
+    badge: hasVipCoupon ? 'Desconto VIP ativo' : null,
     popular: false,
     features: [
-      `${BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO} reais de desconto sobre o valor real`,
-      `Valor promocional por ${BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses após assinatura`,
       'Hospedagem em servidor dedicado Linux',
-      'Monitoramento de disponibilidade',
-      'Pequenas correções e reparos',
+      'Monitoramento de disponibilidade 24/7',
+      'Pequenas correções e reparos inclusos',
       'Suporte via WhatsApp / e-mail',
-      'Pode haver ajuste por ampliação: tráfego, disco, memória, CPU e necessidades específicas',
-      'Após atingir meta interna de clientes, valor retorna ao preço normal de R$ 200/mês',
+      'Preço base inicial mínimo para operação padrão',
+      'Depende da quantidade de informações e dados salvos',
+      'Limites definidos de capacidade, tráfego e velocidade de tempo de resposta',
+      'Filtros anti-DDoS e camadas extras de proteção sob consulta',
     ],
     cta: 'Contratar Manutenção',
-    href: '/#contact',
+    href: '/precos#contact',
   },
   {
     icon: Globe,
     name: 'Setup do Sistema',
     description: 'Configuração inicial de site, aplicativo ou sistema. Inclui 2h de programação + IA.',
-    price: BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO,
-    priceLabel: `R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO}`,
-    originalPrice: BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL,
-    badge: '50% OFF',
+    price: setupComercial,
+    priceLabel: `R$ ${setupComercial}`,
+    originalPrice: setupReferencia,
+    badge: hasVipCoupon ? 'Indicação B2B ativa' : null,
     popular: true,
     features: [
       '2h de programação inclusas',
@@ -44,38 +59,38 @@ const pricingPlans = [
       'Deploy em produção (Vercel / servidor)',
       'Configuração de domínio .com.br',
       'Responsável técnico no registro.br',
-      `Valor real de referência: R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL}`,
-      'Sem validade expressa: condição promocional por meta interna',
+      `Valor real de referência: R$ ${setupReferencia}`,
+      'Desconto aplicado somente com indicação de parceiro B2B ativa',
     ],
     cta: 'Começar Setup',
-    href: '/#contact',
+    href: '/precos#contact',
   },
   {
     icon: Mail,
     name: 'Configuração de E-mail',
-    description: 'Setup completo de e-mail profissional apontando para o domínio da empresa.',
-    price: BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO,
-    priceLabel: `R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
-    originalPrice: BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL,
-    badge: '50% OFF',
+    description: 'Setup completo de e-mail profissional no domínio da empresa, sem desconto promocional.',
+    price: emailSetupComercial,
+    priceLabel: `R$ ${emailSetupComercial}`,
+    originalPrice: null,
+    badge: null,
     popular: false,
     features: [
       'Por sistema / por domínio',
       'E-mail profissional no domínio próprio',
-      'Servidor e-mail Studio Santana',
+      'Servidor SSantana Infraestrutura',
       `Manutenção: R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/mês por e-mail`,
       'Parceria Google / Microsoft / Zoho (consultar)',
       'Domínio .com.br = mais credibilidade',
-      `Valor real de referência: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL}`,
-      'Sem validade expressa: condição promocional por meta interna',
+      'Preço público sem desconto comercial automático',
+      'Condições comerciais avaliadas por escopo e necessidade',
     ],
     cta: 'Configurar E-mail',
-    href: '/#contact',
+    href: '/precos#contact',
   },
   {
     icon: Mail,
     name: 'E-mail Próprio (Servidor)',
-    description: 'E-mail profissional com IMAP/POP/SMTP/Webmail em servidor próprio Studio Santana.',
+    description: 'E-mail profissional com IMAP/POP/SMTP/Webmail em servidor próprio SSantana Infraestrutura.',
     price: BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL,
     priceLabel: `R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/e-mail mês`,
     originalPrice: null,
@@ -90,7 +105,7 @@ const pricingPlans = [
       `Setup obrigatório: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
     ],
     cta: 'Solicitar E-mail Próprio',
-    href: '/education#email',
+    href: '/email',
   },
   {
     icon: Globe,
@@ -109,33 +124,50 @@ const pricingPlans = [
       'Recomendado para times em escala',
     ],
     cta: 'Calcular Cloud E-mail',
-    href: '/education#email',
+    href: '/email',
   },
   {
-    icon: Wrench,
-    name: 'Setup de Tráfego Pago',
-    description: 'Planejamento e configuração inicial para Meta, Google, TikTok, Kwai, Waze e outros.',
+    icon: Star,
+    name: 'Consultoria Estratégica',
+    description: 'Consultoria com foco em decisão técnica, organização operacional e próximos passos aplicáveis.',
     price: null,
-    priceLabel: 'Estimativa via calculadora',
+    priceLabel: hasVipCoupon ? 'R$ 200/h com indicação parceira' : 'R$ 400/h',
     originalPrice: null,
-    badge: 'PNL + UX',
+    badge: hasVipCoupon ? 'Condição parceira aplicada' : null,
     popular: false,
     features: [
-      'Coleta de orçamento por plataforma (dia/semana/mês)',
-      'Definição de funil com reuniões estratégicas',
-      'Preço estimado inicial + ajuste após reunião',
-      'Uso de IA para análise e produtividade',
-      'Preço final depende da complexidade real',
+      'Reunião consultiva com diagnóstico prático do cenário atual',
+      'Plano objetivo de ações por prioridade e impacto',
+      'Feedback pós-reunião para orientar execução',
+      'Condição de R$ 200/h liberada somente por parceiro homologado',
     ],
-    cta: 'Abrir Calculadora de Tráfego',
-    href: '/education#trafego',
+    cta: 'Agendar Consultoria',
+    href: '/precos#contact',
   },
-]
+  ]
+}
 
 export default function PricingSection() {
   const [couponInput, setCouponInput] = useState('')
   const [activeCode, setActiveCode] = useState('')
   const [partnerName, setPartnerName] = useState('')
+  const [serviceMap, setServiceMap] = useState<Record<string, PublicPricingService>>({})
+
+  useEffect(() => {
+    void fetch('/api/pricing/public', { cache: 'no-store' })
+      .then((response) => response.json())
+      .then((payload: { services?: PublicPricingService[] }) => {
+        const services = payload.services || []
+        const mapped = services.reduce<Record<string, PublicPricingService>>((acc, item) => {
+          acc[item.key] = item
+          return acc
+        }, {})
+        setServiceMap(mapped)
+      })
+      .catch(() => {
+        setServiceMap({})
+      })
+  }, [])
 
   useEffect(() => {
     const stored = typeof window !== 'undefined' ? window.localStorage.getItem(REFERRAL_STORAGE_KEY) : null
@@ -162,9 +194,11 @@ export default function PricingSection() {
 
   const hasVipCoupon = !!activeCode
 
+  const pricingPlans = useMemo(() => buildPricingPlans(serviceMap, hasVipCoupon), [serviceMap, hasVipCoupon])
+
   const setupDisplay = useMemo(() => {
-    const fullPrice = BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL
-    const discounted = BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO
+    const fullPrice = serviceMap.SETUP_SISTEMA?.referencePrice ?? BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL
+    const discounted = serviceMap.SETUP_SISTEMA?.currentPrice ?? BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO
     return {
       fullPrice,
       discounted,
@@ -186,29 +220,29 @@ export default function PricingSection() {
       <div className="container mx-auto">
         <div className="text-center mb-8">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Preços Transparentes
+            Escada de Investimento por Serviço
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
-            Sem surpresas. Você sabe exatamente o que vai pagar.
+            Do plano de entrada ao cenário enterprise, você visualiza quanto investir e o que recebe em cada nível.
             <br />
-            Suporte mensal com preço promocional de <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL}/mês</strong> por 12 meses.
+            Suporte e hospedagem a partir de <strong>R$ {serviceMap.MANUTENCAO_MENSAL?.currentPrice ?? BUSINESS_RULES.MANUTENCAO_MENSAL}/mês</strong> (ou R$ 70/mês com indicação parceira para planos essenciais).
           </p>
           <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
-            Desconto ativo por meta interna de clientes. Validade indeterminada.
+            Condições comerciais sujeitas à validação de escopo e elegibilidade.
           </div>
 
           <div className="mx-auto mt-2 max-w-3xl rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-left">
-            <p className="text-sm font-semibold text-cyan-800">Indicacao VIP e Cupom de Parceiro</p>
+            <p className="text-sm font-semibold text-cyan-800">Indicação VIP e Cupom de Parceiro</p>
             <p className="mt-2 text-sm text-cyan-900">
               {hasVipCoupon
-                ? `Cupom ${activeCode} ativo. 50% OFF no Setup liberado${partnerName ? ` por indicacao de ${partnerName}` : ''}.`
-                : 'Sem cupom ativo: exibimos o preco cheio de ancoragem. Com indicacao VIP ou codigo do parceiro, liberamos 50% OFF no Setup.'}
+                ? `Cupom ${activeCode} ativo. Desconto no setup liberado${partnerName ? ` por indicação de ${partnerName}` : ''}.`
+                : 'Sem cupom ativo: exibimos apenas preço público. Desconto fica disponível somente no setup quando há indicação parceira válida.'}
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                placeholder="Digite codigo de cupom/parceiro"
+                placeholder="Digite código de cupom/parceiro"
                 className="w-full rounded-lg border border-cyan-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-cyan-500"
               />
               <button
@@ -220,6 +254,25 @@ export default function PricingSection() {
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="mx-auto mb-10 grid max-w-6xl gap-5 lg:grid-cols-2">
+          <article className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-800">E-mail corporativo: do mais barato ao mais robusto</p>
+            <ol className="mt-3 space-y-2 text-sm text-emerald-900">
+              <li>1. E-mail próprio em servidor SSANTANA: menor custo mensal por conta.</li>
+              <li>2. Setup profissional de domínio e caixas: entrada estruturada e sem improviso.</li>
+              <li>3. Google, Microsoft ou Zoho: maior investimento com ecossistema cloud avançado.</li>
+            </ol>
+          </article>
+          <article className="rounded-2xl border border-sky-200 bg-sky-50 p-5 text-left">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-sky-800">Sites e sistemas: da base ao enterprise</p>
+            <ol className="mt-3 space-y-2 text-sm text-sky-900">
+              <li>1. Setup de entrada: estrutura inicial para começar rápido com padrão profissional.</li>
+              <li>2. Sustentação mensal: evolução contínua, correções e previsibilidade operacional.</li>
+              <li>3. Projetos sob medida: integrações, APIs e arquitetura para operação em escala.</li>
+            </ol>
+          </article>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -268,12 +321,12 @@ export default function PricingSection() {
                     )}
                     {!setupDisplay.applied && (
                       <p className="text-sm text-red-500 font-medium mt-1">
-                        Cupom de parceiro necessario para liberar 50% OFF
+                        Cupom de parceiro B2B necessário para liberar o desconto
                       </p>
                     )}
                     {setupDisplay.applied && (
                       <p className="text-xs text-green-600 font-medium mt-1">
-                        Cupom {activeCode} aplicado com sucesso (50% OFF)
+                        Cupom {activeCode} aplicado com sucesso
                       </p>
                     )}
                   </>
@@ -288,8 +341,8 @@ export default function PricingSection() {
                   </>
                 )}
                 {plan.badge && (
-                  <p className="text-xs text-red-500 font-medium mt-1">
-                    Promoção sem validade expressa (sujeita a meta interna)
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    Condição especial sujeita à validação comercial
                   </p>
                 )}
               </div>
@@ -320,7 +373,7 @@ export default function PricingSection() {
         {/* Notas e extras */}
         <div className="mt-12 max-w-3xl mx-auto space-y-4">
           <div className="bg-blue-50 rounded-xl p-6">
-            <h4 className="font-bold text-gray-900 mb-2">📧 Parceria Google / Microsoft / Zoho</h4>
+            <h4 className="font-bold text-gray-900 mb-2">Parceria Google / Microsoft / Zoho</h4>
             <p className="text-gray-600 text-sm">
               Para empresas que precisam de ferramentas avançadas além do e-mail (Drive, Meet, Teams, etc.),
               trabalhamos em parceria. O custo é superior ao e-mail básico, mas as funcionalidades extras
@@ -328,8 +381,20 @@ export default function PricingSection() {
               <strong>Solicite uma análise personalizada.</strong>
             </p>
           </div>
+          <div className="bg-emerald-50 rounded-xl p-6">
+            <h4 className="font-bold text-gray-900 mb-2">Como economizar sem comprometer a operação</h4>
+            <p className="text-gray-600 text-sm">
+              A manutenção mensal e o setup de e-mail ficam com preço público sem desconto automático.
+              Para reduzir custo total com segurança, siga nossa trilha educacional com boas práticas de escopo,
+              priorização e escolha de infraestrutura.
+            </p>
+            <div className="mt-3 flex flex-col gap-2 text-sm font-semibold text-emerald-800 sm:flex-row sm:gap-4">
+              <a href="/email" className="underline">Ver guia de economia em e-mail</a>
+              <a href="/metodologia" className="underline">Ver trilha educacional completa</a>
+            </div>
+          </div>
           <div className="bg-yellow-50 rounded-xl p-6">
-            <h4 className="font-bold text-gray-900 mb-2">🌐 Por que usar .com.br?</h4>
+            <h4 className="font-bold text-gray-900 mb-2">Por que usar .com.br?</h4>
             <p className="text-gray-600 text-sm">
               O domínio .com.br exige CPF ou CNPJ cadastrado no{' '}
               <a href="https://registro.br" target="_blank" rel="noreferrer" className="underline">registro.br</a>.
@@ -339,21 +404,18 @@ export default function PricingSection() {
             </p>
           </div>
           <div className="bg-gray-50 rounded-xl p-6">
-            <h4 className="font-bold text-gray-900 mb-2">💳 Formas de pagamento</h4>
+            <h4 className="font-bold text-gray-900 mb-2">Formas de pagamento</h4>
             <p className="text-gray-600 text-sm">
-              Aceitamos <strong>PIX, Cartão de Crédito e PicPay</strong>. O pagamento confirma o agendamento
+              Aceitamos <strong>PIX e Cartão de Crédito</strong>. O pagamento confirma o agendamento
               imediatamente. Reuniões de 15 minutos (pré-venda) são gratuitas — basta agendar pelo link.
               Reuniões de 30 ou 60 minutos são pagas e confirmadas após o pagamento.
             </p>
           </div>
           <div className="bg-red-50 rounded-xl p-6">
-            <h4 className="font-bold text-gray-900 mb-2">📌 Regra do Suporte Mensal</h4>
+            <h4 className="font-bold text-gray-900 mb-2">Regra do suporte mensal</h4>
             <p className="text-gray-600 text-sm">
-              O valor de <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL}/mês</strong> é promocional por{' '}
-              <strong>{BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses</strong> após assinatura.
-              O valor real é <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/mês</strong>, com desconto atual de{' '}
-              <strong>R$ {BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO}</strong>.
-              Pode haver reajuste por ampliação de servidor, tráfego, dados, disco, memória, CPU e requisitos específicos.
+              O valor mensal de manutenção base é o mínimo indicado. Pode haver ajuste por ampliação de servidor, tráfego,
+              volume de dados, velocidade de tempo de resposta e ativação de camadas de proteção contra ataques (como anti-DDoS e WAF).
             </p>
           </div>
         </div>

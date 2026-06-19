@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, RefreshCw, Users } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import { buildReferralLandingUrl } from '@/lib/referral-tracking'
 
 type ReferralStatsResponse = {
   newProspects: number
@@ -45,7 +46,7 @@ export default function PartnerProspectionStats({ defaultRefCode = '' }: Partner
     }
   }, [])
 
-  const referralUrl = activeRefCode && origin ? `${origin}/?ref=${activeRefCode}` : ''
+  const referralUrl = activeRefCode && origin ? buildReferralLandingUrl(origin, activeRefCode) : ''
 
   useEffect(() => {
     if (!activeRefCode) {

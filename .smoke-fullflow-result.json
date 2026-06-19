@@ -1,0 +1,17 @@
+{
+    "success":  true,
+    "partnerEmail":  "partner.fullflow.1780096685@example.com",
+    "partnerUserId":  "cmprjlxft000012e5rqcjomoo",
+    "referralCode":  "PARCEIRO0VOA",
+    "referralUrl":  "https://ssantana.com.br/indicacao-vip?ref=PARCEIRO0VOA\u0026d=0.0500",
+    "loginSuccess":  true,
+    "selectedRole":  "PARTNER",
+    "discountBefore":  0.05,
+    "discountAfter":  0.04,
+    "directSuccess":  true,
+    "directReferralUrl":  "https://ssantana.com.br/indicacao-vip?ref=PARCEIRO0VOA\u0026d=0.0400",
+    "directAppliedDiscount":  0.04,
+    "directPartnerNet":  0.16,
+    "emailSent":  false,
+    "emailSkipped":  true
+}

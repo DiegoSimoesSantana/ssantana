@@ -5,16 +5,16 @@ import { Loader2 } from 'lucide-react'
 
 export default function Loading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      <div className="text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="text-center" role="status" aria-live="polite" aria-busy="true">
         <div className="mb-6 text-3xl md:text-4xl text-white">
           <AnimatedLogo />
         </div>
-        <div className="flex items-center justify-center gap-2 text-purple-200">
+        <div className="flex items-center justify-center gap-2 text-slate-200">
           <Loader2 className="w-5 h-5 animate-spin" />
           <span className="text-sm uppercase tracking-widest">Carregando</span>
         </div>
-        <p className="mt-4 text-xs text-purple-300">Aguarde 3 segundos...</p>
+        <p className="mt-4 text-xs text-slate-300">Preparando seu ambiente com seguranca...</p>
       </div>
     </div>
   )

@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
           referralCode: referralAttribution.referralCode,
           partnerId: referralAttribution.partnerId ?? null,
           partnerName: referralAttribution.partnerName ?? null,
+          partnerDiscountRate: referralAttribution.partnerDiscountRate ?? null,
           capturedAt: referralAttribution.capturedAt,
           updatedAt: referralAttribution.updatedAt,
           lastLandingPath: referralAttribution.lastLandingPath ?? null,

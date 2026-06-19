@@ -1,105 +1,76 @@
 'use client'
 
-import { useState } from 'react'
-import { Star, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+import Link from 'next/link'
 
-const testimonials = [
+const cases = [
   {
-    name: 'Cliente verificado',
-    role: 'Setor de varejo',
-    avatar: '👩‍💼',
-    rating: 5,
-    text: 'A Software Santana transformou nossa operação com um sistema de CRM com IA. As vendas aumentaram e a equipe ficou muito mais produtiva!'
+    name: 'Brasville',
+    role: 'Operação e acompanhamento técnico contínuo',
+    problem: 'Necessidade de sustentar a rotina operacional com acompanhamento técnico constante e evolução controlada do sistema interno.',
+    solution: 'Estrutura de apoio contínuo para manter o RP interno aderente ao fluxo diário e reduzir atritos operacionais.',
+    href: 'https://brasville.com.br',
   },
   {
-    name: 'Cliente verificado',
-    role: 'E-commerce',
-    avatar: '👨‍💼',
-    rating: 5,
-    text: 'Precisávamos de um e-commerce urgente. Em poucos dias tínhamos um site completo, responsivo e já vendendo. A entrega foi exatamente no prazo prometido!'
+    name: 'Assegure Marcas e Patentes',
+    role: 'Presença institucional objetiva',
+    problem: 'Criar uma presença digital clara, organizada e compatível com o estágio atual do negócio.',
+    solution: 'Projeto em WordPress com estrutura simples, sólida e adequada para comunicação institucional e comercial.',
+    href: 'https://assegureonline.com.br',
   },
   {
-    name: 'Cliente verificado',
-    role: 'Educação',
-    avatar: '👩',
-    rating: 5,
-    text: 'O chatbot inteligente economizou tempo da equipe de atendimento e trouxe ROI rápido. Recomendo fortemente!'
-  }
+    name: 'Ariserv',
+    role: 'Sistema com aderência operacional',
+    problem: 'Sair do básico sem perder simplicidade de uso na rotina da equipe.',
+    solution: 'Sistema mais robusto, mas desenhado para uso objetivo e boa aderência operacional no dia a dia.',
+    href: 'https://ariserv.com.br',
+  },
 ]
 
 export default function Testimonials() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-
-  const next = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length)
-  }
-
-  const prev = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
-  }
-
-  const current = testimonials[currentIndex]
-
   return (
-    <section id="testimonials" className="py-20 px-4 bg-white">
-      <div className="container mx-auto max-w-4xl">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Depoimentos
+    <section id="projects" className="bg-white px-4 py-20 dark:bg-zinc-950">
+      <div className="container mx-auto max-w-6xl">
+        <div className="mx-auto max-w-3xl text-center mb-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-300">Projetos de Referência</p>
+          <h2 className="mt-4 text-4xl font-semibold text-gray-900 dark:text-white md:text-5xl">
+            Projetos Desenvolvidos & Casos de Sucesso
           </h2>
-          <p className="text-xl text-gray-600">
-            Comentários de clientes verificados
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Abaixo estão alguns dos projetos digitais e sistemas que desenvolvemos e mantemos em produção.
           </p>
         </div>
 
-        <div className="relative bg-gradient-to-br from-primary-50 to-secondary-50 rounded-2xl p-8 md:p-12 shadow-xl">
-          {/* Testimonial Content */}
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              {[...Array(current.rating)].map((_, i) => (
-                <Star key={i} size={24} fill="#fbbf24" className="text-yellow-400" />
-              ))}
-            </div>
-            <p className="text-xl text-gray-700 italic mb-6 leading-relaxed">
-              "{current.text}"
-            </p>
-            <div>
-              <p className="font-bold text-gray-900">{current.name}</p>
-              <p className="text-gray-600">{current.role}</p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex items-center justify-center space-x-4">
-            <button
-              onClick={prev}
-              className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition"
-              aria-label="Anterior"
+        <div className="grid gap-5 lg:grid-cols-3">
+          {cases.map((item) => (
+            <article
+              key={item.name}
+              className="flex h-full flex-col rounded-[1.75rem] border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 shadow-[0_16px_45px_rgba(15,23,42,0.06)] dark:border-white/10 dark:from-zinc-900 dark:to-zinc-900/80"
             >
-              <ChevronLeft size={24} className="text-gray-700" />
-            </button>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary-700 dark:text-primary-300">{item.name}</p>
+              <h3 className="mt-3 text-xl font-semibold text-slate-950 dark:text-white">{item.role}</h3>
 
-            <div className="flex space-x-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
-                  className={`w-2 h-2 rounded-full transition ${
-                    index === currentIndex ? 'bg-primary-600 w-8' : 'bg-gray-300'
-                  }`}
-                  aria-label={`Ir para depoimento ${index + 1}`}
-                />
-              ))}
-            </div>
+              <div className="mt-5 space-y-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Contexto</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-700 dark:text-slate-300">{item.problem}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">Resposta</p>
+                  <p className="mt-2 text-sm leading-7 text-slate-700 dark:text-slate-300">{item.solution}</p>
+                </div>
+              </div>
 
-            <button
-              onClick={next}
-              className="p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition"
-              aria-label="Próximo"
-            >
-              <ChevronRight size={24} className="text-gray-700" />
-            </button>
-          </div>
+              <Link
+                href={item.href}
+                target="_blank"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary-700 transition hover:text-primary-800 dark:text-primary-300 dark:hover:text-primary-200"
+              >
+                Visitar site do projeto
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </article>
+          ))}
         </div>
       </div>
     </section>

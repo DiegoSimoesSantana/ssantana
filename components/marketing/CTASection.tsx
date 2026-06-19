@@ -1,209 +1,108 @@
 'use client'
 
-import { useState } from 'react'
-import { Send } from 'lucide-react'
+import { ArrowRight, CalendarDays, Mail, Phone, ShieldCheck, Workflow } from 'lucide-react'
 import { BUSINESS_RULES } from '@/lib/business-rules'
 
 export default function CTASection() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    serviceType: '',
-    message: ''
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      if (response.ok) {
-        setSubmitted(true)
-        setFormData({ name: '', email: '', phone: '', serviceType: '', message: '' })
-      }
-    } catch (error) {
-      console.error('Erro ao enviar formulário:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+  const meetingUrl = BUSINESS_RULES.SCHEDULING.FREE_15MIN_URL
+  const whatsappUrl = `https://wa.me/${BUSINESS_RULES.CONTACT.phoneRaw}`
+  const emailUrl = `mailto:${BUSINESS_RULES.CONTACT.email}`
 
   return (
-    <section id="contact" className="py-20 px-4 bg-gradient-to-br from-primary-600 to-secondary-600 text-white">
+    <section id="contact" className="overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(232,244,240,0.16),_transparent_34%),linear-gradient(135deg,#09131f_0%,#102131_52%,#163240_100%)] px-4 py-20 text-white">
       <div className="container mx-auto max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left: CTA */}
-          <div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Pronto para transformar seu negócio?
-            </h2>
-            <p className="text-xl mb-8 text-primary-100">
-              Comece com uma <strong>reunião gratuita de 15 minutos</strong> — sem compromisso.
-              Setup a partir de <strong>R$ 400</strong> com 50% OFF até 05/05/2026.
-              Promoção: <strong>50% OFF</strong> em consultorias até 30/07/2026!
-            </p>
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-[0_30px_80px_rgba(0,0,0,0.28)] backdrop-blur sm:p-10 lg:p-12">
+          <div className="absolute -right-20 top-0 h-56 w-56 rounded-full bg-emerald-400/10 blur-3xl" />
+          <div className="absolute -left-16 bottom-0 h-52 w-52 rounded-full bg-sky-400/10 blur-3xl" />
 
-            <div className="space-y-4 mb-8">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  �
-                </div>
-                <div>
-                  <p className="font-semibold">Reunião Grátis (15 min)</p>
-                  <a href={BUSINESS_RULES.SCHEDULING.FREE_15MIN_URL || '/#contact'} className="text-lg hover:underline">
-                    Agendar agora — sem compromisso
-                  </a>
-                </div>
+          <div className="relative grid gap-10 lg:grid-cols-[1.25fr,0.95fr] lg:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-emerald-200/90">Contato executivo</p>
+              <h2 className="mt-4 max-w-3xl text-4xl font-semibold leading-tight text-white md:text-5xl">
+                Agende uma reunião online e trate diretamente com quem decide escopo, arquitetura e execução.
+              </h2>
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-200">
+                O primeiro contato precisa transmitir segurança, clareza e objetividade. Por isso, a entrada comercial acontece com acesso direto,
+                agenda definida e canais formais de continuidade.
+              </p>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                <article className="rounded-2xl border border-white/12 bg-white/6 p-4">
+                  <div className="inline-flex rounded-xl bg-emerald-300/15 p-2 text-emerald-200">
+                    <CalendarDays className="h-5 w-5" />
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-white">Agenda objetiva</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">Reunião marcada com pauta clara e próximo passo definido ao final.</p>
+                </article>
+                <article className="rounded-2xl border border-white/12 bg-white/6 p-4">
+                  <div className="inline-flex rounded-xl bg-sky-300/15 p-2 text-sky-200">
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-white">Postura profissional</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">Alinhamento com transparência comercial, técnica e contratual desde o início.</p>
+                </article>
+                <article className="rounded-2xl border border-white/12 bg-white/6 p-4">
+                  <div className="inline-flex rounded-xl bg-amber-300/15 p-2 text-amber-200">
+                    <Workflow className="h-5 w-5" />
+                  </div>
+                  <p className="mt-4 text-sm font-semibold text-white">Continuidade operacional</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">Após aprovação, o fluxo segue com organização por prioridade e responsável.</p>
+                </article>
               </div>
 
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  📞
-                </div>
-                <div>
-                  <p className="font-semibold">Telefone/WhatsApp</p>
-                  <a href={`https://wa.me/${BUSINESS_RULES.CONTACT.phoneRaw}`} className="text-lg hover:underline">
-                    {BUSINESS_RULES.CONTACT.phone}
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  ✉️
-                </div>
-                <div>
-                  <p className="font-semibold">E-mail</p>
-                  <a href={`mailto:${BUSINESS_RULES.CONTACT.email}`} className="text-lg hover:underline">
-                    {BUSINESS_RULES.CONTACT.email}
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  💳
-                </div>
-                <div>
-                  <p className="font-semibold">Pagamento</p>
-                  <p className="text-base">PIX · Cartão · PicPay</p>
-                </div>
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:flex-wrap">
+                <a
+                  href={meetingUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-7 py-4 text-base font-semibold text-slate-950 transition hover:brightness-105"
+                >
+                  Agende uma reunião online
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/16 bg-white/8 px-6 py-4 text-base font-semibold text-white transition hover:bg-white/14"
+                >
+                  <Phone className="h-4 w-4" />
+                  WhatsApp
+                </a>
+                <a
+                  href={emailUrl}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/16 bg-white/8 px-6 py-4 text-base font-semibold text-white transition hover:bg-white/14"
+                >
+                  <Mail className="h-4 w-4" />
+                  E-mail
+                </a>
               </div>
             </div>
-          </div>
 
-          {/* Right: Form */}
-          <div className="bg-white rounded-2xl p-8 shadow-2xl">
-            {submitted ? (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">✅</div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Mensagem Enviada!
-                </h3>
-                <p className="text-gray-600">
-                  Obrigado pelo contato! Nossa equipe entrará em contato em até 24h.
-                </p>
+            <aside className="rounded-[1.75rem] border border-white/12 bg-slate-950/45 p-6 shadow-inner shadow-black/20">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">Canais disponíveis</p>
+              <h3 className="mt-4 text-2xl font-semibold text-white">Entrada comercial com presença executiva</h3>
+              <p className="mt-3 text-sm leading-7 text-slate-300">
+                Se preferir, escolha o canal mais adequado para o seu momento. Todos direcionam para atendimento real, sem formulários genéricos e sem perda de contexto.
+              </p>
+
+              <div className="mt-6 space-y-4">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-200">Reunião online</p>
+                  <p className="mt-2 text-sm text-slate-200">Ideal para diagnóstico, definição de escopo e alinhamento estratégico.</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-200">WhatsApp</p>
+                  <p className="mt-2 text-sm text-slate-200">Atendimento rápido para continuidade, dúvidas iniciais e encaminhamento comercial.</p>
+                  <p className="mt-3 text-sm font-medium text-white">{BUSINESS_RULES.CONTACT.phone}</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-200">E-mail corporativo</p>
+                  <p className="mt-2 text-sm text-slate-200">Canal formal para propostas, documentação e tratativas comerciais.</p>
+                  <p className="mt-3 text-sm font-medium text-white">{BUSINESS_RULES.CONTACT.email}</p>
+                </div>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-gray-700 font-semibold mb-2">
-                    Nome Completo *
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Seu nome"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="email" className="block text-gray-700 font-semibold mb-2">
-                    E-mail *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="seu@email.com"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="phone" className="block text-gray-700 font-semibold mb-2">
-                    Celular/WhatsApp *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="(71) 98806-8222"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="serviceType" className="block text-gray-700 font-semibold mb-2">
-                    Tipo de Serviço
-                  </label>
-                  <select
-                    id="serviceType"
-                    value={formData.serviceType}
-                    onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="consultoria">Consultoria (R$ 100)</option>
-                    <option value="website">Site/Sistema Web</option>
-                    <option value="app">Aplicativo Mobile</option>
-                    <option value="automation">Automação com IA</option>
-                    <option value="system">Sistema Personalizado</option>
-                    <option value="other">Outro</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="message" className="block text-gray-700 font-semibold mb-2">
-                    Mensagem
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={4}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                    placeholder="Conte-nos sobre seu projeto..."
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-primary-600 text-white px-6 py-4 rounded-lg hover:bg-primary-700 transition font-semibold text-lg shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50"
-                >
-                  <span>{isSubmitting ? 'Enviando...' : 'Enviar Mensagem'}</span>
-                  <Send size={20} />
-                </button>
-              </form>
-            )}
+            </aside>
           </div>
         </div>
       </div>

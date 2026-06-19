@@ -73,6 +73,7 @@ model User {
   avatar            String?
   role              UserRole        @default(CLIENT)
   emailVerified     DateTime?
+  passwordHash      String?         // bcrypt hash — nulo = usa senha de ambiente
   
   // Relations
   projects          Project[]

@@ -77,6 +77,12 @@ export default function ReferralAttributionManager() {
     }
 
     const refFromQuery = searchParams.get('ref')
+    const discountFromQuery = searchParams.get('d')
+    const parsedDiscount = discountFromQuery ? Number(discountFromQuery) : undefined
+    const partnerDiscountRate =
+      typeof parsedDiscount === 'number' && Number.isFinite(parsedDiscount)
+        ? Math.min(Math.max(parsedDiscount, 0), 1)
+        : undefined
     const visitorKey = ensurePersistentKey(REFERRAL_VISITOR_KEY)
     const sessionKey = ensureSessionKey()
     const storedAttribution = readStoredAttribution()
@@ -96,6 +102,7 @@ export default function ReferralAttributionManager() {
             visitorKey,
             sessionKey,
             landingPath: pathname,
+            partnerDiscountRate: storedAttribution.partnerDiscountRate ?? undefined,
             source: 'stored',
           }),
         })
@@ -118,6 +125,7 @@ export default function ReferralAttributionManager() {
         visitorKey,
         sessionKey,
         landingPath: pathname,
+        partnerDiscountRate,
         source: 'query',
       }),
     })
@@ -140,6 +148,7 @@ export default function ReferralAttributionManager() {
           partnerName: null,
           capturedAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          partnerDiscountRate: partnerDiscountRate ?? null,
           lastLandingPath: pathname,
         }
 
@@ -174,7 +183,7 @@ export default function ReferralAttributionManager() {
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-cyan-200">Indicação VIP ativa</p>
             <p className="mt-1 text-sm leading-6 text-slate-100">
-              Identificamos que você foi indicado por <strong>{label}</strong>. Seu atendimento entrou em fila prioritária.
+              Identificamos que voce foi indicado por <strong>{label}</strong>. Seu cupom de indicacao foi ativado e os precos ja consideram desconto especial.
             </p>
           </div>
           <button

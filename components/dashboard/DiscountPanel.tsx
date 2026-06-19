@@ -34,7 +34,7 @@ export default function DiscountPanel() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Tag className="text-green-600" size={20} />
-          <h3 className="text-lg font-bold text-gray-900">Promoções Ativas</h3>
+          <h3 className="text-lg font-bold text-gray-900">Condições Comerciais</h3>
         </div>
         <button
           onClick={() => setShowDetails(!showDetails)}
@@ -63,17 +63,17 @@ export default function DiscountPanel() {
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-sm font-semibold text-green-700">Promoção ativa</div>
-                  <p className="text-xs text-gray-500 mt-0.5">Sem validade expressa</p>
+                  <div className="text-sm font-semibold text-green-700">Condição ativa</div>
+                  <p className="text-xs text-gray-500 mt-0.5">Aplicacao conforme contrato e cupom</p>
                 </div>
               </div>
 
               {showDetails && (
                 <div className="mt-3 pt-3 border-t border-current border-opacity-20 text-xs text-gray-600 space-y-1">
-                  <p>💰 Preço promocional: <strong>R$ {d.promoPrice}</strong></p>
-                  <p>💰 Preço real (após promoção): <strong>R$ {d.realPrice}</strong></p>
-                  <p>📅 Promoção sem validade expressa (meta interna)</p>
-                  <p className="text-green-700 font-semibold">✅ Promoção ativa — exibida no site</p>
+                  <p>💰 Preço de entrada: <strong>R$ {d.promoPrice}</strong></p>
+                  <p>💰 Preço de referência: <strong>R$ {d.realPrice}</strong></p>
+                  <p>📅 Aplicação sujeita às regras comerciais vigentes</p>
+                  <p className="text-green-700 font-semibold">✅ Exibição pública sem chamada promocional explícita</p>
                 </div>
               )}
             </div>

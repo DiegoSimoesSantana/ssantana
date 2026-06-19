@@ -14,6 +14,7 @@ const trackingSchema = z.object({
   visitorKey: z.string().min(8),
   sessionKey: z.string().min(8),
   landingPath: z.string().optional(),
+  partnerDiscountRate: z.number().min(0).max(1).optional(),
   source: z.enum(['query', 'stored']),
 })
 
@@ -87,6 +88,7 @@ export async function POST(request: NextRequest) {
       partnerId: partner?.id ?? null,
       partnerName: getFirstName(partner?.user.name) || null,
       referralCode: refCode,
+      partnerDiscountRate: validatedData.partnerDiscountRate ?? null,
       capturedAt: now,
       updatedAt: now,
       lastLandingPath: validatedData.landingPath ?? null,

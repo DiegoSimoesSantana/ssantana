@@ -10,11 +10,11 @@ export const BUSINESS_RULES = {
   // ========== PLANOS E SERVIÇOS ==========
 
   // Manutenção Mensal (hospedagem + suporte + reparos pequenos)
-  MANUTENCAO_MENSAL: 70, // R$ 70/mês
-  MANUTENCAO_MENSAL_REAL: 200, // R$ 200/mês (valor real)
-  MANUTENCAO_MENSAL_DESCONTO: 130, // R$ 130 de desconto sobre o valor real
+  MANUTENCAO_MENSAL: 140, // R$ 140/mês
+  MANUTENCAO_MENSAL_REAL: 280, // R$ 280/mês (valor real)
+  MANUTENCAO_MENSAL_DESCONTO: 140, // R$ 140 de desconto sobre o valor real
   MANUTENCAO_DESCONTO_MESES: 12, // Válido por 12 meses após assinatura
-  MANUTENCAO_PROMO_LABEL: 'Promoção sem validade expressa (sujeita a meta interna)', // Label para flag de promoção
+  MANUTENCAO_PROMO_LABEL: 'Condicoes comerciais conforme contrato', // Label para flag comercial
 
   // Setup Inicial do Sistema (site, app, qualquer sistema)
   SETUP_SISTEMA_PRECO_REAL: 800, // R$ 800 (preço cheio)
@@ -51,16 +51,16 @@ export const BUSINESS_RULES = {
 
   // ========== AGENDAMENTO ==========
   SCHEDULING: {
-    FREE_15MIN_URL: '', // TODO: inserir link Calendly/Google 15min gratuito
+    FREE_15MIN_URL: 'https://calendar.google.com/calendar/u/0/appointments/AcZssZ0F7YBCeVqWN-bBLEucbSzyEGjYitSxiVg52jw=',
     PAID_30MIN_URL: '', // TODO: inserir link Calendly/Google 30min pago
     PAID_60MIN_URL: '', // TODO: inserir link Calendly/Google 60min pago
   },
 
   // ========== PAGAMENTO ==========
   PAYMENT: {
-    PICPAY_URL: '', // TODO: inserir link PicPay
+    PICPAY_URL: '', // Removido
     PIX_KEY: '', // TODO: inserir chave Pix
-    METHODS: ['PIX', 'Cartão de Crédito', 'PicPay'],
+    METHODS: ['PIX', 'Cartão de Crédito'],
   },
 
   // ========== DOMÍNIO ==========
@@ -82,11 +82,11 @@ export const BUSINESS_RULES = {
   
   // ========== COMISSÕES DE PARCEIROS ==========
   COMMISSION_TIERS: [
-    { min: 0, max: 5000, rate: 0.05, label: '5%' }, // Até R$ 5.000
-    { min: 5001, max: 15000, rate: 0.10, label: '10%' }, // R$ 5.001 - R$ 15.000
-    { min: 15001, max: 30000, rate: 0.15, label: '15%' }, // R$ 15.001 - R$ 30.000
-    { min: 30001, max: 50000, rate: 0.20, label: '20%' }, // R$ 30.001 - R$ 50.000
-    { min: 50001, rate: 0.25, label: '25%' }, // Acima de R$ 50.000
+    { min: 0, max: 15000, rate: 0.10, label: '10%' }, // Até R$ 15.000
+    { min: 15001, max: 30000, rate: 0.12, label: '12%' }, // R$ 15.001 - R$ 30.000
+    { min: 30001, max: 50000, rate: 0.15, label: '15%' }, // R$ 30.001 - R$ 50.000
+    { min: 50001, max: 100000, rate: 0.18, label: '18%' }, // R$ 50.001 - R$ 100.000
+    { min: 100001, rate: 0.20, label: '20%' }, // Acima de R$ 100.000
   ],
   
   // ========== PAGAMENTO DE PARCEIROS ==========
@@ -180,7 +180,7 @@ export const BUSINESS_RULES = {
   // ========== CONTATO ==========
   CONTACT: {
     phone: '(71) 98806-8222',
-    phoneRaw: '+5571988068222',
+    phoneRaw: '5571988068222',
     email: 'contato@ssantana.com.br',
     address: {
       street: 'Rua Manduaçu, 50',
@@ -214,7 +214,7 @@ export function calculateCommissionRate(projectValue: number): number {
   const tier = BUSINESS_RULES.COMMISSION_TIERS.find(
     (t) => projectValue >= t.min && (!('max' in t) || projectValue <= (t as any).max)
   )
-  return tier?.rate || 0.05
+  return tier?.rate || 0.1
 }
 
 /**

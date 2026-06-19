@@ -1,12 +1,13 @@
 import { prisma } from '@/lib/db'
-import { currentUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
-import DashboardShell from '@/components/dashboard/DashboardShell'
-import { formatCurrency } from '@/lib/business-rules'
-import { Users, DollarSign, TrendingUp, Link as LinkIcon, Calendar, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import DashboardLayout from '@/components/dashboard/DashboardLayout'
+import { Link as LinkIcon, Calendar, AlertCircle, Download, FileText } from 'lucide-react'
 import PartnerProspectionStats from '@/components/dashboard/PartnerProspectionStats'
 import PartnerContractsPanel from '@/components/dashboard/PartnerContractsPanel'
+import { getAccountSession } from '@/lib/account-auth'
+import { buildReferralLandingUrl } from '@/lib/referral-tracking'
+import { getPartnerReferralConfig } from '@/lib/partner-referral-config'
 
 const CALENDAR_LINK = 'https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ3BnznimDnHVolTPdHCTHYPbixuhHbl2tGq23RzwYGSA2NvW2h5fgxOWi-vU9H_Nrnfh3YCOl52'
 
@@ -16,23 +17,79 @@ export const metadata = {
 }
 
 export default async function PartnerDashboard() {
-  // TEMPORÁRIO: Sem autenticação Clerk, simulando usuário parceiro pendente
-  const mockUser = {
-    id: 'temp-partner-001',
-    email: 'parceiro@teste.com',
-    name: 'Parceiro Teste',
-    role: 'PARTNER',
+  const accountSession = await getAccountSession()
+  if (!accountSession?.email || accountSession.selectedRole !== 'PARTNER') {
+    redirect('/sign-in')
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: accountSession.email },
+  })
+
+  if (!dbUser) {
+    redirect('/sign-in')
+  }
+
+  const partnerProfile = await prisma.partner.findUnique({
+    where: { userId: dbUser.id },
+    select: { id: true, companyName: true, referralCode: true, bankAccount: true },
+  })
+
+  if (!partnerProfile) {
+    redirect('/sign-in')
   }
 
   // Verificar se o parceiro já foi validado
-  const isValidated = false // Temporariamente sempre falso para mostrar aviso
+  const isValidated = !!partnerProfile.companyName
+  const referralCode = partnerProfile.referralCode || `PARC-${partnerProfile.id.slice(0, 6).toUpperCase()}`
+  const autoDiscountRate = getPartnerReferralConfig(partnerProfile.bankAccount).autoDiscountRate ?? 0
+  const referralUrl = buildReferralLandingUrl('https://ssantana.com.br', referralCode, autoDiscountRate)
 
   return (
-    <DashboardShell
-      user={{ name: 'Parceiro', email: 'parceiro@teste.com', role: 'PARTNER' as any }}
+    <DashboardLayout
+      user={{ name: dbUser.name || 'Parceiro', email: dbUser.email, role: 'PARTNER' as any }}
+      availableRoles={accountSession.roles}
     >
-      <PartnerProspectionStats defaultRefCode="TESTE123" />
-      <PartnerContractsPanel defaultRefCode="TESTE123" />
+      <div className="mb-6 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Seu link unico de divulgacao</p>
+        <p className="mt-2 break-all text-sm font-medium text-indigo-900">{referralUrl}</p>
+        <p className="mt-2 text-xs text-indigo-700">Use este link para encaminhar contatos para a pagina VIP e manter rastreio de atribuicao com transparencia.</p>
+      </div>
+
+      <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-emerald-800">Kit comercial do parceiro</p>
+            <p className="mt-1 text-sm text-emerald-900">
+              Regras, roteiro e modelos em um unico lugar para manter padrao de apresentacao comercial.
+            </p>
+          </div>
+          <Link
+            href="/partners/kit-comercial"
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800"
+          >
+            Abrir kit e baixar modelos
+            <Download className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="mt-4 grid gap-2 text-xs text-emerald-800 sm:grid-cols-3">
+          <p className="inline-flex items-center gap-2 rounded-lg bg-white/60 px-3 py-2">
+            <FileText className="h-3.5 w-3.5" />
+            Termos comerciais explicados
+          </p>
+          <p className="inline-flex items-center gap-2 rounded-lg bg-white/60 px-3 py-2">
+            <FileText className="h-3.5 w-3.5" />
+            Scripts de venda prontos
+          </p>
+          <p className="inline-flex items-center gap-2 rounded-lg bg-white/60 px-3 py-2">
+            <FileText className="h-3.5 w-3.5" />
+            Modelos para personalizacao
+          </p>
+        </div>
+      </div>
+
+      <PartnerProspectionStats defaultRefCode={referralCode} />
+      <PartnerContractsPanel defaultRefCode={referralCode} />
 
       {/* Aviso de Validação Pendente */}
       {!isValidated && (
@@ -90,32 +147,7 @@ export default async function PartnerDashboard() {
       )}
 
       {/* Dashboard Content - Bloqueado se não validado */}
-      {isValidated ? (
-        <div>
-          {/* Conteúdo original do dashboard aqui */}
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Indicações Ativas</p>
-                  <h3 className="text-2xl font-bold">0</h3>
-                </div>
-                <Users className="w-8 h-8 text-blue-500" />
-              </div>
-            </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Comissão Total</p>
-                  <h3 className="text-2xl font-bold">R$ 0,00</h3>
-                </div>
-                <DollarSign className="w-8 h-8 text-green-500" />
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
+      {!isValidated && (
         <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-12 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-200 rounded-full mb-4">
             <LinkIcon className="w-8 h-8 text-gray-400" />
@@ -128,7 +160,7 @@ export default async function PartnerDashboard() {
           </p>
         </div>
       )}
-    </DashboardShell>
+    </DashboardLayout>
   )
 }
 

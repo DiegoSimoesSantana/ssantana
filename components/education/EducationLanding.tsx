@@ -1,18 +1,17 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
-  ArrowRight,
   CheckCircle2,
-  Layers3,
-  ShieldCheck,
-  Database,
   Code2,
+  Database,
   Globe2,
+  ArrowRight,
+  ShieldCheck,
+  Megaphone,
   Sparkles,
   Mail,
-  Megaphone,
   Calculator,
 } from 'lucide-react'
 import Header from '@/components/layout/Header'
@@ -43,8 +42,8 @@ type LangContent = {
   pricingBullets: string[]
   robustTitle: string
   robustText: string
-  picpayTitle: string
-  picpayText: string
+  securityTitle: string
+  securityText: string
   emailOwnTitle: string
   emailOwnText: string
   emailOwnBullets: string[]
@@ -109,21 +108,22 @@ const CONTENT: Record<Language, LangContent> = {
       'Nossa equipe conta com a experiência do Mestre Diego Simões Santana, com mais de 22 anos em TI e mais de 20 anos em área empresarial e finanças. Isso garante visão prática de negócio, arquitetura robusta e decisões de engenharia alinhadas ao retorno financeiro.',
     pricingTitle: 'Preço inicial claro + evolução por complexidade',
     pricingText:
-      `Trabalhamos com preço de entrada para acelerar início do projeto. Hoje, o setup inicial parte de R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (promoção), e pode evoluir conforme a complexidade real do sistema.`,
+      `Trabalhamos com preco de entrada para acelerar inicio do projeto. O setup inicial pode evoluir conforme a complexidade real do sistema e os requisitos tecnicos.`,
     pricingBullets: [
-      `Suporte mensal promocional: R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL}/mês por ${BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses (${BUSINESS_RULES.MANUTENCAO_PROMO_LABEL})`,
-      `Valor real do suporte: R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/mês (desconto atual de R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO})`,
-      `Setup de sistema: R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (de R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL})`,
+      `Suporte/Hospedagem base: R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL}/mês para operação padrão`,
+      `Desconto de indicação parceira: pode reduzir a manutenção básica de entrada para R$ 70/mês`,
+      `Valor de referência cheio da manutenção: R$ ${BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/mês`,
+      `Escalabilidade: preços sobem conforme tamanho de dados, velocidade, tempo de resposta e segurança (ex: filtros DDoS)`,
+      `Setup de sistema: R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (de R$ ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL} via indicação parceira)`,
       `Setup de e-mail: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO} (de R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL})`,
-      'Setups de site e e-mail sem validade expressa (promoção por meta interna)',
       'Projetos maiores exigem planejamento técnico pago antes da execução completa',
     ],
     robustTitle: 'Projetos robustos exigem planejamento pago',
     robustText:
       'Para sistemas grandes, o próprio desenho de arquitetura já é uma entrega de alto valor. Por isso, antes da implementação completa, realizamos etapa formal de planejamento com pagamento dedicado. Isso protege prazo, orçamento e previsibilidade.',
-    picpayTitle: 'PicPay recebe cartão internacional?',
-    picpayText:
-      'Pode funcionar em alguns cenários, mas depende do produto contratado e da adquirência. Recomendação prática: validar com transação real de cartão internacional e manter gateway alternativo para não perder venda.',
+    securityTitle: 'Como funciona a segurança e o tempo de resposta da hospedagem?',
+    securityText:
+      'Nossos servidores básicos possuem limites de capacidade, velocidade e tráfego. Caso seu sistema esteja em um nicho muito visado por ataques (como DDoS) ou demande resposta em milissegundos sob alta carga, ativamos camadas especiais de proteção anti-DDoS e firewalls de aplicação.',
     emailOwnTitle: 'Plano de E-mail Próprio (Servidor Studio Santana)',
     emailOwnText:
       'Ideal para empresas que querem baixo custo, controle e domínio próprio. Após setup, você pode criar regras de encaminhamento ilimitadas.',
@@ -206,19 +206,20 @@ const CONTENT: Record<Language, LangContent> = {
     pricingText:
       `We offer an entry price to start quickly. Current setup starts at BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (promo), and evolves according to real complexity.`,
     pricingBullets: [
-      `Promotional support: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL}/month for ${BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} months (${BUSINESS_RULES.MANUTENCAO_PROMO_LABEL})`,
-      `Real support price: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/month (current discount BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO})`,
-      `System setup: BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (from BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL})`,
-      `Email setup: BRL ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO} (from BRL ${BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL})`,
-      'Site and email setup have no explicit expiry (internal goal-based promo)',
+      `Base Support/Hosting: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL}/month for standard operations`,
+      `Referral Discount: reduces basic maintenance to BRL 70/month with an active B2B partner coupon`,
+      `Full Reference Price: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/month`,
+      `Scalability: pricing scales with storage, speed, response times, and protection layers (e.g., anti-DDoS)`,
+      `System Setup: BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (from BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL} with coupon)`,
+      `Email Setup: BRL ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO} (from BRL ${BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL})`,
       'Large projects require paid planning before full build',
     ],
     robustTitle: 'Robust projects require paid planning',
     robustText:
       'For large systems, architecture planning itself is a high-value deliverable. We run a formal paid planning phase before full implementation to protect scope, timeline, and budget.',
-    picpayTitle: 'Can PicPay accept international credit cards?',
-    picpayText:
-      'It may work in some scenarios, but this depends on product and acquiring setup. Practical recommendation: validate with real international transactions and keep an alternative gateway.',
+    securityTitle: 'How do hosting security and response times work?',
+    securityText:
+      'Our basic servers have capacity, speed, and traffic limits. If your system operates in a niche highly targeted by attacks (like DDoS) or requires millisecond response times under high loads, we activate special anti-DDoS protection layers and application firewalls.',
     emailOwnTitle: 'Private Email Plan (Studio Santana Server)',
     emailOwnText:
       'Best for low-cost business email with full control and custom domain. After setup, forwarding rules can be created with no fixed limit.',
@@ -264,7 +265,7 @@ const CONTENT: Record<Language, LangContent> = {
       'Las entregas rápidas funcionan porque trabajamos con alcance MVP, etapas claras y feedback continuo del cliente.',
     mvpTitle: 'Entrega MVP: por qué es rápida?',
     mvpText:
-      'En modo MVP priorizamos el problema principal y la funcionalidad que genera valor inmediato. En lugar de construir todo al mismo tiempo, entregamos un núcleo funcional de alta calidad y evolucionamos con retroalimentación real.',
+      'En modo MVP priorizamos el problema principal y la funcionalidad que genera valor inmediato. En lugar de construir todo al mismo tempo, entregamos un núcleo funcional de alta calidad y evolucionamos con retroalimentación real.',
     processTitle: 'Nuestro proceso por bloques',
     processSteps: [
       '1) Descubrimiento orientado a objetivos y métricas',
@@ -282,7 +283,7 @@ const CONTENT: Record<Language, LangContent> = {
       'Separación de capas: UI, dominio, infraestructura, datos',
       'Patrones de diseño cuando mejoran claridad y mantenimiento',
       'Código legible, testeable y predecible',
-      'Seguridad y performance desde el inicio',
+      'Segurança y performance desde el inicio',
     ],
     stackTitle: 'Tecnologías como bloques de construcción',
     stackText:
@@ -294,26 +295,27 @@ const CONTENT: Record<Language, LangContent> = {
       'Infraestructura: Linux, cloud, automatización de deploy y monitoreo',
       'IA aplicada: automatizaciones y asistentes con foco en productividad real',
     ],
-    leadershipTitle: 'Experiencia de liderazgo técnico',
+    leadershipTitle: 'Ingeniería y sociedad: visión de propietario',
     leadershipText:
-      'Nuestro equipo cuenta con la experiencia del Mestre Diego Simoes Santana, con más de 22 anos en TI y más de 20 anos en el área empresarial y finanzas.',
+      'Nuestro equipo cuenta con la experiencia del Mestre Diego Simoes Santana, con más de 22 años en TI y finanzas. Al contratar a Studio Santana, usted no solo compra código, sino un socio estratégico que entiende de flujo de caja y arquitectura resiliente.',
     pricingTitle: 'Precio inicial claro + evolución por complejidad',
     pricingText:
       `Trabajamos con precio de entrada para comenzar rápido. Hoy el setup inicial parte de BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (promoción) y evoluciona según la complejidad real.`,
     pricingBullets: [
-      `Soporte promocional: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL}/mes por ${BUSINESS_RULES.MANUTENCAO_DESCONTO_MESES} meses (${BUSINESS_RULES.MANUTENCAO_PROMO_LABEL})`,
-      `Precio real del soporte: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/mes (descuento actual BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL_DESCONTO})`,
-      `Setup del sistema: BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (de BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL})`,
+      `Soporte/Hospedaje base: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL}/mes para operación estándar`,
+      `Descuento por recomendación: reduce el mantenimiento básico a BRL 70/mes con cupón activo`,
+      `Precio de referencia real: BRL ${BUSINESS_RULES.MANUTENCAO_MENSAL_REAL}/mes`,
+      `Escalabilidad: el precio sube según volumen de datos, velocidad, tiempo de respuesta y seguridad (ej. filtros DDoS)`,
+      `Setup del sistema: BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO} (de BRL ${BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL} con cupón)`,
       `Setup de correo: BRL ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO} (de BRL ${BUSINESS_RULES.EMAIL_SETUP_PRECO_REAL})`,
-      'Setups de sitio y correo sin fecha explícita (promo por meta interna)',
       'Proyectos grandes requieren planificación paga antes de la ejecución completa',
     ],
     robustTitle: 'Proyectos robustos requieren planificación paga',
     robustText:
       'Para sistemas grandes, el diseno de arquitectura ya es una entrega de alto valor. Por eso realizamos una fase formal de planificación con pago dedicado antes de implementar todo.',
-    picpayTitle: 'PicPay recibe tarjeta internacional?',
-    picpayText:
-      'Puede funcionar en algunos casos, pero depende del producto y de la adquirencia. Recomendación: pruebas reales controladas y gateway alternativo para no perder conversiones.',
+    securityTitle: '¿Cómo funciona la seguridad y el tiempo de respuesta del hosting?',
+    securityText:
+      'Nuestros servidores básicos tienen límites de capacidad, velocidad y tráfico. Si su sistema opera en un nicho altamente atacado (como DDoS) o requiere tiempos de respuesta en milisegundos bajo alta carga, activamos capas especiales de protección anti-DDoS y firewalls de aplicación.',
     emailOwnTitle: 'Plan de correo propio (Servidor Studio Santana)',
     emailOwnText:
       'Ideal para empresas que buscan costo bajo, control y dominio propio. Después del setup, puedes definir reglas de reenvío sin límite fijo.',
@@ -329,7 +331,7 @@ const CONTENT: Record<Language, LangContent> = {
     emailCloudTitle: 'Google, Microsoft y Zoho (alianza)',
     emailCloudText:
       'También implementamos Google Workspace, Microsoft 365 y Zoho. El setup es el mismo, pero el costo mensual depende de usuarios, almacenamiento y funcionalidades.',
-    trafficTitle: 'Setup de Tráfico Pago con PNL + UX',
+    trafficTitle: 'Setup de Tráfego Pago con PNL + UX',
     trafficText:
       'Configuración estratégica para TikTok, Kwai, WhatsApp, Instagram, Facebook, Google, Google Maps, Waze y otros. La IA acelera análisis, pero lo más importante son las reuniones para entender empresa y comprador.',
     trafficBullets: [
@@ -465,23 +467,23 @@ export default function EducationLanding({
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-800 pt-28 pb-20 px-4 text-slate-100">
+      <main className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 pt-28 pb-20 px-4 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800 dark:text-slate-100">
         <section className="container mx-auto max-w-6xl">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/30 bg-amber-200/10 px-4 py-2 text-amber-100">
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-amber-800 dark:border-amber-800/30 dark:bg-amber-900/10 dark:text-amber-100 animate-fade-in">
               <Sparkles size={16} />
               Educational Playbook • MVP to Scale
             </div>
             {!lockLanguage && (
-              <div className="inline-flex rounded-xl border border-slate-600 bg-slate-800/70 p-1">
+              <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-800/70">
                 {LANG_BUTTONS.map((item) => (
                   <button
                     key={item.value}
                     onClick={() => setLang(item.value)}
                     className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
                       lang === item.value
-                        ? 'bg-cyan-400 text-slate-950'
-                        : 'text-slate-200 hover:bg-slate-700'
+                        ? 'bg-cyan-500 text-white shadow-sm'
+                        : 'text-slate-600 hover:bg-slate-150 dark:text-slate-200 dark:hover:bg-slate-700'
                     }`}
                   >
                     {item.label}
@@ -491,30 +493,30 @@ export default function EducationLanding({
             )}
           </div>
 
-          <div className="rounded-3xl border border-slate-700 bg-slate-900/80 p-8 md:p-12 shadow-2xl">
-            <h1 className="text-3xl md:text-5xl leading-tight font-black tracking-tight text-white mb-5">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 md:p-12 shadow-lg dark:border-slate-800 dark:bg-slate-900/80">
+            <h1 className="text-3xl md:text-5xl leading-tight font-black tracking-tight text-slate-950 dark:text-white mb-5">
               {t.heroTitle}
             </h1>
-            <p className="text-lg md:text-2xl text-slate-200 max-w-4xl leading-relaxed">
+            <p className="text-lg md:text-2xl text-slate-700 dark:text-slate-200 max-w-4xl leading-relaxed">
               {t.heroSubtitle}
             </p>
           </div>
 
           <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h2 className="text-2xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
-                <Layers3 size={20} /> {t.mvpTitle}
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h2 className="text-2xl font-bold text-cyan-700 dark:text-cyan-300 mb-4 flex items-center gap-2">
+                <Code2 size={20} /> {t.mvpTitle}
               </h2>
-              <p className="text-slate-200 leading-8 text-lg">{t.mvpText}</p>
+              <p className="text-slate-700 dark:text-slate-200 leading-8 text-lg">{t.mvpText}</p>
             </article>
 
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h2 className="text-2xl font-bold text-emerald-300 mb-4 flex items-center gap-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h2 className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-4 flex items-center gap-2">
                 <CheckCircle2 size={20} /> {t.processTitle}
               </h2>
               <ul className="space-y-3">
                 {t.processSteps.map((step) => (
-                  <li key={step} className="rounded-lg bg-slate-800 px-4 py-3 text-slate-100 leading-7">
+                  <li key={step} className="rounded-lg bg-slate-50 border border-slate-100 px-4 py-3 text-slate-700 leading-7 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100">
                     {step}
                   </li>
                 ))}
@@ -522,177 +524,207 @@ export default function EducationLanding({
             </article>
           </div>
 
+          {lang === 'pt' && (
+            <section className="mt-6 rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50/50 via-white to-emerald-50/50 p-7 dark:border-cyan-800/30 dark:from-cyan-950/20 dark:via-slate-900 dark:to-emerald-950/20">
+              <h3 className="text-2xl font-bold text-slate-950 dark:text-white">Desenvolvimento de sites e sistemas: do mais enxuto ao enterprise</h3>
+              <p className="mt-3 text-slate-700 dark:text-slate-200 leading-8">
+                Use esta escala para orientar proposta comercial, expectativa de prazo e nível de robustez esperado pelo cliente.
+              </p>
+              <p className="mt-2 text-sm leading-7 text-slate-650 dark:text-slate-400">
+                O atendimento e a liderança de projeto são sempre feitos diretamente pelo Engenheiro de Software Sócio da empresa (decisor técnico).
+                As camadas de desenvolvimento técnico são realizadas de forma interna, garantindo que o atendimento nunca é delegado a profissionais sem a capacidade técnica necessária de te orientar.
+              </p>
+              <div className="mt-5 grid gap-4 md:grid-cols-3">
+                <article className="rounded-xl border border-emerald-200 bg-white p-4 dark:border-emerald-800/40 dark:bg-slate-900/80">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">1. Essencial</p>
+                  <h4 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">Site institucional + captação</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">Entrada para negócios que precisam presença digital profissional com baixo risco de implantação.</p>
+                </article>
+                <article className="rounded-xl border border-cyan-200 bg-white p-4 dark:border-cyan-800/40 dark:bg-slate-900/80">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">2. Profissional</p>
+                  <h4 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">Sistema com regras de negócio</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">Ideal para operação com área logada, fluxos internos, integrações e evolução mensal contínua.</p>
+                </article>
+                <article className="rounded-xl border border-violet-200 bg-white p-4 dark:border-violet-800/40 dark:bg-slate-900/80">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">3. Enterprise</p>
+                  <h4 className="mt-2 text-lg font-semibold text-slate-950 dark:text-white">Arquitetura de escala + APIs</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-slate-300">Projetos com alta criticidade, integrações complexas e governança técnica para crescimento acelerado.</p>
+                </article>
+              </div>
+            </section>
+          )}
+
           <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-xl font-bold text-violet-300 mb-3 flex items-center gap-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-xl font-bold text-violet-750 dark:text-violet-300 mb-3 flex items-center gap-2">
                 <Code2 size={18} /> {t.blocksTitle}
               </h3>
-              <p className="text-slate-200 leading-8">{t.blocksText}</p>
+              <p className="text-slate-700 dark:text-slate-300 leading-8">{t.blocksText}</p>
             </article>
 
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-xl font-bold text-amber-300 mb-3 flex items-center gap-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-xl font-bold text-amber-700 dark:text-amber-300 mb-3 flex items-center gap-2">
                 <ShieldCheck size={18} /> {t.oopTitle}
               </h3>
-              <ul className="space-y-2 text-slate-200">
+              <ul className="space-y-2 text-slate-700 dark:text-slate-300">
                 {t.oopItems.map((item) => (
-                  <li key={item} className="rounded-lg bg-slate-800 px-3 py-2">• {item}</li>
+                  <li key={item} className="rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 px-3 py-2">• {item}</li>
                 ))}
               </ul>
             </article>
 
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-xl font-bold text-cyan-300 mb-3 flex items-center gap-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-xl font-bold text-cyan-700 dark:text-cyan-300 mb-3 flex items-center gap-2">
                 <Database size={18} /> {t.stackTitle}
               </h3>
-              <p className="text-slate-200 leading-7 mb-3">{t.stackText}</p>
-              <ul className="space-y-2 text-slate-200">
+              <p className="text-slate-700 dark:text-slate-300 leading-7 mb-3">{t.stackText}</p>
+              <ul className="space-y-2 text-slate-700 dark:text-slate-300">
                 {t.stackItems.map((item) => (
-                  <li key={item} className="rounded-lg bg-slate-800 px-3 py-2">• {item}</li>
+                  <li key={item} className="rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 px-3 py-2">• {item}</li>
                 ))}
               </ul>
             </article>
           </div>
 
-          <section className="mt-6 rounded-2xl border border-slate-700 bg-slate-900 p-7">
-            <h3 className="text-2xl font-bold text-emerald-300 mb-3">{t.leadershipTitle}</h3>
-            <p className="text-lg text-slate-100 leading-8">{t.leadershipText}</p>
+          <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-3">{t.leadershipTitle}</h3>
+            <p className="text-lg text-slate-755 dark:text-slate-300 leading-8">{t.leadershipText}</p>
           </section>
 
           <section id="email" className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-2xl font-bold text-amber-300 mb-3">{t.pricingTitle}</h3>
-              <p className="text-slate-100 leading-8 mb-4">{t.pricingText}</p>
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-2xl font-bold text-amber-700 dark:text-amber-300 mb-3">{t.pricingTitle}</h3>
+              <p className="text-slate-700 dark:text-slate-300 leading-8 mb-4">{t.pricingText}</p>
               <ul className="space-y-2">
                 {t.pricingBullets.map((item) => (
-                  <li key={item} className="rounded-lg bg-slate-800 px-3 py-2 text-slate-100">• {item}</li>
+                  <li key={item} className="rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 px-3 py-2 text-slate-700 dark:text-slate-100">• {item}</li>
                 ))}
               </ul>
             </article>
 
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-2xl font-bold text-violet-300 mb-3">{t.robustTitle}</h3>
-              <p className="text-slate-100 leading-8 mb-6">{t.robustText}</p>
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-2xl font-bold text-violet-700 dark:text-violet-300 mb-3">{t.robustTitle}</h3>
+              <p className="text-slate-700 dark:text-slate-300 leading-8 mb-6">{t.robustText}</p>
 
-              <div className="rounded-xl border border-cyan-300/40 bg-cyan-300/10 px-4 py-4">
-                <h4 className="font-bold text-cyan-200 mb-2 flex items-center gap-2">
-                  <Globe2 size={16} /> {t.picpayTitle}
+              <div className="rounded-xl border border-cyan-200 bg-cyan-50/50 px-4 py-4 dark:border-cyan-800/40 dark:bg-cyan-900/10">
+                <h4 className="font-bold text-cyan-800 dark:text-cyan-200 mb-2 flex items-center gap-2">
+                  <ShieldCheck size={16} /> {t.securityTitle}
                 </h4>
-                <p className="text-slate-100 leading-7">{t.picpayText}</p>
+                <p className="text-slate-700 dark:text-slate-350 leading-7">{t.securityText}</p>
               </div>
             </article>
           </section>
 
           <section className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-2xl font-bold text-cyan-300 mb-3 flex items-center gap-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-2xl font-bold text-cyan-700 dark:text-cyan-300 mb-3 flex items-center gap-2">
                 <Mail size={20} /> {t.emailOwnTitle}
               </h3>
-              <p className="text-slate-100 leading-8 mb-4">{t.emailOwnText}</p>
+              <p className="text-slate-700 dark:text-slate-300 leading-8 mb-4">{t.emailOwnText}</p>
               <ul className="space-y-2 mb-5">
                 {t.emailOwnBullets.map((item) => (
-                  <li key={item} className="rounded-lg bg-slate-800 px-3 py-2 text-slate-100">• {item}</li>
+                  <li key={item} className="rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 px-3 py-2 text-slate-700 dark:text-slate-100">• {item}</li>
                 ))}
               </ul>
 
-              <div className="rounded-xl border border-cyan-300/40 bg-cyan-300/10 p-4">
-                <h4 className="font-bold text-cyan-200 mb-3 flex items-center gap-2">
+              <div className="rounded-xl border border-cyan-200 bg-cyan-50/50 p-4 dark:border-cyan-800/40 dark:bg-cyan-900/10">
+                <h4 className="font-bold text-cyan-800 dark:text-cyan-200 mb-3 flex items-center gap-2">
                   <Calculator size={16} /> {t.calcEstimateTitle}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                   <label className="text-sm">
-                    <span className="block mb-1 text-slate-200">Contas de e-mail</span>
+                    <span className="block mb-1 text-slate-700 dark:text-slate-300">Contas de e-mail</span>
                     <input
                       type="number"
                       min={0}
                       value={emailUnits}
                       onChange={(e) => setEmailUnits(e.target.value)}
-                      className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                     />
                   </label>
                   <label className="text-sm">
-                    <span className="block mb-1 text-slate-200">Alterações (add/remove)</span>
+                    <span className="block mb-1 text-slate-700 dark:text-slate-300">Alterações (add/remove)</span>
                     <input
                       type="number"
                       min={0}
                       value={emailChanges}
                       onChange={(e) => setEmailChanges(e.target.value)}
-                      className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                     />
                   </label>
                 </div>
-                <p className="text-slate-100">Setup: <strong>{brl(ownEmailEstimate.setup)}</strong></p>
-                <p className="text-slate-100">Mensal estimado: <strong>{brl(ownEmailEstimate.monthly)}</strong></p>
-                <p className="text-slate-100">Custos de alterações: <strong>{brl(ownEmailEstimate.changesCost)}</strong></p>
+                <p className="text-slate-800 dark:text-slate-200">Setup: <strong>{brl(ownEmailEstimate.setup)}</strong></p>
+                <p className="text-slate-800 dark:text-slate-200">Mensal estimado: <strong>{brl(ownEmailEstimate.monthly)}</strong></p>
+                <p className="text-slate-800 dark:text-slate-200">Custos de alterações: <strong>{brl(ownEmailEstimate.changesCost)}</strong></p>
               </div>
             </article>
 
-            <article className="rounded-2xl border border-slate-700 bg-slate-900 p-7">
-              <h3 className="text-2xl font-bold text-amber-300 mb-3 flex items-center gap-2">
+            <article className="rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="text-2xl font-bold text-amber-700 dark:text-amber-300 mb-3 flex items-center gap-2">
                 <Mail size={20} /> {t.emailCloudTitle}
               </h3>
-              <p className="text-slate-100 leading-8 mb-4">{t.emailCloudText}</p>
+              <p className="text-slate-700 dark:text-slate-300 leading-8 mb-4">{t.emailCloudText}</p>
 
-              <div className="rounded-xl border border-amber-300/40 bg-amber-200/10 p-4 space-y-3">
-                <h4 className="font-bold text-amber-200 flex items-center gap-2">
+              <div className="rounded-xl border border-amber-250 bg-amber-50/50 p-4 space-y-3 dark:border-amber-800/40 dark:bg-amber-900/10">
+                <h4 className="font-bold text-amber-800 dark:text-amber-200 flex items-center gap-2">
                   <Calculator size={16} /> {t.calcEstimateTitle}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <label className="text-sm">
-                    <span className="block mb-1 text-slate-200">{t.calcLabelUsers}</span>
+                    <span className="block mb-1 text-slate-700 dark:text-slate-300">{t.calcLabelUsers}</span>
                     <input
                       type="number"
                       min={0}
                       value={cloudUsers}
                       onChange={(e) => setCloudUsers(e.target.value)}
-                      className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                     />
                   </label>
                   <label className="text-sm">
-                    <span className="block mb-1 text-slate-200">{t.calcLabelUsd}</span>
+                    <span className="block mb-1 text-slate-700 dark:text-slate-300">{t.calcLabelUsd}</span>
                     <input
                       type="number"
                       min={0}
                       step="0.1"
                       value={cloudUsdPerUser}
                       onChange={(e) => setCloudUsdPerUser(e.target.value)}
-                      className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                     />
                   </label>
                   <label className="text-sm">
-                    <span className="block mb-1 text-slate-200">{t.calcLabelFx}</span>
+                    <span className="block mb-1 text-slate-700 dark:text-slate-300">{t.calcLabelFx}</span>
                     <input
                       type="number"
                       min={0}
                       step="0.01"
                       value={usdFx}
                       onChange={(e) => setUsdFx(e.target.value)}
-                      className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                     />
                   </label>
                 </div>
-                <p className="text-slate-100">Setup: <strong>{brl(cloudEmailEstimate.setup)}</strong></p>
-                <p className="text-slate-100">Mensal estimado (BRL): <strong>{brl(cloudEmailEstimate.monthlyBrl)}</strong></p>
-                <p className="text-xs text-amber-100">
+                <p className="text-slate-800 dark:text-slate-200">Setup: <strong>{brl(cloudEmailEstimate.setup)}</strong></p>
+                <p className="text-slate-800 dark:text-slate-200">Mensal estimado (BRL): <strong>{brl(cloudEmailEstimate.monthlyBrl)}</strong></p>
+                <p className="text-xs text-amber-800 dark:text-amber-200 font-medium">
                   Valor estimado sujeito a oscilação cambial (USD/BRL) e política de preço dos provedores.
                 </p>
               </div>
             </article>
           </section>
 
-          <section id="trafego" className="mt-6 rounded-2xl border border-slate-700 bg-slate-900 p-7">
-            <h3 className="text-2xl font-bold text-emerald-300 mb-3 flex items-center gap-2">
+          <section id="trafego" className="mt-6 rounded-2xl border border-slate-200 bg-white p-7 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <h3 className="text-2xl font-bold text-emerald-700 dark:text-emerald-300 mb-3 flex items-center gap-2">
               <Megaphone size={20} /> {t.trafficTitle}
             </h3>
-            <p className="text-slate-100 leading-8 mb-4">{t.trafficText}</p>
+            <p className="text-slate-700 dark:text-slate-300 leading-8 mb-4">{t.trafficText}</p>
             <ul className="space-y-2 mb-6">
               {t.trafficBullets.map((item) => (
-                <li key={item} className="rounded-lg bg-slate-800 px-3 py-2 text-slate-100">• {item}</li>
+                <li key={item} className="rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700 px-3 py-2 text-slate-700 dark:text-slate-100">• {item}</li>
               ))}
             </ul>
 
-            <div className="rounded-xl border border-emerald-300/40 bg-emerald-200/10 p-4">
-              <h4 className="font-bold text-emerald-100 mb-4 flex items-center gap-2">
+            <div className="rounded-xl border border-emerald-250 bg-emerald-50/50 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
+              <h4 className="font-bold text-emerald-800 dark:text-emerald-200 mb-4 flex items-center gap-2">
                 <Calculator size={16} /> {t.calcEstimateTitle}
               </h4>
 
@@ -700,21 +732,22 @@ export default function EducationLanding({
                 {PLATFORMS.map((platform) => {
                   const row = trafficBudgets[platform]
                   return (
-                    <div key={platform} className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-lg bg-slate-900/80 p-3">
-                      <label className="flex items-center gap-2 text-sm text-slate-100">
+                    <div key={platform} className="grid grid-cols-1 md:grid-cols-4 gap-3 rounded-lg bg-white border border-slate-150 dark:bg-slate-800/40 dark:border-slate-700/50 p-3">
+                      <label className="flex items-center gap-2 text-sm text-slate-800 dark:text-slate-100 font-semibold cursor-pointer">
                         <input
                           type="checkbox"
                           checked={row.enabled}
                           onChange={(e) => updateBudget(platform, { enabled: e.target.checked })}
+                          className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                         />
                         {platform}
                       </label>
                       <label className="text-sm">
-                        <span className="block mb-1 text-slate-300">{t.calcLabelPeriod}</span>
+                        <span className="block mb-1 text-slate-600 dark:text-slate-300">{t.calcLabelPeriod}</span>
                         <select
                           value={row.period}
                           onChange={(e) => updateBudget(platform, { period: e.target.value as Period })}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                         >
                           <option value="daily">Dia</option>
                           <option value="weekly">Semana</option>
@@ -722,24 +755,24 @@ export default function EducationLanding({
                         </select>
                       </label>
                       <label className="text-sm">
-                        <span className="block mb-1 text-slate-300">{t.calcLabelAmount} (R$)</span>
+                        <span className="block mb-1 text-slate-650 dark:text-slate-300">{t.calcLabelAmount} (R$)</span>
                         <input
                           type="number"
                           min={0}
                           step="0.01"
                           value={row.amount}
                           onChange={(e) => updateBudget(platform, { amount: e.target.value })}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                         />
                       </label>
                       <label className="text-sm">
-                        <span className="block mb-1 text-slate-300">{t.calcLabelReviews}</span>
+                        <span className="block mb-1 text-slate-650 dark:text-slate-300">{t.calcLabelReviews}</span>
                         <input
                           type="number"
                           min={0}
                           value={reviewMeetings}
                           onChange={(e) => setReviewMeetings(e.target.value)}
-                          className="w-full rounded-lg border border-slate-600 bg-slate-900 px-3 py-2 text-white"
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-slate-950 dark:border-slate-600 dark:bg-slate-900 dark:text-white outline-none"
                         />
                       </label>
                     </div>
@@ -747,27 +780,27 @@ export default function EducationLanding({
                 })}
               </div>
 
-              <div className="mt-4 rounded-lg border border-emerald-200/40 bg-emerald-300/10 p-4">
-                <p className="text-slate-100">Mídia mensal estimada: <strong>{brl(trafficEstimate.monthlyMedia)}</strong></p>
-                <p className="text-slate-100">Preço estimado de setup: <strong>{brl(trafficEstimate.estimate)}</strong></p>
-                <p className="text-xs text-emerald-100 mt-2">{t.calcEstimateDisclaimer}</p>
+              <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/70 p-4 dark:border-emerald-800/40 dark:bg-emerald-900/10">
+                <p className="text-slate-800 dark:text-slate-100">Mídia mensal estimada: <strong>{brl(trafficEstimate.monthlyMedia)}</strong></p>
+                <p className="text-slate-800 dark:text-slate-100">Preço estimado de setup: <strong>{brl(trafficEstimate.estimate)}</strong></p>
+                <p className="text-xs text-emerald-800 dark:text-emerald-200 mt-2 font-medium">{t.calcEstimateDisclaimer}</p>
               </div>
             </div>
           </section>
 
-          <section className="mt-8 rounded-3xl border border-emerald-300/30 bg-emerald-300/10 p-7 md:p-10">
-            <h3 className="text-3xl font-black text-white mb-3">{t.ctaTitle}</h3>
-            <p className="text-lg md:text-xl text-emerald-100 leading-8 mb-6">{t.ctaText}</p>
+          <section className="mt-8 rounded-3xl border border-emerald-250 bg-gradient-to-r from-emerald-50 to-cyan-50 p-7 md:p-10 dark:border-emerald-800/30 dark:from-emerald-950/20 dark:to-cyan-950/20">
+            <h3 className="text-3xl font-black text-slate-950 dark:text-white mb-3">{t.ctaTitle}</h3>
+            <p className="text-lg md:text-xl text-slate-700 dark:text-emerald-300 leading-8 mb-6">{t.ctaText}</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/#contact"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-400 px-6 py-3 font-bold text-slate-950 hover:bg-cyan-300 transition"
+                className="inline-block bg-gradient-to-r from-cyan-500 to-emerald-500 text-white font-bold py-4 px-8 rounded-xl hover:shadow-lg hover:shadow-cyan-500/50 transition"
               >
                 {t.ctaPrimary} <ArrowRight size={18} />
               </Link>
               <Link
-                href="/#pricing"
-                className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-slate-900 px-6 py-3 font-bold text-slate-100 hover:bg-slate-800 transition"
+                href="/precos"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-6 py-3 font-bold text-slate-800 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800 transition"
               >
                 {t.ctaSecondary}
               </Link>

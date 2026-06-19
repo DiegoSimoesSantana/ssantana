@@ -1,0 +1,24 @@
+# SSANTANA - Informacoes para LLMs e Agentes
+
+name: SSANTANA
+url: https://ssantana.com.br
+sitemap: https://ssantana.com.br/sitemap.xml
+robots: https://ssantana.com.br/robots.txt
+language: pt-BR
+
+summary: Empresa de engenharia de software e IA com oferta de infraestrutura, desenvolvimento rapido e programa de parceiros B2B.
+
+important_pages:
+- https://ssantana.com.br/
+- https://ssantana.com.br/partners
+- https://ssantana.com.br/education
+- https://ssantana.com.br/sign-in
+
+partner_program:
+- Modelo B2B de nivel unico (nao e MMN)
+- Comissao recorrente para indicacoes diretas elegiveis
+- Regras de atribuicao e rastreio no site
+
+contact:
+- email: contato@ssantana.com.br
+- phone: +55-71-98806-8222

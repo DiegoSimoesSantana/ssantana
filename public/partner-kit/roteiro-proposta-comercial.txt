@@ -1,0 +1,26 @@
+ROTEIRO COMERCIAL - MODELO BASE
+
+1) CONTEXTO DO CLIENTE
+- Qual site/servico esta em uso hoje?
+- Quais problemas aparecem com frequencia?
+- O que ja foi tentado e nao resolveu?
+
+2) RISCO DE MANTER COMO ESTA
+- Lentidao no site e perda de conversao
+- Queda em horario comercial
+- E-mail sem confianca de entrega
+
+3) PROPOSTA DE SOLUCAO
+- Setup tecnico inicial
+- Ajustes para estabilidade
+- Suporte para operacao continua
+
+4) RESULTADO ESPERADO
+- Site mais rapido e confiavel
+- Menos retrabalho tecnico
+- Equipe focada em vender e atender
+
+5) PROXIMO PASSO
+- Validar escopo
+- Confirmar prazo
+- Iniciar onboarding

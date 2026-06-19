@@ -1,0 +1,15 @@
+CHECKLIST DE DIAGNOSTICO RAPIDO
+
+[ ] O cliente tem dominio proprio?
+[ ] O site atual apresenta lentidao?
+[ ] Existe historico de queda ou instabilidade?
+[ ] O e-mail corporativo ja caiu no spam?
+[ ] O cliente tem prazo critico para entrar no ar?
+[ ] Ha equipe interna para manutencao tecnica?
+[ ] O cliente valoriza suporte com resposta rapida?
+
+NOTAS DA REUNIAO:
+- Principal dor:
+- Impacto no negocio:
+- Urgencia:
+- Oportunidade de melhoria:

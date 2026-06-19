@@ -7,10 +7,27 @@ function getSecret() {
   return process.env.ADMIN_AUTH_SECRET || 'change-me-admin-secret'
 }
 
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase()
+}
+
+function stripOptionalBrDomain(email: string) {
+  return normalizeEmail(email).replace(/\.br$/, '')
+}
+
 export function verifyAdminCredentials(email: string, password: string) {
-  const allowedEmail = (process.env.ADMIN_EMAIL || '').toLowerCase()
+  const allowedEmail = normalizeEmail(process.env.ADMIN_EMAIL || '')
   const allowedPassword = process.env.ADMIN_PASSWORD || ''
-  return email.toLowerCase() === allowedEmail && password === allowedPassword
+
+  if (!allowedEmail || !allowedPassword) {
+    return false
+  }
+
+  const providedEmail = normalizeEmail(email)
+  const directMatch = providedEmail === allowedEmail
+  const fallbackDomainMatch = stripOptionalBrDomain(providedEmail) === stripOptionalBrDomain(allowedEmail)
+
+  return (directMatch || fallbackDomainMatch) && password === allowedPassword
 }
 
 function signPayload(payload: string) {

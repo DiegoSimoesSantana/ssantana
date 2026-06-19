@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/db'
-import { currentUser } from '@clerk/nextjs'
 import { redirect } from 'next/navigation'
-import DashboardShell from '@/components/dashboard/DashboardShell'
+import DashboardLayout from '@/components/dashboard/DashboardLayout'
 import { formatCurrency } from '@/lib/business-rules'
 import { FolderKanban, Clock, CheckCircle, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { getAccountSession } from '@/lib/account-auth'
 
 export const metadata = {
   title: 'Meus Projetos',
@@ -12,14 +12,14 @@ export const metadata = {
 }
 
 export default async function ClientDashboard() {
-  const user = await currentUser()
-  
-  if (!user) {
+  const accountSession = await getAccountSession()
+
+  if (!accountSession?.email || accountSession.selectedRole !== 'CLIENT') {
     redirect('/sign-in')
   }
 
   const dbUser = await prisma.user.findUnique({
-    where: { email: user.emailAddresses[0].emailAddress },
+    where: { email: accountSession.email },
   })
 
   if (!dbUser) {
@@ -54,15 +54,15 @@ export default async function ClientDashboard() {
   }
 
   return (
-    <DashboardShell user={dbUser}>
+    <DashboardLayout user={{ ...dbUser, role: 'CLIENT' }} availableRoles={accountSession.roles}>
       <div className="space-y-8">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
-            Bem-vindo, {dbUser.name}!
+            Painel do cliente: {dbUser.name}
           </h1>
           <p className="text-gray-600 mt-2">
-            Acompanhe o status dos seus projetos
+            Acompanhe status, etapas e previsibilidade da sua operacao digital.
           </p>
         </div>
 
@@ -115,12 +115,15 @@ export default async function ClientDashboard() {
           
           {projects.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 mb-4">Você ainda não tem projetos</p>
+              <p className="text-gray-500 mb-4">Ainda nao ha projeto ativo neste perfil.</p>
+              <p className="text-sm text-gray-500 mb-5">
+                Inicie uma triagem tecnica para abrir escopo com caminho claro de entrega.
+              </p>
               <Link
                 href="/"
                 className="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition font-semibold"
               >
-                Solicitar Orçamento
+                Iniciar triagem tecnica
               </Link>
             </div>
           ) : (
@@ -177,7 +180,7 @@ export default async function ClientDashboard() {
           )}
         </div>
       </div>
-    </DashboardShell>
+    </DashboardLayout>
   )
 }
 

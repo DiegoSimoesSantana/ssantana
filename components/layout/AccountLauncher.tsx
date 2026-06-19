@@ -20,6 +20,7 @@ type SessionPayload = {
     avatar: string | null
     dashboardHref: string
     menu: MenuItem[]
+    profiles?: Array<'ADMIN' | 'PARTNER' | 'CLIENT'>
   }
 }
 
@@ -58,8 +59,18 @@ export default function AccountLauncher() {
       }
     }
 
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setMenuOpen(false)
+      }
+    }
+
     document.addEventListener('mousedown', handleOutsideClick)
-    return () => document.removeEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('keydown', handleEscape)
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+      document.removeEventListener('keydown', handleEscape)
+    }
   }, [])
 
   const identityLabel = useMemo(() => {
@@ -99,6 +110,36 @@ export default function AccountLauncher() {
     window.location.href = '/'
   }
 
+  const logoutAccount = async () => {
+    await fetch('/api/account/auth/logout', { method: 'POST' })
+    window.location.href = '/sign-in'
+  }
+
+  const switchToRole = async (role: 'ADMIN' | 'PARTNER' | 'CLIENT') => {
+    if (!session.user) return
+
+    if (role === 'ADMIN') {
+      window.location.href = '/admin/dashboard'
+      return
+    }
+
+    if (session.user.role === 'ADMIN') {
+      await fetch('/api/admin/auth/logout', { method: 'POST' })
+    }
+
+    const response = await fetch('/api/account/auth/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ selectedRole: role }),
+    })
+
+    if (!response.ok) {
+      return
+    }
+
+    window.location.href = role === 'PARTNER' ? '/dashboard/partner' : '/dashboard/client'
+  }
+
   return (
     <div className="relative" ref={containerRef}>
       <div className="flex items-center gap-2">
@@ -116,6 +157,8 @@ export default function AccountLauncher() {
             onClick={() => setMenuOpen((current) => !current)}
             className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-2 py-2 shadow-sm transition hover:border-primary-300"
             aria-label="Abrir conta"
+            aria-expanded={menuOpen}
+            aria-controls="account-launcher-menu"
           >
             {session.user?.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -137,13 +180,15 @@ export default function AccountLauncher() {
           onClick={() => setMenuOpen((current) => !current)}
           className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-primary-300"
           aria-label="Abrir atalhos da conta"
+          aria-expanded={menuOpen}
+          aria-controls="account-launcher-menu"
         >
           {menuOpen ? <X size={18} /> : <Grid2x2 size={18} />}
         </button>
       </div>
 
       {menuOpen && (
-        <div className="absolute right-0 z-50 mt-3 w-[min(92vw,22rem)] rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl">
+        <div id="account-launcher-menu" className="absolute right-0 z-50 mt-3 w-[min(92vw,22rem)] rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl">
           {session.authenticated && session.user ? (
             <div className="mb-4 rounded-2xl bg-slate-50 p-4">
               <div className="flex items-center gap-3">
@@ -166,6 +211,7 @@ export default function AccountLauncher() {
                   Foto de perfil ainda nao cadastrada. Assim que houver configuracao de perfil, ela aparecera aqui.
                 </p>
               )}
+
             </div>
           ) : (
             <div className="mb-4 rounded-2xl bg-slate-50 p-4">
@@ -205,7 +251,7 @@ export default function AccountLauncher() {
                 <Link href="/partners" onClick={() => setMenuOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
                   Seja parceiro
                 </Link>
-                <Link href="/admin/login" onClick={() => setMenuOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
+                <Link href="/sign-in" onClick={() => setMenuOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
                   Admin
                 </Link>
                 <Link href="/#contact" onClick={() => setMenuOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm font-semibold text-slate-800 transition hover:bg-slate-50">
@@ -214,6 +260,28 @@ export default function AccountLauncher() {
               </>
             )}
           </div>
+
+          {session.authenticated && session.user && (session.user.profiles?.length || 0) > 1 && (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Trocar visualização de perfil</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {session.user.profiles?.map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => void switchToRole(role)}
+                    className={`rounded-xl px-3 py-2 text-xs font-semibold transition ${
+                      session.user?.role === role
+                        ? 'bg-primary-600 text-white'
+                        : 'border border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {role === 'ADMIN' ? 'Admin' : role === 'PARTNER' ? 'Parceiro' : 'Cliente'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
             <div className="flex items-start gap-3">
@@ -258,6 +326,16 @@ export default function AccountLauncher() {
               className="mt-4 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Sair do admin
+            </button>
+          )}
+
+          {session.authenticated && session.user?.role !== 'ADMIN' && (
+            <button
+              type="button"
+              onClick={logoutAccount}
+              className="mt-4 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Sair e escolher perfil
             </button>
           )}
         </div>

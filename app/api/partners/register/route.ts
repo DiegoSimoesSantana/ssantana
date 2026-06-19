@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db'
+import { buildReferralLandingUrl } from '@/lib/referral-tracking'
+import { hashUserPassword } from '@/lib/account-auth'
+import {
+  MAX_PARTNER_COMMISSION_RATE,
+  MIN_PARTNER_COMMISSION_RATE,
+  mergePartnerReferralConfig,
+} from '@/lib/partner-referral-config'
 
 const registerPartnerSchema = z.object({
   name: z.string().min(2),
@@ -12,6 +19,9 @@ const registerPartnerSchema = z.object({
   cpfResponsible: z.string().optional(),
   birthDate: z.string().min(8),
   pixKey: z.string().min(3),
+  pixKeyType: z.enum(['CPF', 'CNPJ', 'PHONE', 'EMAIL', 'RANDOM']),
+  autoDiscountRate: z.number().min(0).max(1).optional().default(0),
+  password: z.string().min(8).optional(),
   acceptTerms: z.literal(true),
 }).superRefine((data, ctx) => {
   if (data.personType === 'PJ' && !data.cpfResponsible) {
@@ -19,6 +29,50 @@ const registerPartnerSchema = z.object({
       code: z.ZodIssueCode.custom,
       path: ['cpfResponsible'],
       message: 'CPF do responsável é obrigatório para PJ',
+    })
+  }
+
+  const netRate = MAX_PARTNER_COMMISSION_RATE - data.autoDiscountRate
+  if (netRate < MIN_PARTNER_COMMISSION_RATE) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['autoDiscountRate'],
+      message: 'Desconto acima do permitido. O repasse líquido do parceiro deve ser de no mínimo 10%.',
+    })
+  }
+
+  const pixKey = data.pixKey.trim()
+  const onlyDigits = pixKey.replace(/\D/g, '')
+
+  if (data.pixKeyType === 'CPF' && onlyDigits.length !== 11) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pixKey'],
+      message: 'Para tipo CPF, a chave PIX deve conter 11 dígitos.',
+    })
+  }
+
+  if (data.pixKeyType === 'CNPJ' && onlyDigits.length !== 14) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pixKey'],
+      message: 'Para tipo CNPJ, a chave PIX deve conter 14 dígitos.',
+    })
+  }
+
+  if (data.pixKeyType === 'PHONE' && onlyDigits.length < 10) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pixKey'],
+      message: 'Para tipo Telefone, informe DDD e número válido.',
+    })
+  }
+
+  if (data.pixKeyType === 'EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pixKey)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['pixKey'],
+      message: 'Para tipo E-mail, informe um e-mail válido.',
     })
   }
 })
@@ -65,6 +119,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = registerPartnerSchema.parse(body)
     const origin = getOrigin(request)
+    const passwordHash = data.password ? await hashUserPassword(data.password) : null
 
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email.toLowerCase() },
@@ -83,10 +138,22 @@ export async function POST(request: NextRequest) {
           cpfResponsible: data.cpfResponsible,
           birthDate: new Date(data.birthDate),
           pixKey: data.pixKey,
+          commissionRate: MAX_PARTNER_COMMISSION_RATE,
+          bankAccount: mergePartnerReferralConfig(existingUser.partnerProfile.bankAccount, {
+            pixKeyType: data.pixKeyType,
+            autoDiscountRate: data.autoDiscountRate,
+          }),
           cpfCnpj: data.document,
           isActive: true,
         },
       })
+
+      if (passwordHash) {
+        await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { passwordHash },
+        })
+      }
 
       const activeContract = await prisma.partnerContractTerm.findFirst({
         where: { isActive: true },
@@ -130,7 +197,7 @@ export async function POST(request: NextRequest) {
           name: existingUser.name,
           email: existingUser.email,
           referralCode: existingCode,
-          referralUrl: `${origin}/?ref=${existingCode}`,
+          referralUrl: buildReferralLandingUrl(origin, existingCode, data.autoDiscountRate),
         },
       })
     }
@@ -146,6 +213,7 @@ export async function POST(request: NextRequest) {
           email: data.email.toLowerCase(),
           phone: data.phone,
           role: 'PARTNER',
+          ...(passwordHash && { passwordHash }),
         },
       })
       userId = createdUser.id
@@ -156,6 +224,7 @@ export async function POST(request: NextRequest) {
           name: data.name,
           phone: data.phone,
           role: 'PARTNER',
+          ...(passwordHash && { passwordHash }),
         },
       })
     }
@@ -169,6 +238,11 @@ export async function POST(request: NextRequest) {
         cpfResponsible: data.cpfResponsible,
         birthDate: new Date(data.birthDate),
         pixKey: data.pixKey,
+        commissionRate: MAX_PARTNER_COMMISSION_RATE,
+        bankAccount: mergePartnerReferralConfig(undefined, {
+          pixKeyType: data.pixKeyType,
+          autoDiscountRate: data.autoDiscountRate,
+        }),
         cpfCnpj: data.document,
         referralCode,
       },
@@ -205,7 +279,7 @@ export async function POST(request: NextRequest) {
         name: data.name,
         email: data.email.toLowerCase(),
         referralCode,
-        referralUrl: `${origin}/?ref=${referralCode}`,
+        referralUrl: buildReferralLandingUrl(origin, referralCode, data.autoDiscountRate),
       },
     })
   } catch (error) {

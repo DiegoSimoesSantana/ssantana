@@ -8,7 +8,7 @@ export default function Footer() {
   const { CONTACT, SOCIAL } = BUSINESS_RULES
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-gray-900 dark:bg-zinc-950 text-gray-300 dark:text-gray-400 border-t border-white/5">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
@@ -35,6 +35,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/#about" className="transition hover:text-primary-400">Sobre Nós</Link></li>
               <li><Link href="/#projects" className="transition hover:text-primary-400">Projetos</Link></li>
+              <li><Link href="/blog" className="transition hover:text-primary-400">Blog</Link></li>
               <li><Link href="/partners" className="transition hover:text-primary-400">Programa de Parceiros</Link></li>
               <li><Link href="/#contact" className="transition hover:text-primary-400">Contato</Link></li>
             </ul>
@@ -60,7 +61,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-8 border-t border-gray-800 pt-8 text-center text-sm">
-          <p>© {new Date().getFullYear()} Software Santana. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Studio Santana. Todos os direitos reservados.</p>
           <div className="mt-2 space-x-4">
             <Link href="/privacy" className="transition hover:text-primary-400">Política de Privacidade</Link>
             <Link href="/terms" className="transition hover:text-primary-400">Termos de Uso</Link>

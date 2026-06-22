@@ -8,14 +8,14 @@ interface AnimatedLogoProps {
 }
 
 export default function AnimatedLogo({ className, showSlogan = true, compact = false }: AnimatedLogoProps) {
-  const titleClasses = compact ? 'text-base' : 'text-current'
+  const titleClasses = compact ? 'text-base font-bold' : 'text-xl md:text-2xl font-black tracking-tight'
 
   return (
     <span className={clsx('inline-flex flex-col leading-none', className)} aria-label="SSantana">
-      <span className={clsx('font-black tracking-tight text-current', titleClasses)}>SSantana</span>
+      <span className={clsx('logo-vibrante', titleClasses)}>SSantana</span>
       {showSlogan && !compact && (
-        <span className="mt-1 text-[11px] font-medium text-current/80">
-          Seu sistema ideal
+        <span className="mt-1 text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+          Sistemas & IA
         </span>
       )}
     </span>

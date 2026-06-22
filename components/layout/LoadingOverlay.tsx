@@ -9,7 +9,7 @@ export default function LoadingOverlay() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false)
-    }, 3000)
+    }, 250) // Reduzido de 3000ms para 250ms para entrada rápida
 
     return () => clearTimeout(timer)
   }, [])

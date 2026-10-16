@@ -1,41 +1,47 @@
-import HeroSection from '@/components/marketing/HeroSection'
-import ServicesShowcase from '@/components/marketing/ServicesShowcase'
-import ProcessSection from '@/components/marketing/ProcessSection'
-import PricingSection from '@/components/marketing/PricingSection'
-import CTASection from '@/components/marketing/CTASection'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-
+import HeroSection from '@/components/marketing/HeroSection'
+import VitrineOfertasRapidas from '@/components/marketing/VitrineOfertasRapidas'
 import AuthoritySection from '@/components/marketing/AuthoritySection'
-import Testimonials from '@/components/marketing/Testimonials'
+import CTASection from '@/components/marketing/CTASection'
+import { getDynamicPricing } from '@/lib/dynamic-pricing'
+import { prisma } from '@/lib/db'
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic'
+
+export default async function HomePage() {
+  const pricing = await getDynamicPricing()
+
+  let whatsappNumber = '5571988068222'
+  try {
+    const credSetting = await prisma.settings.findUnique({
+      where: { key: 'api_credentials' },
+    })
+    const credVal = (credSetting?.value as Record<string, any>) || {}
+    if (credVal.WHATSAPP_NUMBER) {
+      whatsappNumber = credVal.WHATSAPP_NUMBER
+    }
+  } catch {
+    // fallback
+  }
+
   return (
-    <>
+    <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 text-slate-900 dark:text-white transition-colors">
       <Header />
-      <main className="min-h-screen">
-        {/* 1. Hero: Institutional positioning + guided navigation */}
-        <HeroSection />
-        
-        {/* 2. Services: Easy navigation of services */}
-        <ServicesShowcase />
+      <main>
+        {/* 1. Hero Direta de Baixa Barreira */}
+        <HeroSection whatsappNumber={whatsappNumber} />
 
-        {/* 3. Process: 5 days methodology */}
-        <ProcessSection />
+        {/* 2. Vitrine de Ofertas de Entrada com Acordeões e PicPay */}
+        <VitrineOfertasRapidas pricing={pricing} whatsappNumber={whatsappNumber} />
 
-        {/* 4. Pricing: Transparency on costs */}
-        <PricingSection />
-
-        {/* 5. Projects: Mini cases and backlinks */}
-        <Testimonials />
-        
-        {/* 6. Authority: Credentials + Trust */}
+        {/* 3. Autoridade: Seu Guardião Tecnológico (Mestre Diego + Clientes) */}
         <AuthoritySection />
 
-        {/* 7. Institutional CTA: direct contact with owner */}
+        {/* 4. Chamada Final de Contato */}
         <CTASection />
       </main>
       <Footer />
-    </>
+    </div>
   )
 }

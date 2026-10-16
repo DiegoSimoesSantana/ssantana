@@ -1,84 +1,108 @@
 'use client'
 
-import { Eye, ShieldCheck, Target } from 'lucide-react'
+import { ShieldCheck, Award, CheckCircle2, ArrowUpRight, Cpu, Lock } from 'lucide-react'
 
 export default function AuthoritySection() {
+  const homologatedClients = [
+    { name: 'Brasville', area: 'Logística & Distribuição' },
+    { name: 'Assegure Online', area: 'Seguros & Finanças' },
+    { name: 'Ariserv', area: 'Serviços Especializados' },
+    { name: 'advdourado', area: 'Escritório Jurídico' },
+    { name: 'Agente Apice', area: 'Operação Comercial' },
+    { name: 'Voth Montagens', area: 'Engenharia Industrial' },
+  ]
+
   return (
-    <section className="bg-[radial-gradient(circle_at_top_right,_rgba(16,185,129,0.08),_transparent_38%),linear-gradient(180deg,#f8fbfa_0%,#ffffff_42%,#f1f6f8_100%)] px-4 py-20 dark:bg-zinc-900">
+    <section className="py-20 px-4 bg-slate-50 dark:bg-zinc-900/60 border-t border-slate-200 dark:border-white/10 transition-colors">
       <div className="container mx-auto max-w-5xl">
-        <div className="mb-12 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-600 dark:text-slate-300">Posicionamento institucional</p>
-          <h2 className="mb-4 mt-4 text-4xl font-semibold text-gray-900 dark:text-white md:text-5xl">
-            Engenharia aplicada ao negócio com transparência total
+        
+        {/* Top Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">
+            Autoridade & Prova Social
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mt-3 tracking-tight">
+            Seu Guardião de Servidores & Engenharia de TI
           </h2>
-          <p className="mx-auto max-w-3xl text-xl text-gray-600 dark:text-gray-400">
-            A Studio Santana apoia decisores que precisam estruturar, proteger e evoluir a base tecnológica do negócio.
+          <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-400 mt-2">
+            Mais de duas décadas de experiência prática para proteger, otimizar e escalar as operações do seu negócio.
           </p>
         </div>
 
-        <div className="rounded-[2rem] border border-slate-200 bg-white/90 p-8 shadow-[0_24px_60px_rgba(15,23,42,0.08)] backdrop-blur md:p-12 dark:border-white/10 dark:bg-zinc-900/80">
-          <div className="space-y-6">
-            <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-              Sua empresa não contrata apenas código: contrata continuidade operacional, reputação digital e capacidade de crescer com método.
-            </p>
+        {/* Card Principal: Liderança Diego Santana */}
+        <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-zinc-900 p-8 sm:p-12 shadow-sm mb-12">
+          <div className="flex flex-col md:flex-row gap-8 items-start">
             
-            <div className="grid gap-4 md:grid-cols-3">
-              <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
-                <div className="inline-flex rounded-lg bg-emerald-100 p-2 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                  <Target className="h-4 w-4" />
-                </div>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Missão</p>
-                <p className="mt-2 text-sm leading-7 text-gray-700 dark:text-gray-300">
-                  Divulgar conhecimento tecnológico de forma prática e aplicável, transformando estratégia em execução real.
-                </p>
-              </article>
-              <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
-                <div className="inline-flex rounded-lg bg-sky-100 p-2 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
-                  <Eye className="h-4 w-4" />
-                </div>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-sky-700 dark:text-sky-300">Visão</p>
-                <p className="mt-2 text-sm leading-7 text-gray-700 dark:text-gray-300">
-                  Estruturar e proteger a base tecnológica de negócios para crescimento saudável, eficiente e sustentável.
-                </p>
-              </article>
-              <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-white/10 dark:bg-zinc-900">
-                <div className="inline-flex rounded-lg bg-violet-100 p-2 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
-                  <ShieldCheck className="h-4 w-4" />
-                </div>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">Valores</p>
-                <p className="mt-2 text-sm leading-7 text-gray-700 dark:text-gray-300">
-                  Transparência absoluta, decisões baseadas em dados e responsabilidade técnica em cada etapa.
-                </p>
-              </article>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white flex items-center justify-center font-black text-2xl sm:text-3xl shrink-0 shadow-lg shadow-sky-600/30">
+              DS
             </div>
 
-            <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
-              O atendimento e a liderança de seu projeto são feitos de forma direta pelo Engenheiro de Software Sócio da empresa (decisor técnico), garantindo alta capacidade técnica de atendimento. Nosso serviço nunca é delegado a profissionais sem capacidade técnica de te orientar, e nossa equipe de funcionários atua exclusivamente em etapas internas de desenvolvimento e arquitetura.
-            </p>
+            <div className="space-y-4 flex-1">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                  Mestre Diego Simões Santana
+                </h3>
+                <p className="text-sm font-semibold text-sky-600 dark:text-sky-400">
+                  Mestre em Ciência da Computação • Engenheiro de Software Sênior
+                </p>
+              </div>
 
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-5 dark:border-emerald-900/40 dark:bg-emerald-900/20">
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800 dark:text-emerald-300">Seu guardião de servidores</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-950 dark:text-white">Arquitetura, infraestrutura e continuidade com liderança técnica sênior</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
-                A condução técnica combina experiência de engenharia em produção, visão de risco operacional e prática de governança para manter sistemas estáveis,
-                e-mails confiáveis e crescimento sustentável sem improviso.
+              <p className="text-sm sm:text-base text-slate-600 dark:text-zinc-300 leading-relaxed">
+                Com <strong>+22 anos de atuação em Tecnologia da Informação</strong> e <strong>+20 anos no ecossistema de negócios e investimentos</strong>, Diego lidera a arquitetura técnica de cada projeto. Seu atendimento não é terceirizado para estagiários: você conversa e valida escopo diretamente com quem tem competência sênior para solucionar e entregar.
               </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 text-xs">
+                  <span className="font-bold block text-slate-900 dark:text-white">+22 Anos de TI</span>
+                  <span className="text-slate-500 dark:text-zinc-400">Engenharia e infraestrutura Linux</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 text-xs">
+                  <span className="font-bold block text-slate-900 dark:text-white">Decisor Técnico</span>
+                  <span className="text-slate-500 dark:text-zinc-400">Contato direto sem intermediários</span>
+                </div>
+                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-100 dark:border-zinc-700 text-xs">
+                  <span className="font-bold block text-slate-900 dark:text-white">Blindagem Legal</span>
+                  <span className="text-slate-500 dark:text-zinc-400">Contratos auditados Anti-MED</span>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <a
+                  href="https://www.linkedin.com/in/diegobassa/?locale=pt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 transition"
+                >
+                  Conectar no LinkedIn
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
-            <p className="text-md font-semibold text-primary-600 dark:text-primary-400">
-              Também unimos consultoria tecnológica com visão de investimentos para apoiar decisões de negócio com mais clareza.
-            </p>
-
-            <a
-              href="https://www.linkedin.com/in/diegobassa/?locale=pt"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 dark:border-white/20 dark:text-slate-100 dark:hover:bg-white/10"
-            >
-              Ver perfil no LinkedIn
-            </a>
           </div>
         </div>
+
+        {/* Casos Reais Homologados */}
+        <div>
+          <div className="text-center mb-6">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+              Casos Reais Homologados & Atendidos
+            </h4>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {homologatedClients.map((client) => (
+              <div
+                key={client.name}
+                className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 text-center shadow-sm hover:border-sky-300 dark:hover:border-sky-700 transition"
+              >
+                <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{client.name}</p>
+                <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-1 truncate">{client.area}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </section>
   )

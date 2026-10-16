@@ -5,116 +5,109 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import AnimatedLogo from './AnimatedLogo'
 import AccountLauncher from './AccountLauncher'
+import ThemeToggle from './ThemeToggle'
+import VipReferralBanner from '../marketing/VipReferralBanner'
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="fixed top-0 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-50 border-b border-gray-200 dark:border-white/10">
-      <nav className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="text-2xl font-bold text-primary-600">
-            <AnimatedLogo />
-          </Link>
+    <>
+      <div className="fixed top-0 w-full z-50">
+        <VipReferralBanner />
+        <header className="w-full bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200 dark:border-white/10 transition-colors">
+          <nav className="container mx-auto px-4 py-3.5 max-w-7xl">
+            <div className="flex items-center justify-between">
+              {/* Logo */}
+              <Link href="/" className="text-2xl font-bold text-sky-600 dark:text-sky-400">
+                <AnimatedLogo />
+              </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/#services" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Serviços
-            </Link>
-            <Link href="/#pricing" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Preços
-            </Link>
-            <Link href="/metodologia" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Metodologia
-            </Link>
-            <Link href="/#projects" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Projetos
-            </Link>
-            <Link href="/partners" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Parceiros
-            </Link>
-            <Link href="/blog" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Blog
-            </Link>
-            <Link href="/#contact" className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition">
-              Contato
-            </Link>
-          </div>
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-6 text-sm font-medium">
+                <Link href="/#services" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                  Soluções
+                </Link>
+                <Link href="/#pricing" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                  Preços de Entrada
+                </Link>
+                <Link href="/partners" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                  Parceiros
+                </Link>
+                <Link href="/blog" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                  Blog
+                </Link>
+                <Link href="/#contact" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
+                  Contato
+                </Link>
+              </div>
 
-          {/* CTA Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <AccountLauncher />
-          </div>
+              {/* CTA Buttons & Theme Toggle */}
+              <div className="hidden md:flex items-center space-x-3">
+                <ThemeToggle />
+                <AccountLauncher />
+              </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-4">
-            <Link
-              href="/#services"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Serviços
-            </Link>
-            <Link
-              href="/#pricing"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Preços
-            </Link>
-            <Link
-              href="/metodologia"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Metodologia
-            </Link>
-            <Link
-              href="/#projects"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Projetos
-            </Link>
-            <Link
-              href="/partners"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Parceiros
-            </Link>
-            <Link
-              href="/blog"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Blog
-            </Link>
-            <Link
-              href="/#contact"
-              className="block text-gray-700 hover:text-primary-600 transition"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contato
-            </Link>
-            <div className="pt-2">
-              <AccountLauncher />
+              {/* Mobile Menu & Toggle Button */}
+              <div className="flex items-center gap-2 md:hidden">
+                <ThemeToggle />
+                <button
+                  className="p-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  aria-label="Abrir menu"
+                >
+                  {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </nav>
-    </header>
+
+            {/* Mobile Menu */}
+            {mobileMenuOpen && (
+              <div className="md:hidden mt-4 pb-4 space-y-3 border-t border-slate-100 dark:border-zinc-800 pt-3">
+                <Link
+                  href="/#services"
+                  className="block py-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600 transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Soluções
+                </Link>
+                <Link
+                  href="/#pricing"
+                  className="block py-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600 transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Preços de Entrada
+                </Link>
+                <Link
+                  href="/partners"
+                  className="block py-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600 transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Parceiros
+                </Link>
+                <Link
+                  href="/blog"
+                  className="block py-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600 transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Blog
+                </Link>
+                <Link
+                  href="/#contact"
+                  className="block py-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600 transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Contato
+                </Link>
+                <div className="pt-2">
+                  <AccountLauncher />
+                </div>
+              </div>
+            )}
+          </nav>
+        </header>
+      </div>
+      <div className="h-16" /> {/* Spacer */}
+    </>
   )
 }

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
 type Props = {
-  referralCode: string
+  referralCode?: string
 }
 
 type SettingsResponse = {
@@ -52,7 +52,7 @@ export default function PartnerDirectReferralForm({ referralCode }: Props) {
   }, [])
 
   const autoLink = useMemo(() => {
-    const params = new URLSearchParams({ ref: referralCode })
+    const params = new URLSearchParams({ ref: referralCode || '' })
     if (settings?.autoDiscountRate && settings.autoDiscountRate > 0) {
       params.set('d', settings.autoDiscountRate.toFixed(4))
     }

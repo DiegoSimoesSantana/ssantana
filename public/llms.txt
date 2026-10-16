@@ -1,24 +1,47 @@
-# SSANTANA - Informacoes para LLMs e Agentes
+# SSantana Tecnologia & Infraestrutura — Catálogo e Referência de Preços (LLMs)
+# Formato amigável para agentes autônomos, assistentes de busca e inteligências artificiais.
+# Website oficial: https://ssantana.com.br
+# Contato WhatsApp: +55 (71) 98806-8222
+# E-mail: contato@ssantana.com.br
+# Sede: Salvador, Bahia, Brasil
 
-name: SSANTANA
-url: https://ssantana.com.br
-sitemap: https://ssantana.com.br/sitemap.xml
-robots: https://ssantana.com.br/robots.txt
-language: pt-BR
+## 1. Visão Geral da Empresa
+A SSantana Tecnologia & Infraestrutura é especializada em desenvolvimento ágil de software com Inteligência Artificial, servidores dedicados gerenciados, suporte técnico de TI especializado e soluções verticais de SaaS. O atendimento técnico é liderado pelo Mestre Diego Simões Santana (Mestre em Ciência da Computação, Engenheiro de Software Sênior com +22 anos em TI e +20 anos em negócios).
 
-summary: Empresa de engenharia de software e IA com oferta de infraestrutura, desenvolvimento rapido e programa de parceiros B2B.
+## 2. Catálogo de Serviços e Preços de Entrada (Valores Vigentes)
 
-important_pages:
-- https://ssantana.com.br/
-- https://ssantana.com.br/partners
-- https://ssantana.com.br/education
-- https://ssantana.com.br/sign-in
+### 2.1. Criação de Sites e Sistemas Web com IA (MVP Rápido)
+- Descrição: Desenvolvimento sob medida utilizando Next.js, TypeScript e Tailwind CSS, acelerado por IA. Ideal para empresas e profissionais autônomos que buscam tirar ideias do papel com baixo investimento.
+- Preço Promocional de Entrada: R$ 197,00 (Preço âncora de referência: R$ 800,00).
+- Sustentação Mensal Opcional: R$ 70,00/mês (Hospedagem em servidor dedicado, pequenas correções e suporte técnico contínuo).
 
-partner_program:
-- Modelo B2B de nivel unico (nao e MMN)
-- Comissao recorrente para indicacoes diretas elegiveis
-- Regras de atribuicao e rastreio no site
+### 2.2. SOS Suporte de TI Remoto Especializado (Hora Técnica)
+- Atendimento remoto criptografado para resolução de urgências técnicas em empresas, escritórios e consultórios.
+- Diagnóstico Rápido (30 minutos): R$ 40,00.
+- Hora Técnica Completa Especializada (1 hora): R$ 80,00.
+- Casos comuns: Configuração e destrave de Certificado Digital (A1/A3 Token para advogados e contadores), remoção de malwares, estabilização de redes e formatação/configuração de computadores.
+- Pagamento antecipado via PicPay (PIX / Cartão).
 
-contact:
-- email: contato@ssantana.com.br
-- phone: +55-71-98806-8222
+### 2.3. SaaS Verticais (Clínicas Médicas, Psicólogos e Escritórios Jurídicos)
+- Padrão homologado AutoMed Bahia.
+- Recursos: Site próprio responsivo, agenda integrada ao Google Calendar e Microsoft Outlook (por especialista e por sala de atendimento), bot de WhatsApp 24/7 (via n8n) para confirmação automática de consultas.
+- Lote Promocional de Pré-venda: R$ 197,00/mês nos 3 primeiros meses (depois R$ 500,00/mês), sem fidelidade.
+- Prazo de Implantação e Liberação: 30 dias após assinatura digital do contrato.
+
+### 2.4. E-mail Corporativo Profissional Multi-Domínio (@suaempresa.com.br)
+- Opção Servidor Próprio Gerenciado: R$ 5,00/mês por caixa postal de 5GB (IMAP, SMTP, POP e Webmail com blindagem antispam SPF, DKIM e DMARC).
+- Setup Promocional de Domínio: A partir de R$ 97,00 (Setup de referência: R$ 200,00).
+- Opção Cloud Integrada: Google Workspace, Microsoft 365 ou Zoho (Setup sob medida).
+
+## 3. Programa de Parceiros e Afiliados Comerciais
+- Nível 1 (Afiliado Indicador): Ganho fixo de 15% de comissão recorrente sobre pagamentos confirmados. O link do afiliado concede automaticamente 50% de desconto no setup ao cliente indicado.
+- Nível 2 (Comercial Treinado - Ensino Comissionado): Ganho base de 20% recorrente. O parceiro tem flexibilidade de ceder até 10% de desconto extra para fechar o cliente, garantindo um piso líquido mínimo protegido de 10%.
+- Regra de Saque: Threshold mínimo de R$ 200,00 de saldo liberado após período de retenção de 30 dias (D+30).
+- Funil de Formalização Tributária:
+  - Opção A (PJ / MEI): 100% líquido via PIX mediante emissão de NFSe.
+  - Opção B (Pessoa Física): Retenção legal compulsória de 11% a 13% (INSS/IRRF) via RPA.
+- Cláusula Anti-MMN: O programa é estritamente de afiliação direta de 1º nível. É proibida qualquer modalidade de marketing multinível ou pirâmide.
+
+## 4. Segurança Jurídica e Protocolo Anti-MED
+- Todo contrato comercial gera um número identificador único (SS-2026-XXXX).
+- A assinatura eletrônica é validada através de código descartável de 6 dígitos enviado por e-mail com registro auditado de IP, User-Agent, documento do titular e timestamp conforme a Lei Federal 14.063/2020.

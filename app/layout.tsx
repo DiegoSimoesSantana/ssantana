@@ -12,31 +12,30 @@ import CookieConsentBanner from '@/components/tracking/CookieConsentBanner'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://studio-santana.vercel.app'),
+  metadataBase: new URL('https://ssantana.com.br'),
   title: {
-    default: 'Studio Santana - Engenharia de Software com AI | Entrega em 5 dias',
-    template: '%s | Studio Santana'
+    default: 'SSantana | Infraestrutura Gerenciada, SaaS e E-mail Corporativo Blindado',
+    template: '%s | SSantana Tecnologia & Infraestrutura',
   },
-  description: 'Desenvolvimento ágil de software com Inteligência Artificial. Sistemas web, MVPs e automação entregues em 5 dias úteis com planejamento preciso e tecnologia de ponta.',
+  description: 'Desenvolvimento ágil de software com Inteligência Artificial, infraestrutura de servidores gerenciada, SaaS vertical para saúde/jurídico e suporte técnico direto com o decisor.',
   keywords: [
-    'engenharia de software',
-    'inteligência artificial',
-    'IA',
-    'desenvolvimento rápido',
-    'sistemas web',
-    'automação',
-    'Next.js',
-    'consultoria tech',
-    'desenvolvimento ágil',
-    'MVP',
-    'prototipagem',
+    'SSantana Tecnologia',
+    'infraestrutura de TI',
+    'servidores gerenciados',
+    'SaaS clínicas',
+    'SaaS advogados',
+    'e-mail corporativo blindado',
+    'suporte técnico remoto',
+    'hora técnica TI',
+    'desenvolvimento com IA',
+    'MVP ágil',
     'Salvador',
     'Bahia',
-    'Brasil'
+    'Brasil',
   ],
-  authors: [{ name: 'Studio Santana', url: 'https://studio-santana.vercel.app' }],
-  creator: 'Studio Santana',
-  publisher: 'Studio Santana',
+  authors: [{ name: 'SSantana Tecnologia & Infraestrutura', url: 'https://ssantana.com.br' }],
+  creator: 'SSantana Tecnologia & Infraestrutura',
+  publisher: 'SSantana Tecnologia & Infraestrutura',
   formatDetection: {
     email: false,
     address: false,
@@ -45,23 +44,23 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
-    url: 'https://studio-santana.vercel.app',
-    title: 'Studio Santana - Soluções em IA para seu negócio',
-    description: 'Transforme suas ideias em realidade com nossa expertise em IA e desenvolvimento ágil. Entrega garantida em 5 dias úteis.',
-    siteName: 'Studio Santana',
+    url: 'https://ssantana.com.br',
+    title: 'SSantana | Infraestrutura Gerenciada, SaaS e E-mail Corporativo Blindado',
+    description: 'Infraestrutura de TI de alta confiabilidade, sistemas web com IA e atendimento direto com o decisor técnico.',
+    siteName: 'SSantana Tecnologia & Infraestrutura',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Studio Santana - Engenharia de Software com AI',
+        alt: 'SSantana Tecnologia & Infraestrutura',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Studio Santana - Engenharia de Software com AI',
-    description: 'Desenvolvimento ágil com IA. Entrega em 5 dias úteis.',
+    title: 'SSantana | Infraestrutura Gerenciada, SaaS e E-mail Corporativo Blindado',
+    description: 'Sistemas com IA, servidores blindados e suporte especializado sob medida.',
     images: ['/og-image.jpg'],
   },
   robots: {
@@ -74,10 +73,6 @@ export const metadata: Metadata = {
       'max-image-preview': 'large',
       'max-snippet': -1,
     },
-  },
-  verification: {
-    google: 'your-google-verification-code',
-    yandex: 'your-yandex-verification-code',
   },
 }
 
@@ -98,57 +93,39 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-                "@type": "ProfessionalService",
-                "name": "Studio Santana - Engenharia de Software e AI",
-                "image": "https://studio-santana.vercel.app/logo.png",
-                "description": "Desenvolvimento de software ágil com foco em IA. Criação de sistemas web, MVPs e automação em 5 dias úteis.",
-                "priceRange": "R$ 100 - R$ 2000+",
-                "address": {
-                  "@type": "PostalAddress",
-                  "addressLocality": "Salvador",
-                  "addressRegion": "BA",
-                  "addressCountry": "BR"
-                },
-                "geo": {
-                  "@type": "GeoCoordinates",
-                  "latitude": -12.9714,
-                  "longitude": -38.5014
-                },
-                "url": "https://studio-santana.vercel.app",
-                "telephone": "+55-71-98806-8222",
-                "email": "contato@ssantana.com.br",
-                "openingHoursSpecification": [
-                  {
-                    "@type": "OpeningHoursSpecification",
-                    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-                    "opens": "09:00",
-                    "closes": "18:00"
-                  }
-                ],
-                "sameAs": [
-                  "https://www.linkedin.com/company/studio-santana",
-                  "https://github.com/ssantana",
-                  "https://instagram.com/studio.santana"
-                ],
-                "offers": [
-                  {
-                    "@type": "Offer",
-                    "name": "Consultoria de Diagnóstico e Plano de Ação",
-                    "description": "Reunião de 30-60min para entendimento de escopo e orçamento imediato.",
-                    "price": "200.00",
-                    "priceCurrency": "BRL",
-                    "availability": "https://schema.org/InStock"
-                  },
-                  {
-                    "@type": "Offer",
-                    "name": "Desenvolvimento de Sistema Web Simples",
-                    "price": "2000.00",
-                    "priceCurrency": "BRL",
-                    "description": "Desenvolvimento de software sob medida com entrega em 5 dias úteis.",
-                    "availability": "https://schema.org/InStock"
-                  }
-                ]
-              })
+              "@type": "ProfessionalService",
+              "name": "SSantana Tecnologia & Infraestrutura",
+              "image": "https://ssantana.com.br/logo.png",
+              "description": "Desenvolvimento de software ágil com IA, suporte de TI remoto e e-mail corporativo blindado.",
+              "priceRange": "R$ 40,00 - R$ 800",
+              "address": {
+                "@type": "PostalAddress",
+                "addressLocality": "Salvador",
+                "addressRegion": "BA",
+                "addressCountry": "BR"
+              },
+              "geo": {
+                "@type": "GeoCoordinates",
+                "latitude": -12.9714,
+                "longitude": -38.5014
+              },
+              "url": "https://ssantana.com.br",
+              "telephone": "+55-71-98806-8222",
+              "email": "contato@ssantana.com.br",
+              "openingHoursSpecification": [
+                {
+                  "@type": "OpeningHoursSpecification",
+                  "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+                  "opens": "08:00",
+                  "closes": "20:00"
+                }
+              ],
+              "sameAs": [
+                "https://www.linkedin.com/company/ssantana-tech",
+                "https://github.com/ssantana",
+                "https://instagram.com/ssantana.tech"
+              ]
+            })
           }}
         />
       </head>

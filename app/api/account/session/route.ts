@@ -8,9 +8,9 @@ function buildMenu(role: 'ADMIN' | 'PARTNER' | 'CLIENT') {
   if (role === 'ADMIN') {
     return [
       { label: 'Painel Admin', href: '/admin/dashboard', tone: 'primary' },
-      { label: 'Parceiros', href: '/admin/dashboard', tone: 'default' },
-      { label: 'Leads', href: '/admin/dashboard', tone: 'default' },
-      { label: 'Gestao', href: '/admin/dashboard', tone: 'default' },
+      { label: 'Lançar Comissões', href: '/admin/comissoes', tone: 'default' },
+      { label: 'Configurações & Preços', href: '/admin/configuracoes', tone: 'default' },
+      { label: 'Gestão Geral', href: '/admin/dashboard', tone: 'default' },
     ]
   }
 

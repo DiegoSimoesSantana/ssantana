@@ -43,9 +43,30 @@ enum PaymentStatus {
 }
 
 enum CommissionStatus {
-  PENDING               // Aguardando conclusão do projeto
-  PROCESSING            // Processando pagamento
-  PAID                  // Paga
+  EM_RETENCAO_30_DIAS   // Retenção de 30 dias após pagamento
+  LIBERADO              // Liberado para saque após 30 dias
+  SOLICITADO            // Solicitação de saque em análise
+  PAID                  // Paga / Transferida
+  PENDING               // Aguardando
+  PROCESSING            // Processando
+  CANCELLED             // Cancelada / Estornada
+}
+
+enum PartnerLevel {
+  INDICADOR             // Nível 1: 15% fixo + 50% OFF Setup cliente
+  COMERCIAL_TREINADO    // Nível 2: 20% base (cessão até 10%, min 10% líquido)
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum WithdrawalTaxOption {
+  PJ_MEI                // 100% líquido com NFSe
+  PF_CPF                // Retenção INSS/IRRF (11% a 13%)
 }
 
 enum PersonType {
@@ -109,10 +130,15 @@ model Partner {
   bankAccount       Json?           // Dados bancários { banco, agencia, conta, tipo }
   isActive          Boolean         @default(true)
   
-  // Comissões
-  commissionRate    Float           @default(0.05)  // 5% padrão
+  // Programa de Parceiros & Níveis
+  nivelParceiro     PartnerLevel    @default(INDICADOR)
+  commissionRate    Float           @default(0.15)  // 15% para INDICADOR, 20% para COMERCIAL_TREINADO
+  maxAutoDiscountRate Float         @default(0.00)  // Desconto concedido pelo parceiro ao cliente (máx 10% para COMERCIAL_TREINADO)
+  
+  // Saldos e Comissões
   totalEarned       Float           @default(0)
-  pendingBalance    Float           @default(0)
+  pendingBalance    Float           @default(0)     // Em retenção 30 dias
+  availableBalance  Float           @default(0)     // Saldo liberado para saque (>= R$ 200)
   
   // Relations
   referrals         Referral[]
@@ -120,12 +146,14 @@ model Partner {
   leads             Lead[]
   trackingEvents    ReferralTrackingEvent[]
   contractAcceptances PartnerContractAcceptance[]
+  withdrawals       PartnerWithdrawal[]
   
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
   @@index([userId])
   @@index([referralCode])
+  @@index([nivelParceiro])
 }
 
 model PartnerContractTerm {
@@ -303,9 +331,17 @@ model Contract {
   includesSourceCode Boolean        @default(false)
   sourceCodeMultiplier Float        @default(3.0)  // 3x hora base
   
-  // Assinatura Digital (ZapSign/Clicksign)
+  // Contrato Numerado & Validação Anti-MED
+  contractNumber    String?         @unique // Ex: SS-2026-XXXX
+  validationCode    String?         // Código de 6 dígitos digitado na tela
+  validationIp      String?         // IP do cliente no momento da validação
+  validationUserAgent String?       // User Agent do navegador
+  clientDocument    String?         // CPF ou CNPJ do cliente informado no aceite
+  antiMedAudit      Json?           // Payload de auditoria para proteção de chargeback/MED
+  
+  // Assinatura Digital (ZapSign/Clicksign/Interno Anti-MED)
   status            ContractStatus  @default(DRAFT)
-  signatureProvider String?         // "zapsign", "clicksign"
+  signatureProvider String?         // "internal_antimed", "zapsign", "clicksign"
   externalId        String?         // ID do documento na plataforma
   signatureUrl      String?         // URL para o cliente assinar
   
@@ -376,23 +412,36 @@ model Payment {
 
 model Commission {
   id                String          @id @default(cuid())
-  paymentId         String
-  payment           Payment         @relation(fields: [paymentId], references: [id])
+  paymentId         String?
+  payment           Payment?        @relation(fields: [paymentId], references: [id])
   
   partnerId         String
   partner           Partner         @relation(fields: [partnerId], references: [id])
   
-  projectId         String
-  project           Project         @relation(fields: [projectId], references: [id])
+  projectId         String?
+  project           Project?        @relation(fields: [projectId], references: [id])
+  
+  // Cliente e Serviço (para lançamentos manuais ou automáticos)
+  clientId          String?
+  clientName        String?
+  clientEmail       String?
+  serviceName       String?         // ex: "Setup de Sistema", "Manutenção Mensal", "SaaS Clínicas"
+  grossAmount       Float?          // Valor total pago pelo cliente (em R$)
+  paymentDate       DateTime        @default(now()) // Data do pagamento pelo cliente
+  releaseDate       DateTime?       // Data de liberação = pagamento + 30 dias
   
   // Cálculo da comissão
-  amount            Float
-  rate              Float           // 0.05, 0.10, 0.15, 0.20, 0.25
+  amount            Float           // Valor líquido da comissão para o parceiro
+  rate              Float           // 0.10 a 0.20 (ex: 0.15 = 15%)
   
-  // Status
-  status            CommissionStatus @default(PENDING)
+  // Status da retenção e saque
+  status            CommissionStatus @default(EM_RETENCAO_30_DIAS)
   
-  // Pagamento
+  // Pagamento de Saque associado
+  withdrawalId      String?
+  withdrawal        PartnerWithdrawal? @relation(fields: [withdrawalId], references: [id])
+  
+  // Pagamento direto histórico
   paidAt            DateTime?
   transactionId     String?
   paymentMethod     String?         // "transfer", "pix"
@@ -406,6 +455,64 @@ model Commission {
   @@index([partnerId])
   @@index([status])
   @@index([projectId])
+  @@index([releaseDate])
+}
+
+model PartnerWithdrawal {
+  id                String              @id @default(cuid())
+  partnerId         String
+  partner           Partner             @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  
+  // Valores
+  requestedAmount   Float               // Mínimo R$ 200,00
+  taxOption         WithdrawalTaxOption // PJ_MEI (100% líquido) vs PF_CPF (retenção 11% a 13%)
+  taxRate           Float               @default(0)     // 0 para PJ_MEI, 0.11 a 0.13 para PF_CPF
+  taxAmount         Float               @default(0)     // Valor retido de INSS/IRRF
+  netAmount         Float               // Valor efetivo a transferir via PIX
+  
+  // Dados de pagamento
+  pixKey            String
+  pixKeyType        String?
+  
+  // Formalização fiscal
+  nfseUrl           String?             // Upload da NFSe para PJ/MEI
+  rpaDocument       String?             // Registro RPA para PF
+  
+  status            WithdrawalStatus    @default(PENDING)
+  approvedAt        DateTime?
+  paidAt            DateTime?
+  receiptUrl        String?             // Comprovante bancário/PIX
+  notes             String?             @db.Text
+  
+  commissions       Commission[]
+  
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  @@index([partnerId])
+  @@index([status])
+}
+
+model ContractValidationCode {
+  id                String          @id @default(cuid())
+  contractNumber    String          // Ex: SS-2026-XXXX
+  email             String
+  code              String          // 6 dígitos
+  expiresAt         DateTime
+  used              Boolean         @default(false)
+  usedAt            DateTime?
+  
+  // Rastreio jurídico Anti-MED / Disputas
+  ipAddress         String?
+  userAgent         String?
+  document          String?         // CPF ou CNPJ
+  clientName        String?
+  
+  createdAt         DateTime        @default(now())
+
+  @@index([contractNumber])
+  @@index([email])
+  @@index([code])
 }
 
 model Referral {

@@ -105,6 +105,7 @@ model User {
   messagesReceived  Message[]       @relation("MessageReceiver")
   messagesSent      Message[]       @relation("MessageSender")
   projectAcceptances ProjectAcceptance[]
+  meetingSchedules  MeetingSchedule[]
   
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
@@ -290,6 +291,7 @@ model Project {
   serviceCredits    Int             @default(1)
   serviceCreditsUsed Int            @default(0)
   creditExpiryDate  DateTime?
+  monthlyMeetingMinutes Int          @default(30) // 30 minutos de reunião inclusos por mês por serviço ativo
   meetingDate       DateTime?
   meetingUrl        String?
   meetingNotes      String?         @db.Text
@@ -304,6 +306,7 @@ model Project {
   messages          Message[]
   commissions       Commission[]
   acceptance        ProjectAcceptance?
+  meetingSchedules  MeetingSchedule[]
   
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
@@ -311,6 +314,41 @@ model Project {
   @@index([clientId])
   @@index([status])
   @@index([approvedByAdmin])
+}
+
+model MeetingSchedule {
+  id                String          @id @default(cuid())
+  clientId          String
+  client            User            @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  projectId         String?
+  project           Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title             String          @default("Reunião Técnica / Alinhamento (30 Min)")
+  description       String?         @db.Text
+  scheduledAt       DateTime
+  durationMinutes   Int             @default(30)
+  meetingUrl        String?
+  notes             String?         @db.Text
+  serviceReport     String?         @db.Text
+  
+  // Classificação da Agenda
+  hasActiveService  Boolean         @default(false)
+  isMonthlyIncluded Boolean         @default(true) // Coberto pelos 30 min/mês inclusos no serviço ativo
+  status            String          @default("SCHEDULED") // "VALID", "PENDING_PAYMENT", "PAID_IN_MEETING", "CONFIRMED", "COMPLETED", "CANCELLED"
+  
+  // Cobrança avulsa caso não coberto ou minutos extras
+  paymentRequired   Boolean         @default(false)
+  amountDue         Float?          @default(0)
+  paymentLinkId     String?
+  paymentUrl        String?
+  paidAt            DateTime?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([clientId])
+  @@index([projectId])
+  @@index([scheduledAt])
+  @@index([status])
 }
 
 model Contract {

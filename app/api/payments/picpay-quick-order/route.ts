@@ -158,6 +158,8 @@ export async function POST(request: NextRequest) {
 
     const picpayOrder = await picpay.createPayment({
       referenceId: contractNumber,
+      title,
+      description: `Atendimento expresso de 30 minutos - ${title}`,
       callbackUrl: `${baseUrl}/api/webhooks/picpay`,
       returnUrl: `${baseUrl}/painel?ticket=${contractNumber}`,
       value: amount,
@@ -170,6 +172,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    if (picpayOrder.paymentLinkId) {
+      await prisma.payment.update({
+        where: { id: payment.id },
+        data: { externalId: picpayOrder.paymentLinkId },
+      })
+    }
+
     const creds = await picpay.getCredentials()
     const isMock = !creds.clientSecret
 
@@ -177,6 +186,7 @@ export async function POST(request: NextRequest) {
       success: true,
       referenceId: contractNumber,
       paymentId: payment.id,
+      paymentLinkId: picpayOrder.paymentLinkId,
       amount,
       title,
       paymentUrl: picpayOrder.paymentUrl,

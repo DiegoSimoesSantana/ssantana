@@ -879,15 +879,32 @@ export default function VitrineOfertasRapidas({
 
                 {/* QR Code PIX */}
                 {orderResult.qrcode?.base64Image && (
-                  <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-zinc-800/50 rounded-2xl border border-slate-200 dark:border-zinc-700">
-                    <img
-                      src={orderResult.qrcode.base64Image}
-                      alt="QR Code PIX PicPay"
-                      className="w-48 h-48 rounded-xl object-contain shadow-sm bg-white p-2"
-                    />
-                    <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-2 font-mono">
-                      Ref: {orderResult.referenceId}
-                    </span>
+                  <div className="flex flex-col items-center justify-center p-5 bg-slate-50 dark:bg-zinc-800/60 rounded-2xl border border-slate-200 dark:border-zinc-700 space-y-3">
+                    <div className="text-center">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 dark:text-emerald-400 block">
+                        Pague com PIX pelo seu Banco
+                      </span>
+                      <p className="text-xs text-slate-600 dark:text-zinc-300 font-medium mt-0.5">
+                        Aponte a câmera do celular no QR Code abaixo:
+                      </p>
+                    </div>
+
+                    <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-200">
+                      <img
+                        src={orderResult.qrcode.base64Image}
+                        alt="QR Code PIX PicPay Oficial"
+                        className="w-52 h-52 object-contain"
+                      />
+                    </div>
+
+                    <div className="text-center">
+                      <span className="text-xs font-bold text-slate-800 dark:text-white">
+                        Valor: {selectedService ? formatBRL(selectedService.price) : 'R$ 50,00'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-mono mt-0.5">
+                        Identificador: {orderResult.referenceId}
+                      </span>
+                    </div>
                   </div>
                 )}
 
@@ -897,7 +914,7 @@ export default function VitrineOfertasRapidas({
                     <button
                       type="button"
                       onClick={copyPixToClipboard}
-                      className="w-full py-3 px-4 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/50 dark:hover:bg-sky-950 text-sky-800 dark:text-sky-200 font-bold text-xs rounded-xl flex items-center justify-center gap-2 border border-sky-300 dark:border-sky-800 transition shadow-sm"
+                      className="w-full py-3.5 px-4 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-950 text-sky-800 dark:text-sky-200 font-bold text-xs rounded-xl flex items-center justify-center gap-2 border border-sky-300 dark:border-sky-800 transition shadow-sm active:scale-95"
                     >
                       <Copy className="w-4 h-4 text-sky-600" />
                       {copiedPix ? '✓ Código PIX Copiado com Sucesso!' : 'Copiar Código PIX (Copia e Cola)'}
@@ -911,15 +928,17 @@ export default function VitrineOfertasRapidas({
                 )}
 
                 {/* Botão para Checkout direto no PicPay */}
-                <a
-                  href={orderResult.paymentUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Pagar no App do PicPay / Cartão de Crédito
-                </a>
+                {orderResult.paymentUrl && (
+                  <a
+                    href={orderResult.paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                    Pagar no App do PicPay / Cartão de Crédito
+                  </a>
+                )}
 
                 {/* Botão de simulação quando em modo de teste/demo */}
                 {orderResult.isMock && (

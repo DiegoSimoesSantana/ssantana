@@ -285,6 +285,15 @@ model Project {
   approvedByAdmin   Boolean         @default(false)
   approvedAt        DateTime?
   approvalNotes     String?         @db.Text
+
+  // Agendamento, Reunião & Créditos de Atendimento
+  serviceCredits    Int             @default(1)
+  serviceCreditsUsed Int            @default(0)
+  creditExpiryDate  DateTime?
+  meetingDate       DateTime?
+  meetingUrl        String?
+  meetingNotes      String?         @db.Text
+  serviceReport     String?         @db.Text
   
   // Relations
   contract          Contract?

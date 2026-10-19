@@ -13,12 +13,53 @@ async function getClientFromSession(request: NextRequest) {
   const token = request.cookies.get(ACCOUNT_COOKIE_NAME)?.value
   const session = parseAccountSessionToken(token)
 
-  if (!session?.email || session.selectedRole !== 'CLIENT') {
+  let email = session?.selectedRole === 'CLIENT' ? session.email : null
+
+  // 1. Se não houver sessão ativa, tenta buscar por ticket / contractNumber
+  const ticket = request.nextUrl.searchParams.get('ticket')
+  const emailParam = request.nextUrl.searchParams.get('email')
+
+  if (!email && ticket) {
+    const contract = await prisma.contract.findFirst({
+      where: {
+        OR: [
+          { contractNumber: ticket },
+          { id: ticket },
+        ],
+      },
+      include: {
+        client: true,
+      },
+    })
+    if (contract?.client?.email) {
+      email = contract.client.email
+    }
+  }
+
+  // 2. Se ainda não achou, tenta pelo cookie de perfil salvo no checkout
+  if (!email) {
+    const profileCookie = request.cookies.get('ssantana_client_profile')?.value
+    if (profileCookie) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(profileCookie))
+        if (parsed.email) {
+          email = parsed.email.toLowerCase()
+        }
+      } catch {}
+    }
+  }
+
+  // 3. Fallback para e-mail na URL
+  if (!email && emailParam) {
+    email = emailParam.toLowerCase()
+  }
+
+  if (!email) {
     return null
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: session.email },
+    where: { email },
     include: {
       projects: {
         include: {
@@ -33,7 +74,7 @@ async function getClientFromSession(request: NextRequest) {
   return user
 }
 
-// GET: Retorna dados do cliente, contratos, faturas PicPay e cronômetro de implantação
+// GET: Retorna dados do cliente, contratos, faturas PicPay, cronômetro e detalhes de reunião
 export async function GET(request: NextRequest) {
   const user = await getClientFromSession(request)
   if (!user) {
@@ -48,11 +89,11 @@ export async function GET(request: NextRequest) {
       phone: user.phone,
     },
     projects: user.projects.map((p) => {
-      // Cálculo do cronômetro de 30 dias de implantação
+      // Cálculo do cronômetro de implantação / prazo
       const startDate = p.startDate || p.createdAt
-      const deadlineDate = new Date(new Date(startDate).getTime() + 30 * 24 * 60 * 60 * 1000)
+      const deadlineDate = p.creditExpiryDate || new Date(new Date(startDate).getTime() + 30 * 24 * 60 * 60 * 1000)
       const now = new Date()
-      const remainingDays = Math.max(0, Math.ceil((deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+      const remainingDays = Math.max(0, Math.ceil((new Date(deadlineDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 
       return {
         id: p.id,
@@ -63,6 +104,15 @@ export async function GET(request: NextRequest) {
         startDate,
         deadlineDate,
         remainingDays,
+        // Informações de Reunião, Atendimento e Créditos
+        serviceCredits: p.serviceCredits ?? 1,
+        serviceCreditsUsed: p.serviceCreditsUsed ?? 0,
+        creditExpiryDate: p.creditExpiryDate || deadlineDate,
+        meetingDate: p.meetingDate,
+        meetingUrl: p.meetingUrl,
+        meetingNotes: p.meetingNotes,
+        serviceReport: p.serviceReport,
+        completedAt: p.completedAt,
         contract: p.contract ? {
           id: p.contract.id,
           contractNumber: p.contract.contractNumber,

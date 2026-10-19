@@ -35,12 +35,26 @@ export async function GET(
       })
     }
 
-    // 2. Se ainda estiver pendente no banco, checar diretamente na API do PicPay
-    const picpayStatus = await picpay.getPaymentStatus(referenceId)
-    const isPaid = picpayStatus.status === 'completed' || picpayStatus.status === 'paid'
+    // 2. Se o cliente solicitar simulação de pagamento (em teste) ou checar na API do PicPay
+    const searchParams = request.nextUrl.searchParams
+    const simulatePaid = searchParams.get('simulate') === 'true'
+
+    const creds = await picpay.getCredentials()
+    const isMock = !creds.clientSecret
+
+    let isPaid = false
+    let picpayStatus: { status: string; authorizationId?: string } = { status: 'pending' }
+
+    if (simulatePaid) {
+      isPaid = true
+      picpayStatus = { status: 'completed', authorizationId: `simulated-${Date.now()}` }
+    } else {
+      picpayStatus = await picpay.getPaymentStatus(referenceId)
+      isPaid = picpayStatus.status === 'completed' || picpayStatus.status === 'paid'
+    }
 
     if (isPaid && payment) {
-      // Atualiza o banco caso o webhook ainda não tenha chegado
+      // Atualiza o banco caso o webhook ainda não tenha chegado ou simulação acionada
       await prisma.payment.update({
         where: { id: payment.id },
         data: {
@@ -83,9 +97,76 @@ export async function GET(
       paid: false,
       status: payment?.status || picpayStatus.status || 'PENDING',
       referenceId,
+      isMock,
     })
   } catch (error: any) {
     console.error('[Payment Status Polling Error]', error)
     return NextResponse.json({ error: 'Erro ao consultar status' }, { status: 500 })
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { referenceId: string } }
+) {
+  try {
+    const referenceId = params.referenceId
+    if (!referenceId) {
+      return NextResponse.json({ error: 'referenceId é obrigatório' }, { status: 400 })
+    }
+
+    const payment = await prisma.payment.findFirst({
+      where: {
+        OR: [
+          { externalId: referenceId },
+          { contract: { contractNumber: referenceId } },
+        ],
+      },
+    })
+
+    if (!payment) {
+      return NextResponse.json({ error: 'Pagamento não localizado' }, { status: 404 })
+    }
+
+    await prisma.payment.update({
+      where: { id: payment.id },
+      data: {
+        status: 'COMPLETED',
+        paidAt: new Date(),
+        projectReleased: true,
+        releasedAt: new Date(),
+      },
+    })
+
+    if (payment.projectId) {
+      await prisma.project.update({
+        where: { id: payment.projectId },
+        data: {
+          status: 'IN_PROGRESS',
+          startDate: new Date(),
+        },
+      })
+    }
+
+    if (payment.contractId) {
+      await prisma.contract.update({
+        where: { id: payment.contractId },
+        data: {
+          status: 'SIGNED',
+          signedAt: new Date(),
+        },
+      })
+    }
+
+    return NextResponse.json({
+      paid: true,
+      status: 'PAID',
+      referenceId,
+      paymentId: payment.id,
+      message: 'Pagamento validado com sucesso.',
+    })
+  } catch (error: any) {
+    console.error('[Payment Manual Confirm Error]', error)
+    return NextResponse.json({ error: 'Erro ao confirmar pagamento' }, { status: 500 })
   }
 }

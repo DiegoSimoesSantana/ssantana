@@ -151,7 +151,10 @@ export class PicPayClient {
     const creds = await this.getCredentials()
 
     if (!creds.clientSecret) {
-      return { status: 'completed', authorizationId: `mock-auth-${Date.now()}` }
+      // Quando não há credenciais reais do PicPay configuradas (ambiente demo/homologação),
+      // mantém o status como 'pending' para que o cliente consiga ver o QR Code e copiar o PIX
+      // sem sofrer transição precoce para pago.
+      return { status: 'pending' }
     }
 
     try {

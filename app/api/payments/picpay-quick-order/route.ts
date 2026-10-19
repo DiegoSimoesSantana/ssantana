@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000)
     const contractNumber = `SS-2026-${parsed.serviceType.substring(0, 3)}-${randomSuffix}`
 
+    const creditExpiryDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+
     // Criar projeto de suporte / serviço
     const project = await prisma.project.create({
       data: {
@@ -93,6 +95,9 @@ export async function POST(request: NextRequest) {
         totalValue: amount,
         deliveryDays: 1,
         status: 'AWAITING_PAYMENT',
+        serviceCredits: 1,
+        creditExpiryDate,
+        meetingNotes: 'Atendimento aguardando confirmação do pagamento e agendamento de horário.',
       },
     })
 
@@ -165,6 +170,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    const creds = await picpay.getCredentials()
+    const isMock = !creds.clientSecret
+
     return NextResponse.json({
       success: true,
       referenceId: contractNumber,
@@ -174,6 +182,7 @@ export async function POST(request: NextRequest) {
       paymentUrl: picpayOrder.paymentUrl,
       qrcode: picpayOrder.qrcode,
       expiresAt: picpayOrder.expiresAt,
+      isMock,
     })
   } catch (error: any) {
     console.error('[Quick Order Error]', error)

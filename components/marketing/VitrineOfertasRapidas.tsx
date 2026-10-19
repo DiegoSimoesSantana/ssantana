@@ -32,6 +32,51 @@ type ServiceTypeKey = 'SUPORTE_30M' | 'SUPORTE_1H' | 'MVP_IA' | 'SAAS_CLINICAS' 
 
 const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/u/0/appointments/AcZssZ0F7YBCeVqWN-bBLEucbSzyEGjYitSxiVg52jw='
 
+const CLIENT_STORAGE_KEY = 'ssantana_client_checkout_profile'
+const CLIENT_COOKIE_KEY = 'ssantana_client_profile'
+
+function getSavedClientData(): { name?: string; email?: string; phone?: string; document?: string } | null {
+  if (typeof window === 'undefined') return null
+  try {
+    // 1. Tentar ler do localStorage
+    const raw = window.localStorage.getItem(CLIENT_STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (parsed && typeof parsed === 'object') return parsed
+    }
+    // 2. Tentar ler dos cookies do navegador
+    const match = document.cookie.match(new RegExp('(^|;\\s*)' + CLIENT_COOKIE_KEY + '=([^;]*)'))
+    if (match && match[2]) {
+      const parsed = JSON.parse(decodeURIComponent(match[2]))
+      if (parsed && typeof parsed === 'object') return parsed
+    }
+  } catch (e) {
+    console.warn('Erro ao ler dados salvos do cliente:', e)
+  }
+  return null
+}
+
+function persistClientData(data: { name: string; email: string; phone: string; document: string }) {
+  if (typeof window === 'undefined') return
+  try {
+    const json = JSON.stringify(data)
+    window.localStorage.setItem(CLIENT_STORAGE_KEY, json)
+    // Cookie persistente por 365 dias para recontratação e facilidade do cliente
+    const maxAge = 365 * 24 * 60 * 60
+    document.cookie = `${CLIENT_COOKIE_KEY}=${encodeURIComponent(json)}; max-age=${maxAge}; path=/; SameSite=Lax`
+  } catch (e) {
+    console.warn('Erro ao salvar dados do cliente:', e)
+  }
+}
+
+function clearSavedClientData() {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.removeItem(CLIENT_STORAGE_KEY)
+    document.cookie = `${CLIENT_COOKIE_KEY}=; max-age=0; path=/;`
+  } catch (e) {}
+}
+
 export default function VitrineOfertasRapidas({
   pricing = DEFAULT_DYNAMIC_PRICING,
   whatsappNumber = '5571988068222',
@@ -47,7 +92,7 @@ export default function VitrineOfertasRapidas({
     subtitle: string
   } | null>(null)
 
-  // Formulário do cliente
+  // Formulário do cliente com detecção de pré-preenchimento
   const [clientData, setClientData] = useState({
     name: '',
     email: '',
@@ -55,6 +100,7 @@ export default function VitrineOfertasRapidas({
     document: '',
     acceptedTerms: false,
   })
+  const [isPreFilled, setIsPreFilled] = useState(false)
 
   // Estados da cobrança / PicPay
   const [generatingOrder, setGeneratingOrder] = useState(false)
@@ -66,11 +112,76 @@ export default function VitrineOfertasRapidas({
       content: string
       base64Image: string
     }
+    isMock?: boolean
   } | null>(null)
 
   // Estado de confirmação de pagamento (Gate liberado)
   const [isPaymentPaid, setIsPaymentPaid] = useState(false)
   const [copiedPix, setCopiedPix] = useState(false)
+  const [simulatingPayment, setSimulatingPayment] = useState(false)
+
+  // Carrega dados salvos no storage/cookie ou da sessão ativa ao inicializar
+  useEffect(() => {
+    const saved = getSavedClientData()
+    if (saved && (saved.name || saved.email || saved.phone || saved.document)) {
+      setClientData((prev) => ({
+        ...prev,
+        name: saved.name || prev.name,
+        email: saved.email || prev.email,
+        phone: saved.phone || prev.phone,
+        document: saved.document || prev.document,
+      }))
+      setIsPreFilled(true)
+    }
+
+    // Se houver sessão de cliente logado, também aproveita dados da conta
+    void fetch('/api/account/session', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          setClientData((prev) => {
+            const updated = {
+              ...prev,
+              name: prev.name || data.user.name || '',
+              email: prev.email || data.user.email || '',
+            }
+            if (!prev.name && data.user.name) {
+              persistClientData(updated)
+              setIsPreFilled(true)
+            }
+            return updated
+          })
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const updateClientField = (field: 'name' | 'email' | 'phone' | 'document' | 'acceptedTerms', value: any) => {
+    setClientData((prev) => {
+      const updated = { ...prev, [field]: value }
+      if (field !== 'acceptedTerms') {
+        persistClientData({
+          name: updated.name,
+          email: updated.email,
+          phone: updated.phone,
+          document: updated.document,
+        })
+      }
+      return updated
+    })
+  }
+
+  const handleClearPreFilled = () => {
+    clearSavedClientData()
+    setClientData({
+      name: '',
+      email: '',
+      phone: '',
+      document: '',
+      acceptedTerms: false,
+    })
+    setIsPreFilled(false)
+  }
 
   const toggleAccordion = (id: string) => {
     setOpenAccordion(openAccordion === id ? null : id)
@@ -90,6 +201,20 @@ export default function VitrineOfertasRapidas({
     setOrderResult(null)
     setIsPaymentPaid(false)
     setOrderError(null)
+
+    // Atualiza com os dados salvos mais recentes
+    const saved = getSavedClientData()
+    if (saved && (saved.name || saved.email || saved.phone || saved.document)) {
+      setClientData((prev) => ({
+        ...prev,
+        name: saved.name || prev.name,
+        email: saved.email || prev.email,
+        phone: saved.phone || prev.phone,
+        document: saved.document || prev.document,
+      }))
+      setIsPreFilled(true)
+    }
+
     setModalOpen(true)
   }
 
@@ -102,6 +227,15 @@ export default function VitrineOfertasRapidas({
       setOrderError('Você deve concordar com o termo de reserva e retenção de horário para continuar.')
       return
     }
+
+    // Persiste dados preenchidos para compras e recontratações futuras
+    persistClientData({
+      name: clientData.name,
+      email: clientData.email,
+      phone: clientData.phone,
+      document: clientData.document,
+    })
+    setIsPreFilled(true)
 
     setGeneratingOrder(true)
     setOrderError(null)
@@ -129,6 +263,7 @@ export default function VitrineOfertasRapidas({
         referenceId: data.referenceId,
         paymentUrl: data.paymentUrl,
         qrcode: data.qrcode,
+        isMock: data.isMock,
       })
     } catch (err: any) {
       setOrderError(err.message || 'Falha na comunicação com o servidor de pagamentos.')
@@ -159,11 +294,46 @@ export default function VitrineOfertasRapidas({
     return () => clearInterval(interval)
   }, [orderResult, isPaymentPaid])
 
-  const copyPixToClipboard = () => {
-    if (orderResult?.qrcode?.content) {
-      navigator.clipboard.writeText(orderResult.qrcode.content)
+  // Ação para simular aprovação do pagamento em ambiente de testes/demonstração
+  const handleSimulatePaymentApproval = async () => {
+    if (!orderResult?.referenceId) return
+    setSimulatingPayment(true)
+    try {
+      const res = await fetch(`/api/payments/status/${orderResult.referenceId}?simulate=true`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.paid || data.status === 'PAID') {
+          setIsPaymentPaid(true)
+        }
+      }
+    } catch (e) {
+      console.error('Falha ao simular aprovação:', e)
+    } finally {
+      setSimulatingPayment(false)
+    }
+  }
+
+  const copyPixToClipboard = async () => {
+    if (!orderResult?.qrcode?.content) return
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(orderResult.qrcode.content)
+      } else {
+        const textArea = document.createElement('textarea')
+        textArea.value = orderResult.qrcode.content
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        document.execCommand('copy')
+        textArea.remove()
+      }
       setCopiedPix(true)
-      setTimeout(() => setCopiedPix(false), 3000)
+      setTimeout(() => setCopiedPix(false), 4000)
+    } catch (err) {
+      console.error('Falha ao copiar PIX:', err)
     }
   }
 
@@ -587,6 +757,22 @@ export default function VitrineOfertasRapidas({
                   </div>
                 )}
 
+                {isPreFilled && (
+                  <div className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center justify-between text-xs text-sky-800 dark:text-sky-300">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-sky-600 shrink-0" />
+                      <span>Dados pré-preenchidos do seu cadastro.</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleClearPreFilled}
+                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-800 dark:hover:text-zinc-200 underline shrink-0 ml-2"
+                    >
+                      Limpar dados
+                    </button>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-1">
                     Nome Completo / Empresa *
@@ -596,7 +782,7 @@ export default function VitrineOfertasRapidas({
                     required
                     placeholder="Seu nome ou razão social"
                     value={clientData.name}
-                    onChange={(e) => setClientData({ ...clientData, name: e.target.value })}
+                    onChange={(e) => updateClientField('name', e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl text-sm"
                   />
                 </div>
@@ -611,7 +797,7 @@ export default function VitrineOfertasRapidas({
                       required
                       placeholder="seu@email.com"
                       value={clientData.email}
-                      onChange={(e) => setClientData({ ...clientData, email: e.target.value })}
+                      onChange={(e) => updateClientField('email', e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl text-sm"
                     />
                   </div>
@@ -625,7 +811,7 @@ export default function VitrineOfertasRapidas({
                       required
                       placeholder="(71) 98888-8888"
                       value={clientData.phone}
-                      onChange={(e) => setClientData({ ...clientData, phone: e.target.value })}
+                      onChange={(e) => updateClientField('phone', e.target.value)}
                       className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl text-sm"
                     />
                   </div>
@@ -640,7 +826,7 @@ export default function VitrineOfertasRapidas({
                     required
                     placeholder="000.000.000-00 ou 00.000.000/0001-00"
                     value={clientData.document}
-                    onChange={(e) => setClientData({ ...clientData, document: e.target.value })}
+                    onChange={(e) => updateClientField('document', e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl text-sm font-mono"
                   />
                 </div>
@@ -707,15 +893,20 @@ export default function VitrineOfertasRapidas({
 
                 {/* Copia e Cola PIX */}
                 {orderResult.qrcode?.content && (
-                  <div>
+                  <div className="space-y-2">
                     <button
                       type="button"
                       onClick={copyPixToClipboard}
-                      className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 font-semibold text-xs rounded-xl flex items-center justify-center gap-2 border border-slate-300 dark:border-zinc-700 transition"
+                      className="w-full py-3 px-4 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/50 dark:hover:bg-sky-950 text-sky-800 dark:text-sky-200 font-bold text-xs rounded-xl flex items-center justify-center gap-2 border border-sky-300 dark:border-sky-800 transition shadow-sm"
                     >
                       <Copy className="w-4 h-4 text-sky-600" />
-                      {copiedPix ? '✓ Código PIX Copiado!' : 'Copiar Código PIX Copia e Cola'}
+                      {copiedPix ? '✓ Código PIX Copiado com Sucesso!' : 'Copiar Código PIX (Copia e Cola)'}
                     </button>
+                    {copiedPix && (
+                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold animate-fade-in">
+                        Código pronto! Abra o app do seu banco e escolha a opção &quot;PIX Copia e Cola&quot;.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -730,8 +921,30 @@ export default function VitrineOfertasRapidas({
                   Pagar no App do PicPay / Cartão de Crédito
                 </a>
 
+                {/* Botão de simulação quando em modo de teste/demo */}
+                {orderResult.isMock && (
+                  <div className="p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 text-left space-y-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 dark:text-amber-300">
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Modo Demonstração (Chaves PicPay pendentes)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 dark:text-zinc-400 leading-relaxed">
+                      As credenciais oficiais do PicPay podem ser configuradas no painel em <strong>/admin/configuracoes</strong>. Para testar o desbloqueio da agenda agora:
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleSimulatePaymentApproval}
+                      disabled={simulatingPayment}
+                      className="w-full py-2.5 px-3 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition shadow-sm disabled:opacity-50"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      {simulatingPayment ? 'Processando validação...' : 'Simular Pagamento Aprovado e Destravar Agenda'}
+                    </button>
+                  </div>
+                )}
+
                 {/* Indicador de checagem em tempo real */}
-                <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-zinc-400">
+                <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-zinc-400 pt-1">
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping" />
                   <span>Aguardando confirmação do banco em tempo real...</span>
                 </div>

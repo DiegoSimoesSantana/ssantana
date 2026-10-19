@@ -14,7 +14,9 @@ import {
   AlertCircle,
   ExternalLink,
   ShieldCheck,
-  Mail
+  Mail,
+  Video,
+  Sparkles
 } from 'lucide-react'
 
 const WHATSAPP_VIP_URL = 'https://wa.me/5571999999999?text=Ol%C3%A1%2C%20sou%20cliente%20SSantana%20e%20gostaria%20de%20atendimento%20priorit%C3%A1rio.'
@@ -29,6 +31,14 @@ type ProjectClient = {
   startDate: string
   deadlineDate: string
   remainingDays: number
+  serviceCredits: number
+  serviceCreditsUsed: number
+  creditExpiryDate: string | null
+  meetingDate: string | null
+  meetingUrl: string | null
+  meetingNotes: string | null
+  serviceReport: string | null
+  completedAt: string | null
   contract: {
     id: string
     contractNumber: string | null
@@ -61,14 +71,19 @@ export default function PainelClientePage() {
   const loadData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/client/dashboard')
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams()
+      const res = await fetch(`/api/client/dashboard?${params.toString()}`)
       if (res.status === 401) {
-        window.location.href = '/sign-in'
-        return
+        if (!params.get('ticket') && !params.get('email')) {
+          window.location.href = '/sign-in'
+          return
+        }
       }
       const data = await res.json()
-      setUser(data.user)
-      setProjects(data.projects || [])
+      if (data.user) {
+        setUser(data.user)
+        setProjects(data.projects || [])
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -201,6 +216,110 @@ export default function PainelClientePage() {
                       {proj.status}
                     </span>
                   </div>
+                </div>
+
+                {/* SESSÃO DE ATENDIMENTO, REUNIÃO & CRÉDITOS */}
+                <div className="p-5 rounded-2xl bg-white dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-zinc-700/60 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                        <Video className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                          Sessão Técnica & Crédito de Atendimento
+                        </h3>
+                        <span className="text-xs text-slate-500 dark:text-zinc-400">
+                          Acompanhamento direto com o decisor técnico
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                        Créditos: {proj.serviceCredits - (proj.serviceCreditsUsed || 0) > 0 ? `${proj.serviceCredits - (proj.serviceCreditsUsed || 0)} Disponível` : 'Utilizado'}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                        Válido até: {new Date(proj.creditExpiryDate || proj.deadlineDate).toLocaleDateString('pt-BR')}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Se o serviço já foi concluído pelo técnico */}
+                  {proj.status === 'COMPLETED' ? (
+                    <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 space-y-2">
+                      <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-sm">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                        <span>Atendimento Concluído com Sucesso!</span>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-zinc-400">
+                        Serviço finalizado em: {proj.completedAt ? new Date(proj.completedAt).toLocaleDateString('pt-BR') : 'Finalizado pela equipe técnica'}.
+                      </p>
+                      {proj.serviceReport && (
+                        <div className="mt-2 p-3 bg-white dark:bg-zinc-900 rounded-lg border border-emerald-100 dark:border-emerald-900 text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-line">
+                          <strong className="block text-slate-900 dark:text-white mb-1">Relatório da Entrega / Resumo:</strong>
+                          {proj.serviceReport}
+                        </div>
+                      )}
+                    </div>
+                  ) : proj.meetingDate ? (
+                    /* Se a reunião foi agendada */
+                    <div className="p-4 rounded-xl bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <span className="text-xs font-semibold text-sky-700 dark:text-sky-400 block">
+                            Horário Agendado com o Decisor Técnico:
+                          </span>
+                          <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                            {new Date(proj.meetingDate).toLocaleString('pt-BR', { dateStyle: 'full', timeStyle: 'short' })}
+                          </h4>
+                        </div>
+
+                        {proj.meetingUrl ? (
+                          <a
+                            href={proj.meetingUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition active:scale-95 shrink-0"
+                          >
+                            <Video className="w-4 h-4" />
+                            <span>Entrar na Sala Virtual da Reunião</span>
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-500 italic">Link da reunião será disponibilizado em breve</span>
+                        )}
+                      </div>
+
+                      {proj.meetingNotes && (
+                        <div className="text-xs text-slate-600 dark:text-zinc-400 border-t border-sky-100 dark:border-sky-900 pt-2">
+                          <strong className="text-slate-800 dark:text-zinc-200">Orientações do Especialista:</strong> {proj.meetingNotes}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    /* Se ainda não agendou a reunião */
+                    <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                          Aguardando Agendamento
+                        </span>
+                        <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
+                          Seu pagamento foi confirmado! Escolha o dia e horário que melhor se adapta à sua rotina para realizar a sessão.
+                        </p>
+                      </div>
+
+                      <a
+                        href={CALENDAR_DECISOR_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white text-xs font-bold rounded-xl shadow-sm transition active:scale-95 shrink-0"
+                      >
+                        <Calendar className="w-4 h-4 text-emerald-500" />
+                        <span>Agendar Horário na Agenda Google</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  )}
                 </div>
 
                 {/* CRONÔMETRO DE 30 DIAS DE IMPLANTAÇÃO */}

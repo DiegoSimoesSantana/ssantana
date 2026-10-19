@@ -4,6 +4,43 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import { Calendar, Video, CheckCircle2, Clock, MessageSquare, ExternalLink, Edit3, AlertCircle } from 'lucide-react'
+
+type AdminProject = {
+  id: string
+  title: string
+  description: string
+  totalValue: number
+  status: string
+  serviceCredits: number
+  serviceCreditsUsed: number
+  creditExpiryDate: string | null
+  meetingDate: string | null
+  meetingUrl: string | null
+  meetingNotes: string | null
+  serviceReport: string | null
+  completedAt: string | null
+  createdAt: string
+  client: {
+    id: string
+    name: string
+    email: string
+    phone: string
+  }
+  contract: {
+    id: string
+    contractNumber: string | null
+    status: string
+    signedAt: string | null
+  } | null
+  payments: Array<{
+    id: string
+    amount: number
+    status: string
+    method: string
+    paidAt: string | null
+  }>
+}
 
 type AdminOverview = {
   partners: Array<any>
@@ -123,7 +160,88 @@ export default function AdminDashboardPage() {
   const [pricing, setPricing] = useState<PricingGovernance | null>(null)
   const [pricingBusy, setPricingBusy] = useState(false)
   const [pricingMessage, setPricingMessage] = useState('')
-  const [tab, setTab] = useState<'partners' | 'clients' | 'leads' | 'pricing' | 'users'>('partners')
+  const [tab, setTab] = useState<'atendimentos' | 'partners' | 'clients' | 'leads' | 'pricing' | 'users'>('atendimentos')
+  
+  // Atendimentos tab state
+  const [atendimentos, setAtendimentos] = useState<AdminProject[]>([])
+  const [atendimentosLoading, setAtendimentosLoading] = useState(false)
+  const [editingAtendimento, setEditingAtendimento] = useState<AdminProject | null>(null)
+  const [atendimentoForm, setAtendimentoForm] = useState({
+    meetingDate: '',
+    meetingUrl: '',
+    meetingNotes: '',
+    serviceCredits: 1,
+    creditExpiryDate: '',
+    serviceReport: '',
+    status: 'IN_PROGRESS',
+  })
+  const [savingAtendimento, setSavingAtendimento] = useState(false)
+  const [atendimentoMsg, setAtendimentoMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const loadAtendimentos = async () => {
+    setAtendimentosLoading(true)
+    try {
+      const res = await fetch('/api/admin/atendimentos')
+      if (res.ok) {
+        const data = await res.json()
+        setAtendimentos(data.projects || [])
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setAtendimentosLoading(false)
+    }
+  }
+
+  const openEditAtendimento = (proj: AdminProject) => {
+    setEditingAtendimento(proj)
+    setAtendimentoMsg(null)
+    setAtendimentoForm({
+      meetingDate: proj.meetingDate ? isoToLocalDateTime(proj.meetingDate) : '',
+      meetingUrl: proj.meetingUrl || '',
+      meetingNotes: proj.meetingNotes || '',
+      serviceCredits: proj.serviceCredits || 1,
+      creditExpiryDate: proj.creditExpiryDate ? proj.creditExpiryDate.slice(0, 10) : '',
+      serviceReport: proj.serviceReport || '',
+      status: proj.status || 'IN_PROGRESS',
+    })
+  }
+
+  const saveAtendimento = async (markCompleted: boolean = false) => {
+    if (!editingAtendimento) return
+    setSavingAtendimento(true)
+    setAtendimentoMsg(null)
+    try {
+      const res = await fetch('/api/admin/atendimentos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: editingAtendimento.id,
+          meetingDate: atendimentoForm.meetingDate ? new Date(atendimentoForm.meetingDate).toISOString() : null,
+          meetingUrl: atendimentoForm.meetingUrl,
+          meetingNotes: atendimentoForm.meetingNotes,
+          serviceCredits: Number(atendimentoForm.serviceCredits),
+          creditExpiryDate: atendimentoForm.creditExpiryDate ? new Date(atendimentoForm.creditExpiryDate).toISOString() : null,
+          serviceReport: atendimentoForm.serviceReport,
+          status: markCompleted ? 'COMPLETED' : atendimentoForm.status,
+          markCompleted,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao atualizar atendimento')
+      setAtendimentoMsg({ type: 'success', text: data.message })
+      void loadAtendimentos()
+      setTimeout(() => {
+        setEditingAtendimento(null)
+        setAtendimentoMsg(null)
+      }, 1500)
+    } catch (err: any) {
+      setAtendimentoMsg({ type: 'error', text: err.message })
+    } finally {
+      setSavingAtendimento(false)
+    }
+  }
+
   const [pricingForm, setPricingForm] = useState<PricingFormState>({
     serviceKey: 'SETUP_SISTEMA',
     newPrice: '',
@@ -239,6 +357,7 @@ export default function AdminDashboardPage() {
       fetch('/api/admin/overview').then((r) => r.json()),
       loadPricing(),
       loadUsers(),
+      loadAtendimentos(),
     ])
     setOverview(data)
     setLoading(false)
@@ -252,7 +371,7 @@ export default function AdminDashboardPage() {
     if (!overview) {
       return []
     }
-    if (tab === 'pricing' || tab === 'users') return []
+    if (tab === 'pricing' || tab === 'users' || tab === 'atendimentos') return []
     if (tab === 'partners') return overview.partners
     if (tab === 'clients') return overview.clients
     return overview.leads
@@ -411,28 +530,329 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4">Atendimentos: <strong>{atendimentos.length}</strong></div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Parceiros: <strong>{overview?.partners?.length || 0}</strong></div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Clientes: <strong>{overview?.clients?.length || 0}</strong></div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Leads: <strong>{overview?.leads?.length || 0}</strong></div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">Alteracoes pendentes: <strong>{pendingChanges.length}</strong></div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">Fila de notificacoes: <strong>{queuedNotifications.length}</strong></div>
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4">Atualizacao de precos: <strong>{pricing?.updatedAt ? new Date(pricing.updatedAt).toLocaleString('pt-BR') : '-'}</strong></div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {(['partners', 'clients', 'leads', 'pricing', 'users'] as const).map((item) => (
+          {(['atendimentos', 'partners', 'clients', 'leads', 'pricing', 'users'] as const).map((item) => (
             <button
               key={item}
               onClick={() => setTab(item)}
-              className={`rounded-lg px-4 py-2 text-sm font-semibold ${tab === item ? 'bg-cyan-300 text-slate-900' : 'bg-slate-800 text-white'}`}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${tab === item ? 'bg-cyan-300 text-slate-900 shadow-md' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
             >
-              {item === 'partners' ? 'Parceiros' : item === 'clients' ? 'Clientes' : item === 'leads' ? 'Leads' : item === 'pricing' ? 'Precos B2B' : 'Usuarios'}
+              {item === 'atendimentos' ? 'Atendimentos & Reuniões' : item === 'partners' ? 'Parceiros' : item === 'clients' ? 'Clientes' : item === 'leads' ? 'Leads' : item === 'pricing' ? 'Precos B2B' : 'Usuarios'}
             </button>
           ))}
         </div>
 
-        {tab === 'users' ? (
+        {tab === 'atendimentos' ? (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-cyan-300" />
+                  Atendimentos & Serviços Contratados
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  Gerencie agendamentos, links de reunião Google Meet/AnyDesk, créditos e conclua os atendimentos entregues aos clientes.
+                </p>
+              </div>
+              <button
+                onClick={() => void loadAtendimentos()}
+                disabled={atendimentosLoading}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white rounded-lg transition border border-slate-700 shrink-0"
+              >
+                {atendimentosLoading ? 'Atualizando...' : 'Atualizar Lista'}
+              </button>
+            </div>
+
+            {atendimentosLoading && atendimentos.length === 0 ? (
+              <p className="text-slate-400">Carregando atendimentos...</p>
+            ) : atendimentos.length === 0 ? (
+              <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl">
+                <p className="text-slate-400">Nenhum atendimento ou contratação registrada ainda.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {atendimentos.map((p) => {
+                  const hasPaid = p.payments?.some((pay) => pay.status === 'COMPLETED' || pay.status === 'PAID')
+                  const isCompleted = p.status === 'COMPLETED'
+                  const cleanPhone = (p.client?.phone || '').replace(/\D/g, '')
+
+                  return (
+                    <div
+                      key={p.id}
+                      className="p-5 rounded-2xl border border-white/10 bg-slate-900/90 shadow-md space-y-4"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800">
+                              {p.contract?.contractNumber || 'SEM-CONTRATO'}
+                            </span>
+                            <span
+                              className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                                hasPaid ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-amber-950 text-amber-300 border border-amber-800'
+                              }`}
+                            >
+                              {hasPaid ? '✓ PAGO' : 'AGUARDANDO PAGAMENTO'}
+                            </span>
+                            <span
+                              className={`text-xs px-2.5 py-0.5 rounded-full font-bold ${
+                                isCompleted
+                                  ? 'bg-emerald-900 text-emerald-200'
+                                  : p.meetingDate
+                                  ? 'bg-sky-900 text-sky-200'
+                                  : 'bg-slate-800 text-slate-300'
+                              }`}
+                            >
+                              {isCompleted ? 'CONCLUÍDO' : p.meetingDate ? 'AGENDADO' : 'EM ABERTO'}
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-white mt-1.5">{p.title}</h3>
+                          <p className="text-xs text-slate-400">
+                            Valor: <strong className="text-emerald-400">{formatBRL(p.totalValue)}</strong> • Contratado em: {new Date(p.createdAt).toLocaleDateString('pt-BR')}
+                          </p>
+                        </div>
+
+                        {/* Ações Rápidas */}
+                        <div className="flex items-center gap-2 shrink-0">
+                          {cleanPhone && (
+                            <a
+                              href={`https://wa.me/55${cleanPhone}?text=Ol%C3%A1%20${encodeURIComponent(p.client?.name || '')}%2C%20aqui%20%C3%A9%20Diego%20Santana%20referente%20ao%20seu%20atendimento.`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 transition"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              WhatsApp
+                            </a>
+                          )}
+                          <button
+                            onClick={() => openEditAtendimento(p)}
+                            className="px-3.5 py-1.5 rounded-lg bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition shadow"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            Gerenciar Atendimento
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Informações do Cliente & Detalhes da Reunião */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-1">
+                          <span className="text-slate-400 font-semibold block uppercase tracking-wider text-[10px]">
+                            Cliente
+                          </span>
+                          <p className="font-bold text-white">{p.client?.name || 'Cliente'}</p>
+                          <p className="text-slate-300">{p.client?.email}</p>
+                          <p className="text-slate-400">{p.client?.phone || 'Sem telefone'}</p>
+                        </div>
+
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-1">
+                          <span className="text-slate-400 font-semibold block uppercase tracking-wider text-[10px]">
+                            Crédito & Validade
+                          </span>
+                          <p className="font-bold text-cyan-300">
+                            {p.serviceCredits} sessão(ões) • {p.serviceCreditsUsed > 0 ? `${p.serviceCreditsUsed} consumida(s)` : 'Disponível'}
+                          </p>
+                          <p className="text-slate-300">
+                            Válido até: {p.creditExpiryDate ? new Date(p.creditExpiryDate).toLocaleDateString('pt-BR') : '30 dias'}
+                          </p>
+                        </div>
+
+                        <div className="p-3 bg-white/5 rounded-xl border border-white/5 space-y-1">
+                          <span className="text-slate-400 font-semibold block uppercase tracking-wider text-[10px]">
+                            Reunião Agendada
+                          </span>
+                          {p.meetingDate ? (
+                            <>
+                              <p className="font-bold text-emerald-300">
+                                📅 {new Date(p.meetingDate).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                              </p>
+                              {p.meetingUrl ? (
+                                <a
+                                  href={p.meetingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-cyan-400 hover:underline flex items-center gap-1"
+                                >
+                                  <Video className="w-3 h-3" /> Abrir Link da Reunião
+                                </a>
+                              ) : (
+                                <span className="text-slate-500 italic">Sem link informado</span>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-amber-300">⏳ Horário não definido</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {p.meetingNotes && (
+                        <div className="p-2.5 rounded-lg bg-black/30 border border-white/5 text-xs text-slate-300">
+                          <strong className="text-white">Instruções para o cliente:</strong> {p.meetingNotes}
+                        </div>
+                      )}
+
+                      {p.serviceReport && (
+                        <div className="p-2.5 rounded-lg bg-emerald-950/40 border border-emerald-900/60 text-xs text-emerald-200">
+                          <strong className="text-white">Relatório de Conclusão:</strong> {p.serviceReport}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Modal de Gerenciamento do Atendimento */}
+            {editingAtendimento && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+                <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-6 space-y-5 my-8 shadow-2xl">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                      <h3 className="font-bold text-lg text-white">Gerenciar Atendimento</h3>
+                      <p className="text-xs text-slate-400">{editingAtendimento.title}</p>
+                    </div>
+                    <button
+                      onClick={() => setEditingAtendimento(null)}
+                      className="text-slate-400 hover:text-white text-lg p-1"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  {atendimentoMsg && (
+                    <div
+                      className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                        atendimentoMsg.type === 'success'
+                          ? 'bg-emerald-950/80 border border-emerald-800 text-emerald-200'
+                          : 'bg-rose-950/80 border border-rose-800 text-rose-200'
+                      }`}
+                    >
+                      {atendimentoMsg.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                      <span>{atendimentoMsg.text}</span>
+                    </div>
+                  )}
+
+                  <div className="space-y-3.5 text-xs">
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">
+                        Data e Horário da Reunião (Sessão com o Cliente)
+                      </label>
+                      <input
+                        type="datetime-local"
+                        value={atendimentoForm.meetingDate}
+                        onChange={(e) => setAtendimentoForm({ ...atendimentoForm, meetingDate: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">
+                        Link da Sala Virtual (Google Meet, Zoom ou AnyDesk)
+                      </label>
+                      <input
+                        type="url"
+                        placeholder="https://meet.google.com/abc-defg-hij"
+                        value={atendimentoForm.meetingUrl}
+                        onChange={(e) => setAtendimentoForm({ ...atendimentoForm, meetingUrl: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-slate-300 font-semibold mb-1">
+                          Créditos / Sessões
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={atendimentoForm.serviceCredits}
+                          onChange={(e) => setAtendimentoForm({ ...atendimentoForm, serviceCredits: Number(e.target.value) })}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-slate-300 font-semibold mb-1">
+                          Validade do Crédito
+                        </label>
+                        <input
+                          type="date"
+                          value={atendimentoForm.creditExpiryDate}
+                          onChange={(e) => setAtendimentoForm({ ...atendimentoForm, creditExpiryDate: e.target.value })}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">
+                        Orientações e Instruções (Visível no Portal do Cliente)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Ex: Tenha o AnyDesk aberto ou conecte 5 minutos antes na sala do Google Meet..."
+                        value={atendimentoForm.meetingNotes}
+                        onChange={(e) => setAtendimentoForm({ ...atendimentoForm, meetingNotes: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-300 font-semibold mb-1">
+                        Relatório da Entrega / O que foi resolvido (Para conclusão)
+                      </label>
+                      <textarea
+                        rows={3}
+                        placeholder="Ex: Diagnóstico realizado com sucesso. Corrigida falha no DNS e configurado backup automático em nuvem..."
+                        value={atendimentoForm.serviceReport}
+                        onChange={(e) => setAtendimentoForm({ ...atendimentoForm, serviceReport: e.target.value })}
+                        className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white resize-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      disabled={savingAtendimento}
+                      onClick={() => void saveAtendimento(true)}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Marcar Serviço como Concluído
+                    </button>
+
+                    <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setEditingAtendimento(null)}
+                        className="px-3.5 py-2 text-xs text-slate-400 hover:text-white"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={savingAtendimento}
+                        onClick={() => void saveAtendimento(false)}
+                        className="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs transition"
+                      >
+                        {savingAtendimento ? 'Salvando...' : 'Salvar Alterações'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : tab === 'users' ? (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Usuarios cadastrados</h2>

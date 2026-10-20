@@ -66,8 +66,8 @@ export default function EmailPage() {
                 <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">Atendimentos de continuidade seguem regras contratuais com previsibilidade de custos.</p>
               </div>
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">Indicação parceira</p>
-                <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">Encaminhamentos de parceiros credenciados entram com prioridade de triagem comercial.</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">Condição Promocional</p>
+                <p className="mt-2 text-sm text-slate-700 dark:text-slate-200">Ativações com cupom promocional contam com aplicação imediata de condições especiais.</p>
               </div>
             </div>
           </section>

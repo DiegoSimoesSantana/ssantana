@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Star, Mail, Globe, Wrench } from 'lucide-react'
+import { Check, Star, Mail, Globe, Wrench, TrendingUp, Cpu, ShieldCheck } from 'lucide-react'
 import { BUSINESS_RULES } from '@/lib/business-rules'
 import { parseReferralCookieValue, REFERRAL_STORAGE_KEY } from '@/lib/referral-tracking'
 
@@ -13,7 +13,22 @@ type PublicPricingService = {
   updatedAt: string
 }
 
-function buildPricingPlans(serviceMap: Record<string, PublicPricingService>, hasVipCoupon: boolean) {
+export type PricingPlan = {
+  icon: any
+  name: string
+  category: 'PONTUAL' | 'RECORRENTE'
+  description: string
+  price: number | null
+  priceLabel: string
+  originalPrice: number | null
+  badge: string | null
+  popular: boolean
+  features: string[]
+  cta: string
+  href: string
+}
+
+function buildPricingPlans(serviceMap: Record<string, PublicPricingService>, hasVipCoupon: boolean): PricingPlan[] {
   const manutencaoMensal = serviceMap.MANUTENCAO_MENSAL?.currentPrice ?? BUSINESS_RULES.MANUTENCAO_MENSAL
   const manutencaoPrecoFinal = hasVipCoupon ? 70 : manutencaoMensal
   const setupComercial = serviceMap.SETUP_SISTEMA?.currentPrice ?? BUSINESS_RULES.SETUP_SISTEMA_PRECO_PROMO
@@ -21,129 +36,157 @@ function buildPricingPlans(serviceMap: Record<string, PublicPricingService>, has
   const emailSetupComercial = serviceMap.EMAIL_SETUP?.currentPrice ?? BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO
 
   return [
-  {
-    icon: Wrench,
-    name: 'Manutenção Mensal',
-    description: 'Hospedagem e sustentação contínua do seu sistema com preço base flexível.',
-    price: manutencaoPrecoFinal,
-    priceLabel: `R$ ${manutencaoPrecoFinal}/mês`,
-    originalPrice: hasVipCoupon ? manutencaoMensal : null,
-    badge: hasVipCoupon ? 'Desconto VIP ativo' : null,
-    popular: false,
-    features: [
-      'Hospedagem em servidor dedicado Linux',
-      'Monitoramento de disponibilidade 24/7',
-      'Pequenas correções e reparos inclusos',
-      'Suporte via WhatsApp / e-mail',
-      'Preço base inicial mínimo para operação padrão',
-      'Depende da quantidade de informações e dados salvos',
-      'Limites definidos de capacidade, tráfego e velocidade de tempo de resposta',
-      'Filtros anti-DDoS e camadas extras de proteção sob consulta',
-    ],
-    cta: 'Contratar Manutenção',
-    href: '/precos#contact',
-  },
-  {
-    icon: Globe,
-    name: 'Setup do Sistema',
-    description: 'Configuração inicial de site, aplicativo ou sistema. Inclui 2h de programação + IA.',
-    price: setupComercial,
-    priceLabel: `R$ ${setupComercial}`,
-    originalPrice: setupReferencia,
-    badge: hasVipCoupon ? 'Indicação B2B ativa' : null,
-    popular: true,
-    features: [
-      '2h de programação inclusas',
-      `${BUSINESS_RULES.SETUP_SISTEMA_TOKENS_DIA.toLocaleString('pt-BR')} tokens/dia de IA`,
-      `~${BUSINESS_RULES.SETUP_SISTEMA_PAGINAS_APROX} páginas de programação interligada`,
-      'Deploy em produção (Vercel / servidor)',
-      'Configuração de domínio .com.br',
-      'Responsável técnico no registro.br',
-      `Valor real de referência: R$ ${setupReferencia}`,
-      'Desconto aplicado somente com indicação de parceiro B2B ativa',
-    ],
-    cta: 'Começar Setup',
-    href: '/precos#contact',
-  },
-  {
-    icon: Mail,
-    name: 'Configuração de E-mail',
-    description: 'Setup completo de e-mail profissional no domínio da empresa, sem desconto promocional.',
-    price: emailSetupComercial,
-    priceLabel: `R$ ${emailSetupComercial}`,
-    originalPrice: null,
-    badge: null,
-    popular: false,
-    features: [
-      'Por sistema / por domínio',
-      'E-mail profissional no domínio próprio',
-      'Servidor SSantana Infraestrutura',
-      `Manutenção: R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/mês por e-mail`,
-      'Parceria Google / Microsoft / Zoho (consultar)',
-      'Domínio .com.br = mais credibilidade',
-      'Preço público sem desconto comercial automático',
-      'Condições comerciais avaliadas por escopo e necessidade',
-    ],
-    cta: 'Configurar E-mail',
-    href: '/precos#contact',
-  },
-  {
-    icon: Mail,
-    name: 'E-mail Próprio (Servidor)',
-    description: 'E-mail profissional com IMAP/POP/SMTP/Webmail em servidor próprio SSantana Infraestrutura.',
-    price: BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL,
-    priceLabel: `R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/e-mail mês`,
-    originalPrice: null,
-    badge: null,
-    popular: false,
-    features: [
-      '5GB por conta de e-mail',
-      'IMAP, POP, SMTP e Webmail',
-      'Compatível com Outlook, Gmail e similares',
-      'Regras de encaminhamento ilimitadas',
-      'Adicionar/remover e-mail: R$ 15 por alteração',
-      `Setup obrigatório: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
-    ],
-    cta: 'Solicitar E-mail Próprio',
-    href: '/email',
-  },
-  {
-    icon: Globe,
-    name: 'Google / Microsoft / Zoho',
-    description: 'Configuração corporativa cloud com setup idêntico e mensalidade variável por dólar.',
-    price: null,
-    priceLabel: 'Mensal sob consulta (USD)',
-    originalPrice: null,
-    badge: null,
-    popular: false,
-    features: [
-      `Setup igual: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
-      'Preço mensal depende de usuários e armazenamento',
-      'Inclui avaliação de funcionalidades (Meet, Office, etc.)',
-      'Pode variar com oscilação BRL/USD',
-      'Recomendado para times em escala',
-    ],
-    cta: 'Calcular Cloud E-mail',
-    href: '/email',
-  },
-  {
-    icon: Star,
-    name: 'Consultoria Estratégica',
-    description: 'Consultoria com foco em decisão técnica, organização operacional e próximos passos aplicáveis.',
-    price: null,
-    priceLabel: hasVipCoupon ? 'R$ 200/h com indicação parceira' : 'R$ 400/h',
-    originalPrice: null,
-    badge: hasVipCoupon ? 'Condição parceira aplicada' : null,
-    popular: false,
-    features: [
-      'Reunião consultiva com diagnóstico prático do cenário atual',
-      'Plano objetivo de ações por prioridade e impacto',
-      'Feedback pós-reunião para orientar execução',
-      'Condição de R$ 200/h liberada somente por parceiro homologado',
-    ],
-    cta: 'Agendar Consultoria',
-    href: '/precos#contact',
-  },
+    {
+      icon: TrendingUp,
+      name: 'Laboratório Quantitativo M5',
+      category: 'RECORRENTE',
+      description: 'Rastreamento algorítmico 24h e backtest de estratégias (Forex, Cripto, Commodities e Ações - Zero OTC).',
+      price: 50,
+      priceLabel: 'R$ 50 no 1º mês',
+      originalPrice: 150,
+      badge: 'Boas-Vindas (-66%)',
+      popular: true,
+      features: [
+        'Rastreador algorítmico 24h no Telegram',
+        'Zero OTC: Mercado 100% Real (Forex, Cripto, Ações, Commodities)',
+        'Cruzamento de mais de 15 estratégias simultâneas em M5',
+        'Descarte automático de estratégias frias e de baixa assertividade',
+        'Pré-alerta com porcentagem exata de WinRate antes da vela abrir',
+        'Filtro de probabilidade para até Gale 2 sem proteção',
+        'Fins estritamente educacionais, analíticos e de estudo estatístico',
+        'Depois R$ 150/mês • Cancelamento livre a qualquer momento',
+      ],
+      cta: 'Assinar 1º Mês por R$ 50',
+      href: '/estudo-estrategias',
+    },
+    {
+      icon: Wrench,
+      name: 'Manutenção Mensal',
+      category: 'RECORRENTE',
+      description: 'Hospedagem e sustentação contínua do seu sistema com preço base flexível.',
+      price: manutencaoPrecoFinal,
+      priceLabel: `R$ ${manutencaoPrecoFinal}/mês`,
+      originalPrice: hasVipCoupon ? manutencaoMensal : null,
+      badge: hasVipCoupon ? 'Desconto Ativo' : null,
+      popular: false,
+      features: [
+        'Hospedagem em servidor dedicado Linux',
+        'Monitoramento de disponibilidade 24/7',
+        'Pequenas correções e reparos inclusos',
+        'Suporte via WhatsApp / e-mail',
+        'Preço base inicial mínimo para operação padrão',
+        'Depende da quantidade de informações e dados salvos',
+        'Limites definidos de capacidade, tráfego e velocidade de tempo de resposta',
+        'Filtros anti-DDoS e camadas extras de proteção sob consulta',
+      ],
+      cta: 'Contratar Manutenção',
+      href: '/precos#contact',
+    },
+    {
+      icon: Globe,
+      name: 'Setup do Sistema',
+      category: 'PONTUAL',
+      description: 'Configuração inicial de site, aplicativo ou sistema. Inclui 2h de programação + IA.',
+      price: setupComercial,
+      priceLabel: `R$ ${setupComercial}`,
+      originalPrice: setupReferencia,
+      badge: hasVipCoupon ? 'Condição Promocional' : null,
+      popular: false,
+      features: [
+        '2h de programação inclusas',
+        `${BUSINESS_RULES.SETUP_SISTEMA_TOKENS_DIA.toLocaleString('pt-BR')} tokens/dia de IA`,
+        `~${BUSINESS_RULES.SETUP_SISTEMA_PAGINAS_APROX} páginas de programação interligada`,
+        'Deploy em produção (Vercel / servidor)',
+        'Configuração de domínio .com.br',
+        'Responsável técnico no registro.br',
+        `Valor de tabela de referência: R$ ${setupReferencia}`,
+        'Condição especial liberada com cupom promocional no checkout',
+      ],
+      cta: 'Começar Setup',
+      href: '/precos#contact',
+    },
+    {
+      icon: Mail,
+      name: 'Configuração de E-mail',
+      category: 'PONTUAL',
+      description: 'Setup completo de e-mail profissional no domínio da empresa.',
+      price: emailSetupComercial,
+      priceLabel: `R$ ${emailSetupComercial}`,
+      originalPrice: null,
+      badge: null,
+      popular: false,
+      features: [
+        'Por sistema / por domínio',
+        'E-mail profissional no domínio próprio',
+        'Servidor SSantana Infraestrutura',
+        `Manutenção: R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/mês por e-mail`,
+        'Compatível com Google / Microsoft / Zoho',
+        'Domínio próprio = mais credibilidade e proteção SPF/DKIM',
+        'Condições especiais para pacotes corporativos',
+      ],
+      cta: 'Configurar E-mail',
+      href: '/precos#contact',
+    },
+    {
+      icon: Mail,
+      name: 'E-mail Próprio (Servidor)',
+      category: 'RECORRENTE',
+      description: 'E-mail profissional com IMAP/POP/SMTP/Webmail em servidor próprio SSantana Infraestrutura.',
+      price: BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL,
+      priceLabel: `R$ ${BUSINESS_RULES.EMAIL_MENSAL_POR_EMAIL}/e-mail mês`,
+      originalPrice: null,
+      badge: null,
+      popular: false,
+      features: [
+        '5GB por conta de e-mail',
+        'IMAP, POP, SMTP e Webmail',
+        'Compatível com Outlook, Gmail e similares',
+        'Regras de encaminhamento ilimitadas',
+        'Adicionar/remover e-mail: R$ 15 por alteração',
+        `Setup obrigatório: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
+      ],
+      cta: 'Solicitar E-mail Próprio',
+      href: '/email',
+    },
+    {
+      icon: Globe,
+      name: 'Google / Microsoft / Zoho',
+      category: 'RECORRENTE',
+      description: 'Configuração corporativa cloud com setup idêntico e mensalidade variável por dólar.',
+      price: null,
+      priceLabel: 'Mensal sob consulta (USD)',
+      originalPrice: null,
+      badge: null,
+      popular: false,
+      features: [
+        `Setup igual: R$ ${BUSINESS_RULES.EMAIL_SETUP_PRECO_PROMO}`,
+        'Preço mensal depende de usuários e armazenamento',
+        'Inclui avaliação de funcionalidades (Meet, Office, etc.)',
+        'Pode variar com oscilação BRL/USD',
+        'Recomendado para times em escala',
+      ],
+      cta: 'Calcular Cloud E-mail',
+      href: '/email',
+    },
+    {
+      icon: Star,
+      name: 'Consultoria Estratégica',
+      category: 'PONTUAL',
+      description: 'Consultoria com foco em decisão técnica, organização operacional e próximos passos aplicáveis.',
+      price: null,
+      priceLabel: hasVipCoupon ? 'R$ 200/h com cupom promocional' : 'R$ 400/h',
+      originalPrice: null,
+      badge: hasVipCoupon ? 'Desconto Promocional' : null,
+      popular: false,
+      features: [
+        'Reunião consultiva com diagnóstico prático do cenário atual',
+        'Plano objetivo de ações por prioridade e impacto',
+        'Feedback pós-reunião para orientar execução',
+        'Condição de R$ 200/h disponível mediante ativação de cupom',
+      ],
+      cta: 'Agendar Consultoria',
+      href: '/precos#contact',
+    },
   ]
 }
 
@@ -194,7 +237,14 @@ export default function PricingSection() {
 
   const hasVipCoupon = !!activeCode
 
+  const [selectedCategory, setSelectedCategory] = useState<'ALL' | 'PONTUAL' | 'RECORRENTE'>('ALL')
+
   const pricingPlans = useMemo(() => buildPricingPlans(serviceMap, hasVipCoupon), [serviceMap, hasVipCoupon])
+
+  const filteredPlans = useMemo(() => {
+    if (selectedCategory === 'ALL') return pricingPlans
+    return pricingPlans.filter((p) => p.category === selectedCategory)
+  }, [pricingPlans, selectedCategory])
 
   const setupDisplay = useMemo(() => {
     const fullPrice = serviceMap.SETUP_SISTEMA?.referencePrice ?? BUSINESS_RULES.SETUP_SISTEMA_PRECO_REAL
@@ -223,26 +273,24 @@ export default function PricingSection() {
             Escada de Investimento por Serviço
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
-            Do plano de entrada ao cenário enterprise, você visualiza quanto investir e o que recebe em cada nível.
-            <br />
-            Suporte e hospedagem a partir de <strong>R$ {serviceMap.MANUTENCAO_MENSAL?.currentPrice ?? BUSINESS_RULES.MANUTENCAO_MENSAL}/mês</strong> (ou R$ 70/mês com indicação parceira para planos essenciais).
+            Estrutura transparente com serviços pontuais e assinaturas recorrentes para cada momento da sua operação digital.
           </p>
           <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-full text-sm font-semibold mb-6">
             Condições comerciais sujeitas à validação de escopo e elegibilidade.
           </div>
 
           <div className="mx-auto mt-2 max-w-3xl rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-left">
-            <p className="text-sm font-semibold text-cyan-800">Indicação VIP e Cupom de Parceiro</p>
-            <p className="mt-2 text-sm text-cyan-900">
+            <p className="text-sm font-semibold text-cyan-800">Possui um Cupom Promocional?</p>
+            <p className="mt-1 text-sm text-cyan-900">
               {hasVipCoupon
-                ? `Cupom ${activeCode} ativo. Desconto no setup liberado${partnerName ? ` por indicação de ${partnerName}` : ''}.`
-                : 'Sem cupom ativo: exibimos apenas preço público. Desconto fica disponível somente no setup quando há indicação parceira válida.'}
+                ? `Cupom ${activeCode} ativo! Desconto promocional aplicado com sucesso no setup.`
+                : 'Insira seu código promocional abaixo para validar condições especiais em seu plano ou contratação.'}
             </p>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
               <input
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                placeholder="Digite código de cupom/parceiro"
+                placeholder="Digite seu código de cupom"
                 className="w-full rounded-lg border border-cyan-300 px-3 py-2 text-sm text-gray-900 outline-none focus:border-cyan-500"
               />
               <button
@@ -275,8 +323,44 @@ export default function PricingSection() {
           </article>
         </div>
 
+        {/* Filtro de Categorias: Pontuais vs Assinaturas */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex p-1.5 rounded-2xl bg-slate-100 border border-slate-200">
+            <button
+              onClick={() => setSelectedCategory('ALL')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                selectedCategory === 'ALL'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Todos os Planos ({pricingPlans.length})
+            </button>
+            <button
+              onClick={() => setSelectedCategory('PONTUAL')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                selectedCategory === 'PONTUAL'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Serviços Pontuais & Avulsos ({pricingPlans.filter((p) => p.category === 'PONTUAL').length})
+            </button>
+            <button
+              onClick={() => setSelectedCategory('RECORRENTE')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                selectedCategory === 'RECORRENTE'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Assinaturas Recorrentes ({pricingPlans.filter((p) => p.category === 'RECORRENTE').length})
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {pricingPlans.map((plan, index) => (
+          {filteredPlans.map((plan, index) => (
             <div
               key={index}
               className={`relative bg-white rounded-2xl p-8 border-2 ${

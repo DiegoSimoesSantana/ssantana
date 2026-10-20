@@ -6,7 +6,7 @@ import PricingSection from '@/components/marketing/PricingSection'
 export const metadata: Metadata = {
   title: 'Precos e Investimento | Studio Santana',
   description:
-    'Escada de investimento dos servicos Studio Santana, com desconto de setup somente para indicacao parceira B2B ativa.',
+    'Escada de investimento dos servicos Studio Santana, com valores transparentes para serviços pontuais e assinaturas recorrentes.',
 }
 
 export default function EducationPricingPage() {

@@ -20,7 +20,9 @@ import {
   Copy,
   Clock,
   AlertTriangle,
-  Heart
+  Heart,
+  TrendingUp,
+  BarChart3
 } from 'lucide-react'
 import { DynamicPricingConfig, DEFAULT_DYNAMIC_PRICING } from '@/lib/dynamic-pricing'
 
@@ -29,7 +31,7 @@ interface VitrineOfertasProps {
   whatsappNumber?: string
 }
 
-type ServiceTypeKey = 'SUPORTE_30M' | 'SUPORTE_1H' | 'MVP_IA' | 'SAAS_CLINICAS' | 'EMAIL'
+type ServiceTypeKey = 'SUPORTE_30M' | 'SUPORTE_1H' | 'MVP_IA' | 'SAAS_CLINICAS' | 'EMAIL' | 'QUANT_M5'
 
 const GOOGLE_CALENDAR_URL = 'https://calendar.google.com/calendar/u/0/appointments/AcZssZ0F7YBCeVqWN-bBLEucbSzyEGjYitSxiVg52jw='
 
@@ -83,6 +85,7 @@ export default function VitrineOfertasRapidas({
   whatsappNumber = '5571988068222',
 }: VitrineOfertasProps) {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<'ALL' | 'PONTUAL' | 'RECORRENTE'>('ALL')
 
   // Estado do Modal Pay-Before-Book Gate
   const [modalOpen, setModalOpen] = useState(false)
@@ -102,6 +105,30 @@ export default function VitrineOfertasRapidas({
     acceptedTerms: false,
   })
   const [isPreFilled, setIsPreFilled] = useState(false)
+  const [alreadyAcceptedTerms, setAlreadyAcceptedTerms] = useState(false)
+  const [checkingTerms, setCheckingTerms] = useState(false)
+
+  // Função para verificar se o cliente já assinou/aceitou termos anteriormente
+  const checkTermsStatus = async (email: string) => {
+    if (!email || !email.includes('@')) return
+    try {
+      setCheckingTerms(true)
+      const res = await fetch(`/api/account/terms-status?email=${encodeURIComponent(email)}`, { cache: 'no-store' })
+      if (res.ok) {
+        const data = await res.json()
+        if (data.alreadyAccepted) {
+          setAlreadyAcceptedTerms(true)
+          setClientData((prev) => ({ ...prev, acceptedTerms: true }))
+        } else {
+          setAlreadyAcceptedTerms(false)
+        }
+      }
+    } catch (e) {
+      // no-op
+    } finally {
+      setCheckingTerms(false)
+    }
+  }
 
   // Estados da cobrança / PicPay
   const [generatingOrder, setGeneratingOrder] = useState(false)
@@ -133,6 +160,9 @@ export default function VitrineOfertasRapidas({
         document: saved.document || prev.document,
       }))
       setIsPreFilled(true)
+      if (saved.email) {
+        void checkTermsStatus(saved.email)
+      }
     }
 
     // Se houver sessão de cliente logado, também aproveita dados da conta
@@ -149,6 +179,9 @@ export default function VitrineOfertasRapidas({
             if (!prev.name && data.user.name) {
               persistClientData(updated)
               setIsPreFilled(true)
+            }
+            if (updated.email) {
+              void checkTermsStatus(updated.email)
             }
             return updated
           })
@@ -167,6 +200,9 @@ export default function VitrineOfertasRapidas({
           phone: updated.phone,
           document: updated.document,
         })
+      }
+      if (field === 'email' && typeof value === 'string' && value.includes('@')) {
+        void checkTermsStatus(value)
       }
       return updated
     })
@@ -228,8 +264,12 @@ export default function VitrineOfertasRapidas({
     e.preventDefault()
     if (!selectedService) return
 
-    if (!clientData.acceptedTerms) {
-      setOrderError('Você deve concordar com o termo de reserva e retenção de horário para continuar.')
+    if (!alreadyAcceptedTerms && !clientData.acceptedTerms) {
+      setOrderError(
+        selectedService.key === 'QUANT_M5'
+          ? 'Você deve concordar com o termo de laboratório quantitativo e isenção de risco para continuar.'
+          : 'Você deve concordar com o termo de alinhamento e ativação do serviço para continuar.'
+      )
       return
     }
 
@@ -255,7 +295,7 @@ export default function VitrineOfertasRapidas({
           email: clientData.email,
           phone: clientData.phone,
           document: clientData.document,
-          acceptedTerms: clientData.acceptedTerms,
+          acceptedTerms: alreadyAcceptedTerms ? true : clientData.acceptedTerms,
         }),
       })
 
@@ -359,11 +399,159 @@ export default function VitrineOfertasRapidas({
           </p>
         </div>
 
-        {/* Grid de 4 Ofertas de Alta Conversão */}
+        {/* Filtro por Categorias: Pontual vs Recorrente */}
+        <div className="flex justify-center mb-10">
+          <div className="inline-flex p-1.5 rounded-2xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('ALL')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                selectedCategory === 'ALL'
+                  ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Todas as Soluções
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('PONTUAL')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                selectedCategory === 'PONTUAL'
+                  ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Serviços Pontuais & Avulsos
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('RECORRENTE')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${
+                selectedCategory === 'RECORRENTE'
+                  ? 'bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Assinaturas Recorrentes
+            </button>
+          </div>
+        </div>
+
+        {/* Grid de Ofertas de Alta Conversão */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
+          {/* OFERTA QUANT: Laboratório Quantitativo M5 (Backtest & Estudo de Estratégias) */}
+          {(selectedCategory === 'ALL' || selectedCategory === 'RECORRENTE') && (
+            <div className="rounded-3xl border-2 border-indigo-500/50 bg-gradient-to-br from-indigo-50/50 via-white to-sky-50/40 dark:from-indigo-950/30 dark:via-zinc-900/60 dark:to-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-md hover:shadow-lg transition relative overflow-hidden">
+              <div className="absolute top-0 right-0 transform translate-x-2 -translate-y-2">
+                <span className="px-3.5 py-1 rounded-bl-2xl rounded-tr-2xl text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white shadow-sm">
+                  Zero OTC • Mercado Real
+                </span>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 uppercase tracking-wider">
+                    Assinatura Recorrente
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  Laboratório Quantitativo M5 (Backtest & Estudo)
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
+                  Rastreador algorítmico 24h no Telegram para operações de 5 minutos (M5 com até Gale 2 sem proteção).
+                  Cruza mais de 15 estratégias simultâneas, descarta estratégias frias e entrega pré-alerta estatístico com WinRate antes de cada vela abrir.
+                </p>
+
+                {/* Preço: De R$ 150/mês por R$ 50 no 1º mês */}
+                <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
+                  <span className="text-xs text-slate-400 line-through block">
+                    Valor normal da assinatura: R$ 150,00/mês
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                      R$ 50,00
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">no 1º mês (Boas-Vindas)</span>
+                  </div>
+                  <span className="text-xs text-indigo-700 dark:text-indigo-300 font-semibold mt-1 block">
+                    ✓ Depois R$ 150,00/mês • Sem fidelidade • Cancele quando quiser.
+                  </span>
+                </div>
+
+                {/* Acordeão */}
+                <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => toggleAccordion('quant')}
+                    className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-indigo-600 transition"
+                  >
+                    <span>{openAccordion === 'quant' ? 'Ocultar detalhes' : 'Ver diferenciais quantitativos'}</span>
+                    {openAccordion === 'quant' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {openAccordion === 'quant' && (
+                    <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span><strong>Zero OTC (100% Mercado Real):</strong> Apenas Forex, Cripto, Ações e Commodities oficiais.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span><strong>Backtest Implacável:</strong> Cruzamento de 15+ estratégias matemáticas por ativo simultâneas.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span><strong>Descarte Automático:</strong> Estratégias em queda de assertividade são removidas na hora.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span><strong>Pré-Alerta com WinRate:</strong> Você recebe o aviso com a porcentagem estatística antes da vela abrir.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span><strong>Estudo e Estatística:</strong> Decisão 100% autônoma. Não constitui recomendação de investimento.</span>
+                      </li>
+                    </ul>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleOpenCheckoutModal(
+                      'QUANT_M5',
+                      'Laboratório Quantitativo M5 (Backtest & Estudo de Estratégias)',
+                      50,
+                      '1º Mês de Boas-Vindas por R$ 50,00 (depois R$ 150/mês). Grupo rastreador 24h no Telegram.'
+                    )
+                  }
+                  className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Assinar 1º Mês por R$ 50
+                </button>
+
+                <a
+                  href="/estudo-estrategias"
+                  className="block text-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline py-1"
+                >
+                  Ver página detalhada da metodologia →
+                </a>
+              </div>
+            </div>
+          )}
+
           {/* OFERTA 1: MVP / Criação de Sites e Sistemas Web com IA */}
-          <div className="rounded-3xl border-2 border-sky-500/40 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+          {(selectedCategory === 'ALL' || selectedCategory === 'PONTUAL') && (
+            <div className="rounded-3xl border-2 border-sky-500/40 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
             <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="p-3 rounded-2xl bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400">
@@ -446,274 +634,281 @@ export default function VitrineOfertasRapidas({
               Contratar com PIX / Cartão (PicPay)
             </button>
           </div>
+          )}
 
           {/* OFERTA 2: SOS Suporte de TI Remoto (Hora Técnica & 30 min por R$ 40,00) */}
-          <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
-                  <Wrench className="w-6 h-6" />
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 uppercase tracking-wider">
-                  Atendimento Imediato
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                SOS Suporte de TI Remoto (Hora Técnica)
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
-                Destrave problemas urgentes em computadores, redes e sistemas sem sair do seu escritório.
-              </p>
-
-              {/* Preço Proporcional Exato: 30 min R$ 40,00 e 1h R$ 80,00 */}
-              <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
-                <div className="flex items-baseline justify-between mb-1">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Diagnóstico / 30 Minutos:</span>
-                  <span className="text-xl font-extrabold text-amber-600 dark:text-amber-400">
-                    {formatBRL(pricing.suporteRapido30MinPrice)}
+          {(selectedCategory === 'ALL' || selectedCategory === 'PONTUAL') && (
+            <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
+                    <Wrench className="w-6 h-6" />
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700 uppercase tracking-wider">
+                    Atendimento Imediato
                   </span>
                 </div>
-                <div className="flex items-baseline justify-between border-t border-slate-100 dark:border-zinc-700 pt-2">
-                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">1 Hora Completa Especializada:</span>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">
-                    {formatBRL(pricing.suporteRemoto1hPrice)}
-                  </span>
+
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  SOS Suporte de TI Remoto (Hora Técnica)
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
+                  Destrave problemas urgentes em computadores, redes e sistemas sem sair do seu escritório.
+                </p>
+
+                {/* Preço Proporcional Exato: 30 min R$ 40,00 e 1h R$ 80,00 */}
+                <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
+                  <div className="flex items-baseline justify-between mb-1">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">Diagnóstico / 30 Minutos:</span>
+                    <span className="text-xl font-extrabold text-amber-600 dark:text-amber-400">
+                      {formatBRL(pricing.suporteRapido30MinPrice)}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline justify-between border-t border-slate-100 dark:border-zinc-700 pt-2">
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">1 Hora Completa Especializada:</span>
+                    <span className="text-2xl font-black text-slate-900 dark:text-white">
+                      {formatBRL(pricing.suporteRemoto1hPrice)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Acordeão */}
+                <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => toggleAccordion('suporte')}
+                    className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-amber-600 transition"
+                  >
+                    <span>{openAccordion === 'suporte' ? 'Ocultar detalhes' : 'Ver casos comuns resolvidos'}</span>
+                    {openAccordion === 'suporte' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {openAccordion === 'suporte' && (
+                    <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Configuração de Certificado Digital (A1 / A3 Token) para advogados e contadores.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Limpeza de lentidão, remoção de malwares e ajustes de rede corporativa.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Configuração de roteadores, impressoras e compartilhamentos seguros.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Conexão remota criptografada via AnyDesk / TeamViewer / Google Meet.</span>
+                      </li>
+                    </ul>
+                  )}
                 </div>
               </div>
 
-              {/* Acordeão */}
-              <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
-                  type="button"
-                  onClick={() => toggleAccordion('suporte')}
-                  className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-amber-600 transition"
+                  onClick={() =>
+                    handleOpenCheckoutModal(
+                      'SUPORTE_30M',
+                      'Diagnóstico / Suporte Rápido Remoto (30 Minutos)',
+                      pricing.suporteRapido30MinPrice,
+                      'Atendimento expresso de 30 minutos com decisor técnico'
+                    )
+                  }
+                  className="py-3 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-bold text-xs sm:text-sm text-center transition flex items-center justify-center gap-1.5 shadow-md active:scale-95"
                 >
-                  <span>{openAccordion === 'suporte' ? 'Ocultar detalhes' : 'Ver casos comuns resolvidos'}</span>
-                  {openAccordion === 'suporte' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  <Zap className="w-4 h-4" />
+                  30 Min • {formatBRL(pricing.suporteRapido30MinPrice)}
                 </button>
 
-                {openAccordion === 'suporte' && (
-                  <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Configuração de Certificado Digital (A1 / A3 Token) para advogados e contadores.</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Limpeza de lentidão, remoção de malwares e ajustes de rede corporativa.</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Configuração de roteadores, impressoras e compartilhamentos seguros.</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Conexão remota criptografada via AnyDesk / TeamViewer / Google Meet.</span>
-                    </li>
-                  </ul>
-                )}
+                <button
+                  onClick={() =>
+                    handleOpenCheckoutModal(
+                      'SUPORTE_1H',
+                      'SOS Suporte de TI Remoto Especializado (1 Hora)',
+                      pricing.suporteRemoto1hPrice,
+                      'Sessão completa de 1 hora técnica especializada'
+                    )
+                  }
+                  className="py-3 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white font-bold text-xs sm:text-sm text-center transition flex items-center justify-center gap-1.5 shadow-md active:scale-95"
+                >
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  1 Hora • {formatBRL(pricing.suporteRemoto1hPrice)}
+                </button>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <button
-                onClick={() =>
-                  handleOpenCheckoutModal(
-                    'SUPORTE_30M',
-                    'Diagnóstico / Suporte Rápido Remoto (30 Minutos)',
-                    pricing.suporteRapido30MinPrice,
-                    'Atendimento expresso de 30 minutos com decisor técnico'
-                  )
-                }
-                className="py-3 px-3 rounded-xl bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-slate-950 font-bold text-xs sm:text-sm text-center transition flex items-center justify-center gap-1.5 shadow-md active:scale-95"
-              >
-                <Zap className="w-4 h-4" />
-                30 Min • {formatBRL(pricing.suporteRapido30MinPrice)}
-              </button>
-
-              <button
-                onClick={() =>
-                  handleOpenCheckoutModal(
-                    'SUPORTE_1H',
-                    'SOS Suporte de TI Remoto Especializado (1 Hora)',
-                    pricing.suporteRemoto1hPrice,
-                    'Sessão completa de 1 hora técnica especializada'
-                  )
-                }
-                className="py-3 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white font-bold text-xs sm:text-sm text-center transition flex items-center justify-center gap-1.5 shadow-md active:scale-95"
-              >
-                <Clock className="w-4 h-4 text-amber-500" />
-                1 Hora • {formatBRL(pricing.suporteRemoto1hPrice)}
-              </button>
-            </div>
-          </div>
+          )}
 
           {/* OFERTA 3: SaaS para Clínicas, Psicólogos e Advogados */}
-          <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
-                  <Stethoscope className="w-6 h-6" />
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 uppercase tracking-wider">
-                  Lote Promocional
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                SaaS Clínicas, Psicólogos & Advogados
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
-                Sistema completo: Site próprio, agenda sincronizada ao Google/Outlook e Bot de WhatsApp 24/7.
-              </p>
-
-              {/* Preço */}
-              <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
-                <span className="text-xs text-slate-400 line-through block">
-                  Valor normal após 3 meses: {formatBRL(pricing.saasVerticalNormalPrice)}/mês
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
-                    {formatBRL(pricing.saasVerticalPromoPrice)}/mês
+          {(selectedCategory === 'ALL' || selectedCategory === 'RECORRENTE') && (
+            <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400">
+                    <Stethoscope className="w-6 h-6" />
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 uppercase tracking-wider">
+                    Lote Promocional
                   </span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">nos primeiros 3 meses</span>
                 </div>
-                <span className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold mt-1 block">
-                  ✓ Sem fidelidade • Prazo de implantação: 30 dias após assinatura.
-                </span>
+
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  SaaS Clínicas, Psicólogos & Advogados
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
+                  Sistema completo: Site próprio, agenda sincronizada ao Google/Outlook e Bot de WhatsApp 24/7.
+                </p>
+
+                {/* Preço */}
+                <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
+                  <span className="text-xs text-slate-400 line-through block">
+                    Valor normal após 3 meses: {formatBRL(pricing.saasVerticalNormalPrice)}/mês
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">
+                      {formatBRL(pricing.saasVerticalPromoPrice)}/mês
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">nos primeiros 3 meses</span>
+                  </div>
+                  <span className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold mt-1 block">
+                    ✓ Sem fidelidade • Prazo de implantação: 30 dias após assinatura.
+                  </span>
+                </div>
+
+                {/* Acordeão */}
+                <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => toggleAccordion('saas')}
+                    className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-emerald-600 transition"
+                  >
+                    <span>{openAccordion === 'saas' ? 'Ocultar detalhes' : 'Ver diferenciais do sistema'}</span>
+                    {openAccordion === 'saas' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {openAccordion === 'saas' && (
+                    <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Padrão homologado AutoMed Bahia (médicos, dentistas e terapeutas).</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Agenda integrada por especialista e por sala de atendimento.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Bot no WhatsApp confirma consultas automaticamente, reduzindo faltas em até 30%.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Contrato com blindagem anti-chargeback (código de 6 dígitos).</span>
+                      </li>
+                    </ul>
+                  )}
+                </div>
               </div>
 
-              {/* Acordeão */}
-              <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion('saas')}
-                  className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-emerald-600 transition"
-                >
-                  <span>{openAccordion === 'saas' ? 'Ocultar detalhes' : 'Ver diferenciais do sistema'}</span>
-                  {openAccordion === 'saas' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-
-                {openAccordion === 'saas' && (
-                  <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Padrão homologado AutoMed Bahia (médicos, dentistas e terapeutas).</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Agenda integrada por especialista e por sala de atendimento.</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Bot no WhatsApp confirma consultas automaticamente, reduzindo faltas em até 30%.</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Contrato com blindagem anti-chargeback (código de 6 dígitos).</span>
-                    </li>
-                  </ul>
-                )}
-              </div>
+              <button
+                onClick={() =>
+                  handleOpenCheckoutModal(
+                    'SAAS_CLINICAS',
+                    'SaaS Clínicas, Psicólogos & Escritórios Jurídicos',
+                    pricing.saasVerticalPromoPrice,
+                    'Mensalidade dos primeiros 3 meses promocionais'
+                  )
+                }
+                className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 active:scale-95"
+              >
+                <CreditCard className="w-4 h-4" />
+                Garantir Lote Promocional
+              </button>
             </div>
-
-            <button
-              onClick={() =>
-                handleOpenCheckoutModal(
-                  'SAAS_CLINICAS',
-                  'SaaS Clínicas, Psicólogos & Escritórios Jurídicos',
-                  pricing.saasVerticalPromoPrice,
-                  'Mensalidade dos primeiros 3 meses promocionais'
-                )
-              }
-              className="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 active:scale-95"
-            >
-              <CreditCard className="w-4 h-4" />
-              Garantir Lote Promocional
-            </button>
-          </div>
+          )}
 
           {/* OFERTA 4: E-mail Corporativo Profissional */}
-          <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 uppercase tracking-wider">
-                  Blindagem Antispam
-                </span>
-              </div>
-
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                E-mail Corporativo Profissional Blindado
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
-                Módulo de instalação e setup inicial de e-mail. Após a contratação, você seleciona a quantidade de caixas postais adicionais e define as configurações avançadas diretamente no Portal Interno do Cliente.
-              </p>
-
-              {/* Preço */}
-              <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
-                <span className="text-xs text-slate-400 line-through block">
-                  Setup de referência: {formatBRL(pricing.emailSetupReferencePrice)}
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
-                    {formatBRL(pricing.emailMensalPorContaPrice)}/mês
+          {(selectedCategory === 'ALL' || selectedCategory === 'PONTUAL') && (
+            <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-zinc-900/60 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700 uppercase tracking-wider">
+                    Blindagem Antispam
                   </span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">por conta adicional</span>
                 </div>
-                <span className="text-xs text-slate-500 dark:text-zinc-400 mt-1 block">
-                  Setup inicial promocional a partir de {formatBRL(pricing.emailSetupPromocionalPrice)}.
-                </span>
+
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  E-mail Corporativo Profissional Blindado
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
+                  Módulo de instalação e setup inicial de e-mail. Após a contratação, você seleciona a quantidade de caixas postais adicionais e define as configurações avançadas diretamente no Portal Interno do Cliente.
+                </p>
+
+                {/* Preço */}
+                <div className="mb-6 p-4 rounded-2xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700">
+                  <span className="text-xs text-slate-400 line-through block">
+                    Setup de referência: {formatBRL(pricing.emailSetupReferencePrice)}
+                  </span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                      {formatBRL(pricing.emailMensalPorContaPrice)}/mês
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">por conta adicional</span>
+                  </div>
+                  <span className="text-xs text-slate-500 dark:text-zinc-400 mt-1 block">
+                    Setup inicial promocional a partir de {formatBRL(pricing.emailSetupPromocionalPrice)}.
+                  </span>
+                </div>
+
+                {/* Acordeão */}
+                <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
+                  <button
+                    type="button"
+                    onClick={() => toggleAccordion('email')}
+                    className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-indigo-600 transition"
+                  >
+                    <span>{openAccordion === 'email' ? 'Ocultar detalhes' : 'Ver especificações técnicas'}</span>
+                    {openAccordion === 'email' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </button>
+
+                  {openAccordion === 'email' && (
+                    <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>SPF, DKIM e DMARC configurados para evitar que seus e-mails caiam no Spam.</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Acesso via Webmail moderno, Outlook, celular (IMAP/SMTP).</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span>Adicione contas extras a qualquer momento por apenas R$ 15/mês no painel.</span>
+                      </li>
+                    </ul>
+                  )}
+                </div>
               </div>
 
-              {/* Acordeão */}
-              <div className="border-t border-slate-200 dark:border-zinc-800 pt-4 mb-6">
-                <button
-                  type="button"
-                  onClick={() => toggleAccordion('email')}
-                  className="w-full flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-zinc-300 hover:text-indigo-600 transition"
-                >
-                  <span>{openAccordion === 'email' ? 'Ocultar detalhes' : 'Ver especificações técnicas'}</span>
-                  {openAccordion === 'email' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-
-                {openAccordion === 'email' && (
-                  <ul className="mt-3 space-y-2 text-xs text-slate-600 dark:text-zinc-400 animate-fade-in">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>SPF, DKIM e DMARC configurados para evitar que seus e-mails caiam no Spam.</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Acesso via Webmail moderno, Outlook, celular (IMAP/SMTP).</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                      <span>Adicione contas extras a qualquer momento por apenas R$ 15/mês no painel.</span>
-                    </li>
-                  </ul>
-                )}
-              </div>
+              <button
+                onClick={() =>
+                  handleOpenCheckoutModal(
+                    'EMAIL',
+                    'E-mail Corporativo Profissional Blindado',
+                    pricing.emailSetupPromocionalPrice,
+                    'Módulo de setup inicial e blindagem DNS. Caixas adicionais gerenciadas no painel.'
+                  )
+                }
+                className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
+              >
+                <CreditCard className="w-4 h-4" />
+                Configurar E-mail Profissional
+              </button>
             </div>
-
-            <button
-              onClick={() =>
-                handleOpenCheckoutModal(
-                  'EMAIL',
-                  'E-mail Corporativo Profissional Blindado',
-                  pricing.emailSetupPromocionalPrice,
-                  'Módulo de setup inicial e blindagem DNS. Caixas adicionais gerenciadas no painel.'
-                )
-              }
-              className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
-            >
-              <CreditCard className="w-4 h-4" />
-              Configurar E-mail Profissional
-            </button>
-          </div>
+          )}
 
           {/* OFERTA 5: Apoio a Projetos Gratuitos & Apps Livres */}
           <div className="md:col-span-2 rounded-3xl border border-rose-300 dark:border-rose-900/60 bg-gradient-to-r from-rose-50/80 via-white to-amber-50/60 dark:from-rose-950/30 dark:via-zinc-900/60 dark:to-zinc-900/60 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition">
@@ -864,21 +1059,39 @@ export default function VitrineOfertasRapidas({
                   />
                 </div>
 
-                {/* CHECKBOX DO TERMO DE ALINHAMENTO TÉCNICO */}
-                <div className="p-3.5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/60">
-                  <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700 dark:text-zinc-300 leading-relaxed">
-                    <input
-                      type="checkbox"
-                      required
-                      checked={clientData.acceptedTerms}
-                      onChange={(e) => setClientData({ ...clientData, acceptedTerms: e.target.checked })}
-                      className="mt-0.5 w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 shrink-0"
-                    />
-                    <span>
-                      <strong>Alinhamento e Ativação do Serviço:</strong> Ao confirmar o pagamento, seu atendimento técnico é reservado com prioridade. Após a confirmação, você se torna cliente ativo e terá direito imediato a chamada de reunião ou ligação direta com nosso decisor técnico para alinhar e configurar tudo sob medida.
-                    </span>
-                  </label>
-                </div>
+                {/* TERMO DE CONTRATAÇÃO INTELIGENTE (DISPENSA SE JÁ ACEITO ANTERIORMENTE) */}
+                {alreadyAcceptedTerms ? (
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-left space-y-1">
+                    <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>Termos Gerais Pré-Aceitos em seu Cadastro</span>
+                    </div>
+                    <p className="text-[11px] text-emerald-700 dark:text-emerald-400 leading-relaxed">
+                      Identificamos que você já possui cadastro e aceitou os termos contratuais em serviços anteriores da SSantana. Não é necessário preencher ou assinar novamente.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="p-3.5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/60">
+                    <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700 dark:text-zinc-300 leading-relaxed">
+                      <input
+                        type="checkbox"
+                        required
+                        checked={clientData.acceptedTerms}
+                        onChange={(e) => setClientData({ ...clientData, acceptedTerms: e.target.checked })}
+                        className="mt-0.5 w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 shrink-0"
+                      />
+                      {selectedService.key === 'QUANT_M5' ? (
+                        <span>
+                          <strong>Declaração de Estudo Quantitativo e Isenção de Risco:</strong> Reconheço expressamente que este serviço consiste em um laboratório algorítmico e ferramenta de estudo estatístico com backtests automatizados para análise de mercado. O robô rastreador em tempo real no Telegram NÃO fornece recomendações financeiras nem consultoria de investimentos. Toda e qualquer decisão operacional é de minha exclusiva e total responsabilidade, isentando a SSantana Tecnologia de qualquer obrigação sobre resultados de mercado.
+                        </span>
+                      ) : (
+                        <span>
+                          <strong>Alinhamento e Ativação do Serviço:</strong> Ao confirmar o pagamento, seu atendimento técnico é reservado com prioridade. Após a confirmação, você se torna cliente ativo e terá direito imediato a chamada de reunião ou ligação direta com nosso decisor técnico para alinhar e configurar tudo sob medida.
+                        </span>
+                      )}
+                    </label>
+                  </div>
+                )}
 
                 <button
                   type="submit"

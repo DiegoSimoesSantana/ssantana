@@ -5,20 +5,37 @@ import { getDynamicPricing } from '@/lib/dynamic-pricing'
 import { z } from 'zod'
 
 const quickOrderSchema = z.object({
-  serviceType: z.enum(['SUPORTE_30M', 'SUPORTE_1H', 'MVP_IA', 'SAAS_CLINICAS', 'EMAIL']),
+  serviceType: z.enum(['SUPORTE_30M', 'SUPORTE_1H', 'MVP_IA', 'SAAS_CLINICAS', 'EMAIL', 'QUANT_M5']),
   name: z.string().min(3, 'Nome é obrigatório'),
   email: z.string().email('E-mail inválido'),
   phone: z.string().min(10, 'Telefone com DDD é obrigatório'),
   document: z.string().min(11, 'CPF ou CNPJ válido é obrigatório'),
-  acceptedTerms: z.literal(true, {
-    errorMap: () => ({ message: 'É obrigatório aceitar o termo de retenção para reserva da agenda.' }),
-  }),
+  acceptedTerms: z.boolean().optional(),
 })
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const parsed = quickOrderSchema.parse(body)
+
+    // Verificar se o cliente já aceitou os termos anteriormente
+    const previousContract = await prisma.contract.findFirst({
+      where: {
+        client: { email: parsed.email.toLowerCase() },
+        OR: [
+          { status: { in: ['SIGNED', 'SENT'] } },
+          { signedAt: { not: null } },
+        ],
+      },
+    })
+    const clientAlreadyAccepted = Boolean(previousContract)
+
+    if (!clientAlreadyAccepted && !parsed.acceptedTerms) {
+      return NextResponse.json(
+        { error: 'Para novos clientes, é obrigatório aceitar os termos de contratação para continuar.' },
+        { status: 400 }
+      )
+    }
 
     const pricing = await getDynamicPricing()
 
@@ -51,6 +68,11 @@ export async function POST(request: NextRequest) {
         title = 'E-mail Corporativo Profissional Blindado (Setup)'
         description = 'Configuração de domínio próprio com blindagem antispam SPF, DKIM e DMARC.'
         amount = pricing.emailSetupPromocionalPrice || 150.0
+        break
+      case 'QUANT_M5':
+        title = 'Laboratório Quantitativo M5: Estudo de Estratégias & Backtest (1º Mês)'
+        description = 'Assinatura mensal para estudo estatístico com rastreador no Telegram (Zero OTC: Forex, Cripto, Commodities, Ações). Mais de 15 estratégias filtradas simultaneamente em M5 (até Gale 2 sem proteção). Fins educacionais e analíticos.'
+        amount = 50.0 // R$ 50,00 no primeiro mês de boas-vindas (depois R$ 150/mês)
         break
     }
 
@@ -116,17 +138,36 @@ export async function POST(request: NextRequest) {
             dueDate: new Date().toISOString(),
           },
         ],
-        cancellationRetentionRate: 0.50, // 50% de retenção em caso de cancelamento com menos de 24h ou não comparecimento
+        cancellationRetentionRate: parsed.serviceType === 'QUANT_M5' ? 0.0 : 0.50,
         clientDocument: parsed.document,
         status: 'SENT',
-        content: {
+        content: parsed.serviceType === 'QUANT_M5' ? {
+          term: 'Contrato de Assinatura - Laboratório Quantitativo de Análise & Backtest M5. Plataforma de inteligência de dados, rastreamento algorítmico e backtests históricos em tempo real em mercado real (Zero OTC). As métricas, probabilidades e pré-alertas possuem finalidade estritamente educacional, analítica e de pesquisa estatística. Não constituem assessoria, consultoria, recomendação ou indicação de investimentos. O assinante assume total e irrestrita responsabilidade por qualquer operação financeira que decida realizar por conta própria.',
+          clientName: parsed.name,
+          clientEmail: parsed.email,
+          service: title,
+          monthlyBasePrice: 150.0,
+          welcomePromoPrice: 50.0,
+          recurrence: 'Assinatura Mensal sem fidelidade - Cancelável a qualquer momento',
+          disclaimerCompliance: 'Isenção integral de responsabilidade sobre decisões financeiras e operacionais do usuário',
+          acceptedAt: new Date().toISOString(),
+          previouslyAcceptedClient: clientAlreadyAccepted,
+        } : {
           term: 'Pay-Before-Book Gate: Acesso à agenda liberado exclusivamente após confirmação do pagamento. O cancelamento com menos de 24 horas de antecedência ou o não comparecimento incorre em retenção da hora técnica reservada.',
           clientName: parsed.name,
           clientEmail: parsed.email,
           service: title,
           acceptedAt: new Date().toISOString(),
+          previouslyAcceptedClient: clientAlreadyAccepted,
         },
-        clauses: {
+        clauses: parsed.serviceType === 'QUANT_M5' ? {
+          isEducationalTool: true,
+          disclaimerCompliance: 'Isenção total sobre operações do usuário; não constitui consultoria ou recomendação financeira',
+          galeMax: 2,
+          timeframe: 'M5',
+          market: 'Zero OTC (Mercado Real)',
+          cancellationPolicy: 'Assinatura mensal cancelável a qualquer momento sem fidelidade',
+        } : {
           payBeforeBook: true,
           cancellationPolicy: 'Retenção parcial de 50% para reagendamento em <24h ou no-show',
         },

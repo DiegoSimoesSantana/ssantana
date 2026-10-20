@@ -81,6 +81,16 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
+  const donations = await prisma.donation.findMany({
+    where: {
+      OR: [
+        { donorEmail: { equals: user.email, mode: 'insensitive' } },
+        ...(user.phone ? [{ donorDocument: user.phone }] : []),
+      ],
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+
   return NextResponse.json({
     user: {
       id: user.id,
@@ -88,6 +98,17 @@ export async function GET(request: NextRequest) {
       email: user.email,
       phone: user.phone,
     },
+    donations: donations.map((d) => ({
+      id: d.id,
+      amount: d.amount,
+      targetProject: d.targetProject || 'Geral',
+      referenceId: d.referenceId,
+      status: d.status,
+      paymentUrl: d.paymentUrl,
+      paidAt: d.paidAt,
+      createdAt: d.createdAt,
+      message: d.message,
+    })),
     projects: user.projects.map((p) => {
       // Cálculo do cronômetro de implantação / prazo
       const startDate = p.startDate || p.createdAt

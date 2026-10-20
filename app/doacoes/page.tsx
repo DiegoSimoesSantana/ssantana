@@ -55,8 +55,31 @@ export default function DoacoesPage() {
       base64Image: string
     }
   } | null>(null)
-  const [donationError, setDonationError] = useState<string | null>(null)
+  const [isDonationPaid, setIsDonationPaid] = useState(false)
   const [copiedPix, setCopiedPix] = useState(false)
+  const [donationError, setDonationError] = useState<string | null>(null)
+
+  // Polling automático para detecção da doação paga em tempo real
+  useEffect(() => {
+    if (!donationResult?.referenceId || isDonationPaid) return
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/payments/status/${donationResult.referenceId}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.paid || data.status === 'PAID') {
+            setIsDonationPaid(true)
+            clearInterval(interval)
+          }
+        }
+      } catch (e) {
+        console.error('Polling donation status error:', e)
+      }
+    }, 3000)
+
+    return () => clearInterval(interval)
+  }, [donationResult, isDonationPaid])
 
   // Estados para ideias comunitárias
   const [ideas, setIdeas] = useState<CommunityIdea[]>([])
@@ -472,6 +495,53 @@ export default function DoacoesPage() {
                     : `Contribuir com ${formatBRL(currentAmount)} via PIX ou Cartão`}
                 </button>
               </form>
+            ) : isDonationPaid ? (
+              /* ESTADO: DOAÇÃO RECONHECIDA E CONFIRMADA */
+              <div className="p-8 sm:p-10 rounded-3xl bg-gradient-to-b from-emerald-50 to-white dark:from-emerald-950/40 dark:to-zinc-900 border border-emerald-300 dark:border-emerald-700/80 space-y-5 text-center animate-fade-in shadow-2xl">
+                <div className="w-20 h-20 rounded-full bg-emerald-500 text-white mx-auto flex items-center justify-center shadow-xl shadow-emerald-500/30">
+                  <CheckCircle2 className="w-12 h-12" />
+                </div>
+
+                <div className="space-y-1">
+                  <span className="px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-widest bg-emerald-200 text-emerald-900 dark:bg-emerald-900 dark:text-emerald-200 inline-block">
+                    ✓ Pagamento Reconhecido com Sucesso
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white pt-2">
+                    Muito Obrigado pelo seu Apoio!
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-zinc-300 max-w-lg mx-auto leading-relaxed">
+                    Recebemos com sucesso sua doação de <strong>{formatBRL(donationResult.amount)}</strong>. Sua contribuição mantém viva a tecnologia aberta, sem anúncios e com total privacidade para a sociedade.
+                  </p>
+                </div>
+
+                <div className="p-3.5 bg-slate-100 dark:bg-zinc-800 rounded-2xl border border-slate-200 dark:border-zinc-700 text-xs font-mono text-slate-600 dark:text-zinc-400 max-w-sm mx-auto">
+                  <span>Protocolo da Doação: <strong>{donationResult.referenceId}</strong></span>
+                </div>
+
+                <div className="pt-3 flex flex-wrap items-center justify-center gap-3">
+                  <button
+                    onClick={() => {
+                      setDonationResult(null)
+                      setIsDonationPaid(false)
+                    }}
+                    className="px-5 py-2.5 rounded-xl border border-slate-300 dark:border-zinc-700 text-xs font-bold text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-zinc-800 transition"
+                  >
+                    Fazer Nova Contribuição
+                  </button>
+                  <a
+                    href="#projetos-comunidade"
+                    className="px-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition shadow-md shadow-sky-600/20"
+                  >
+                    Ver & Votar nos Projetos da Esteira
+                  </a>
+                  <a
+                    href="/dashboard/client"
+                    className="px-5 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-950 font-bold text-xs transition"
+                  >
+                    Acessar Painel do Cliente
+                  </a>
+                </div>
+              </div>
             ) : (
               /* CARD DE PAGAMENTO DA DOAÇÃO */
               <div className="p-6 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700 space-y-5 text-center animate-fade-in">
@@ -538,8 +608,14 @@ export default function DoacoesPage() {
                   )}
                 </div>
 
+                {/* Status em tempo real */}
+                <div className="flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-zinc-400 pt-1">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  <span>Aguardando compensação do banco em tempo real...</span>
+                </div>
+
                 <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                  ❤️ Muito obrigado por ajudar a manter ferramentas livres e seguras no ar!
+                  ❤️ Assim que pagar no seu banco, esta tela reconhecerá a doação automaticamente!
                 </p>
               </div>
             )}

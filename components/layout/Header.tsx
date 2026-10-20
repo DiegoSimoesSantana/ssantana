@@ -31,9 +31,6 @@ export default function Header() {
                 <Link href="/#pricing" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
                   Preços de Entrada
                 </Link>
-                <Link href="/partners" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
-                  Parceiros
-                </Link>
                 <Link href="/blog" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
                   Blog
                 </Link>
@@ -80,13 +77,6 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Preços de Entrada
-                </Link>
-                <Link
-                  href="/partners"
-                  className="block py-2 text-slate-700 dark:text-zinc-200 hover:text-sky-600 transition"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Parceiros
                 </Link>
                 <Link
                   href="/blog"

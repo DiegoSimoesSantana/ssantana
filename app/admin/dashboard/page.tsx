@@ -4,7 +4,24 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { Calendar, Video, CheckCircle2, Clock, MessageSquare, ExternalLink, Edit3, AlertCircle, CreditCard } from 'lucide-react'
+import { Calendar, Video, CheckCircle2, Clock, MessageSquare, ExternalLink, Edit3, AlertCircle, CreditCard, Heart, Gift, RefreshCw } from 'lucide-react'
+
+type AdminDonation = {
+  id: string
+  donorName: string | null
+  donorEmail: string | null
+  donorDocument: string | null
+  amount: number
+  message: string | null
+  targetProject: string | null
+  paymentLinkId: string | null
+  referenceId: string
+  status: string
+  paymentUrl: string | null
+  paidAt: string | null
+  createdAt: string
+  updatedAt: string
+}
 
 type AdminProject = {
   id: string
@@ -210,7 +227,95 @@ export default function AdminDashboardPage() {
   const [pricing, setPricing] = useState<PricingGovernance | null>(null)
   const [pricingBusy, setPricingBusy] = useState(false)
   const [pricingMessage, setPricingMessage] = useState('')
-  const [tab, setTab] = useState<'atendimentos' | 'partners' | 'clients' | 'leads' | 'pricing' | 'users'>('atendimentos')
+  const [tab, setTab] = useState<'atendimentos' | 'doacoes' | 'partners' | 'clients' | 'leads' | 'pricing' | 'users'>('atendimentos')
+  
+  // Doações state
+  const [donationsList, setDonationsList] = useState<AdminDonation[]>([])
+  const [donationsStats, setDonationsStats] = useState({
+    totalCount: 0,
+    paidCount: 0,
+    paidTotal: 0,
+    pendingCount: 0,
+    pendingTotal: 0,
+  })
+  const [donationsLoading, setDonationsLoading] = useState(false)
+  const [donationFilter, setDonationFilter] = useState<'ALL' | 'PAID' | 'PENDING'>('ALL')
+  const [donationSearch, setDonationSearch] = useState('')
+  const [donationSyncingId, setDonationSyncingId] = useState<string | null>(null)
+  const [donationActionMsg, setDonationActionMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const loadDonations = async () => {
+    setDonationsLoading(true)
+    try {
+      const res = await fetch('/api/admin/donations')
+      if (res.ok) {
+        const data = await res.json()
+        setDonationsList(data.donations || [])
+        if (data.stats) setDonationsStats(data.stats)
+      }
+    } catch (e) {
+      console.error('Erro ao carregar doações:', e)
+    } finally {
+      setDonationsLoading(false)
+    }
+  }
+
+  const handleSyncDonation = async (referenceId: string) => {
+    setDonationSyncingId(referenceId)
+    setDonationActionMsg(null)
+    try {
+      const res = await fetch('/api/admin/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync', referenceId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao sincronizar doação')
+      setDonationActionMsg({ type: 'success', text: data.message })
+      await loadDonations()
+    } catch (err: any) {
+      setDonationActionMsg({ type: 'error', text: err.message })
+    } finally {
+      setDonationSyncingId(null)
+    }
+  }
+
+  const handleSyncAllDonations = async () => {
+    setDonationSyncingId('ALL')
+    setDonationActionMsg(null)
+    try {
+      const res = await fetch('/api/admin/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync_all' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao sincronizar doações')
+      setDonationActionMsg({ type: 'success', text: data.message })
+      await loadDonations()
+    } catch (err: any) {
+      setDonationActionMsg({ type: 'error', text: err.message })
+    } finally {
+      setDonationSyncingId(null)
+    }
+  }
+
+  const handleMarkDonationPaid = async (donationId: string) => {
+    if (!confirm('Deseja realmente marcar esta doação como PAGA manualmente?')) return
+    try {
+      const res = await fetch('/api/admin/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_paid', donationId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erro ao marcar como paga')
+      setDonationActionMsg({ type: 'success', text: data.message })
+      await loadDonations()
+    } catch (err: any) {
+      setDonationActionMsg({ type: 'error', text: err.message })
+    }
+  }
   
   // Atendimentos & Reuniões state
   const [atendimentosSubTab, setAtendimentosSubTab] = useState<'marcacoes' | 'clientes_saldos' | 'contratacoes'>('marcacoes')
@@ -505,6 +610,7 @@ export default function AdminDashboardPage() {
       loadPricing(),
       loadUsers(),
       loadAtendimentos(),
+      loadDonations(),
     ])
     setOverview(data)
     setLoading(false)
@@ -518,7 +624,7 @@ export default function AdminDashboardPage() {
     if (!overview) {
       return []
     }
-    if (tab === 'pricing' || tab === 'users' || tab === 'atendimentos') return []
+    if (tab === 'pricing' || tab === 'users' || tab === 'atendimentos' || tab === 'doacoes') return []
     if (tab === 'partners') return overview.partners
     if (tab === 'clients') return overview.clients
     return overview.leads
@@ -533,6 +639,24 @@ export default function AdminDashboardPage() {
     () => (pricing?.queue || []).filter((item) => item.status === 'QUEUED'),
     [pricing]
   )
+
+  const filteredDonations = useMemo(() => {
+    return donationsList.filter((d) => {
+      if (donationFilter === 'PAID' && d.status !== 'PAID') return false
+      if (donationFilter === 'PENDING' && d.status !== 'PENDING') return false
+      if (donationSearch.trim()) {
+        const q = donationSearch.toLowerCase()
+        const matches =
+          (d.donorName && d.donorName.toLowerCase().includes(q)) ||
+          (d.donorEmail && d.donorEmail.toLowerCase().includes(q)) ||
+          (d.donorDocument && d.donorDocument.includes(q)) ||
+          (d.referenceId && d.referenceId.toLowerCase().includes(q)) ||
+          (d.targetProject && d.targetProject.toLowerCase().includes(q))
+        if (!matches) return false
+      }
+      return true
+    })
+  }, [donationsList, donationFilter, donationSearch])
 
   const removeItem = async (id: string) => {
     await fetch(`/api/admin/overview?entity=${tab === 'partners' ? 'partner' : tab === 'clients' ? 'client' : 'lead'}&id=${id}`, {
@@ -677,21 +801,24 @@ export default function AdminDashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-5">
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Atendimentos: <strong>{atendimentos.length}</strong></div>
+          <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-300">
+            Doações: <strong>{donationsStats.paidCount} pagas</strong> ({formatBRL(donationsStats.paidTotal)})
+          </div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Parceiros: <strong>{overview?.partners?.length || 0}</strong></div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Clientes: <strong>{overview?.clients?.length || 0}</strong></div>
           <div className="rounded-xl border border-white/10 bg-white/5 p-4">Leads: <strong>{overview?.leads?.length || 0}</strong></div>
         </div>
 
         <div className="flex gap-2 flex-wrap">
-          {(['atendimentos', 'partners', 'clients', 'leads', 'pricing', 'users'] as const).map((item) => (
+          {(['atendimentos', 'doacoes', 'partners', 'clients', 'leads', 'pricing', 'users'] as const).map((item) => (
             <button
               key={item}
               onClick={() => setTab(item)}
               className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${tab === item ? 'bg-cyan-300 text-slate-900 shadow-md' : 'bg-slate-800 text-white hover:bg-slate-700'}`}
             >
-              {item === 'atendimentos' ? 'Atendimentos & Reuniões' : item === 'partners' ? 'Parceiros' : item === 'clients' ? 'Clientes' : item === 'leads' ? 'Leads' : item === 'pricing' ? 'Precos B2B' : 'Usuarios'}
+              {item === 'atendimentos' ? 'Atendimentos & Reuniões' : item === 'doacoes' ? 'Doações & Projetos Livres' : item === 'partners' ? 'Parceiros' : item === 'clients' ? 'Clientes' : item === 'leads' ? 'Leads' : item === 'pricing' ? 'Precos B2B' : 'Usuarios'}
             </button>
           ))}
         </div>
@@ -1522,6 +1649,235 @@ export default function AdminDashboardPage() {
                 </div>
               </div>
             )}
+          </div>
+        ) : tab === 'doacoes' ? (
+          <div className="space-y-6">
+            {/* Header & Controls */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-rose-400 fill-rose-400/20" />
+                  Doações & Financiamento de Softwares Comunitários
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  Gerenciamento de doações voluntárias recebidas via PicPay (PIX e Cartão) para ferramentas livres (como o Bloqueador de Chamadas de Não Contatos).
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  disabled={donationsLoading || donationSyncingId === 'ALL'}
+                  onClick={handleSyncAllDonations}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-bold transition shadow disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${donationSyncingId === 'ALL' ? 'animate-spin' : ''}`} />
+                  {donationSyncingId === 'ALL' ? 'Sincronizando PicPay...' : 'Sincronizar Todas com PicPay'}
+                </button>
+                <button
+                  type="button"
+                  disabled={donationsLoading}
+                  onClick={loadDonations}
+                  className="px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition"
+                >
+                  Atualizar
+                </button>
+              </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">Arrecadação Confirmada</p>
+                <p className="text-2xl font-bold text-white mt-1">{formatBRL(donationsStats.paidTotal)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{donationsStats.paidCount} doação(ões) pagas e reconhecidas</p>
+              </div>
+
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">Aguardando Pagamento</p>
+                <p className="text-2xl font-bold text-white mt-1">{formatBRL(donationsStats.pendingTotal)}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{donationsStats.pendingCount} cobrança(s) pendentes</p>
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-300">Total de Doações</p>
+                <p className="text-2xl font-bold text-white mt-1">{donationsStats.totalCount}</p>
+                <p className="text-xs text-slate-400 mt-0.5">Histórico completo de intenções e doações</p>
+              </div>
+            </div>
+
+            {/* Alert Message */}
+            {donationActionMsg && (
+              <div
+                className={`p-4 rounded-xl text-xs font-semibold border ${
+                  donationActionMsg.type === 'success'
+                    ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-200'
+                    : 'bg-rose-950/60 border-rose-500/40 text-rose-200'
+                }`}
+              >
+                {donationActionMsg.text}
+              </div>
+            )}
+
+            {/* Filters & Search */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setDonationFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    donationFilter === 'ALL' ? 'bg-cyan-300 text-slate-900' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Todas ({donationsList.length})
+                </button>
+                <button
+                  onClick={() => setDonationFilter('PAID')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    donationFilter === 'PAID' ? 'bg-emerald-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Pagas ({donationsStats.paidCount})
+                </button>
+                <button
+                  onClick={() => setDonationFilter('PENDING')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    donationFilter === 'PENDING' ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Pendentes ({donationsStats.pendingCount})
+                </button>
+              </div>
+
+              <div className="w-full sm:w-72">
+                <input
+                  type="text"
+                  placeholder="Buscar doador, e-mail, ref..."
+                  value={donationSearch}
+                  onChange={(e) => setDonationSearch(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:border-cyan-400 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* Table */}
+            <div className="overflow-x-auto rounded-xl border border-white/10 bg-white/5">
+              <table className="min-w-full text-sm">
+                <thead className="bg-slate-900/80 text-left text-slate-300 text-xs">
+                  <tr>
+                    <th className="px-4 py-3">Data / Ref</th>
+                    <th className="px-4 py-3">Doador</th>
+                    <th className="px-4 py-3">Projeto Destino</th>
+                    <th className="px-4 py-3">Valor</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-xs">
+                  {donationsLoading ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                        Carregando doações...
+                      </td>
+                    </tr>
+                  ) : filteredDonations.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-8 text-center text-slate-400">
+                        Nenhuma doação encontrada para os filtros selecionados.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredDonations.map((d) => (
+                      <tr key={d.id} className="hover:bg-white/[0.02] transition">
+                        <td className="px-4 py-3 font-mono">
+                          <p className="font-bold text-white">{d.referenceId}</p>
+                          <p className="text-[11px] text-slate-400">
+                            {new Date(d.createdAt).toLocaleDateString('pt-BR')} às{' '}
+                            {new Date(d.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-white">{d.donorName || 'Anônimo / Não informado'}</p>
+                          <p className="text-[11px] text-slate-400">{d.donorEmail || '-'}</p>
+                          {d.donorDocument && (
+                            <p className="text-[11px] text-slate-500 font-mono">Doc: {d.donorDocument}</p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block px-2 py-0.5 rounded bg-slate-800 text-cyan-300 font-medium text-[11px]">
+                            {d.targetProject || 'Geral'}
+                          </span>
+                          {d.message && (
+                            <p className="text-[11px] text-slate-400 italic mt-1 line-clamp-2">
+                              "{d.message}"
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="font-bold text-sm text-white">{formatBRL(d.amount)}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {d.status === 'PAID' ? (
+                            <div>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                PAGO
+                              </span>
+                              {d.paidAt && (
+                                <p className="text-[10px] text-emerald-400/80 mt-0.5">
+                                  {new Date(d.paidAt).toLocaleDateString('pt-BR')} {new Date(d.paidAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              <Clock className="w-3 h-3 text-amber-400" />
+                              PENDENTE
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              disabled={donationSyncingId === d.referenceId}
+                              onClick={() => handleSyncDonation(d.referenceId)}
+                              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 text-[11px] font-semibold transition border border-slate-700 flex items-center gap-1"
+                              title="Consultar status em tempo real na API do PicPay"
+                            >
+                              <RefreshCw className={`w-3 h-3 ${donationSyncingId === d.referenceId ? 'animate-spin' : ''}`} />
+                              Sincronizar
+                            </button>
+
+                            {d.status !== 'PAID' && (
+                              <button
+                                type="button"
+                                onClick={() => handleMarkDonationPaid(d.id)}
+                                className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-semibold transition"
+                                title="Marcar manualmente como paga"
+                              >
+                                Marcar Pago
+                              </button>
+                            )}
+
+                            {d.paymentUrl && (
+                              <a
+                                href={d.paymentUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="p-1 text-slate-400 hover:text-white"
+                                title="Abrir link do PicPay"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : tab === 'users' ? (
           <div className="space-y-4">

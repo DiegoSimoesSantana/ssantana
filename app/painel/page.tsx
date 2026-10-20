@@ -16,7 +16,9 @@ import {
   ShieldCheck,
   Mail,
   Video,
-  Sparkles
+  Sparkles,
+  Heart,
+  Gift,
 } from 'lucide-react'
 
 const WHATSAPP_VIP_URL = 'https://wa.me/5571999999999?text=Ol%C3%A1%2C%20sou%20cliente%20SSantana%20e%20gostaria%20de%20atendimento%20priorit%C3%A1rio.'
@@ -55,9 +57,22 @@ type ProjectClient = {
   }>
 }
 
+type ClientDonation = {
+  id: string
+  amount: number
+  targetProject: string
+  referenceId: string
+  status: string
+  paymentUrl: string | null
+  paidAt: string | null
+  createdAt: string
+  message: string | null
+}
+
 export default function PainelClientePage() {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null)
   const [projects, setProjects] = useState<ProjectClient[]>([])
+  const [donations, setDonations] = useState<ClientDonation[]>([])
   const [loading, setLoading] = useState(true)
 
   // Agendamento e Saldo Mensal (30 min / mês)
@@ -128,6 +143,7 @@ export default function PainelClientePage() {
       if (data.user) {
         setUser(data.user)
         setProjects(data.projects || [])
+        setDonations(data.donations || [])
       }
     } catch (err) {
       console.error(err)
@@ -663,7 +679,92 @@ export default function PainelClientePage() {
           </div>
         )}
 
-        {/* MODAL: SOLICITAR ALTERAÇÃO (EX: ADICIONAR CONTA DE E-MAIL POR R$ 15) */}
+        {/* SEÇÃO: MINHAS DOAÇÕES & APOIO A PROJETOS GRATUITOS */}
+        <div className="mt-8 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Heart className="w-5 h-5 text-rose-500 fill-rose-500/20" />
+                Minhas Contribuições & Apoio a Projetos Gratuitos
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1">
+                Acompanhe o reconhecimento de doações para aplicativos comunitários (ex: Bloqueador de Chamadas de Não Contatos).
+              </p>
+            </div>
+            <a
+              href="/doacoes"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 text-rose-700 dark:text-rose-300 text-xs font-semibold hover:bg-rose-100 transition"
+            >
+              <Gift className="w-4 h-4" />
+              Apoiar Projetos Gratuitos
+            </a>
+          </div>
+
+          {donations.length === 0 ? (
+            <div className="text-center py-6 border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">
+              <Heart className="w-7 h-7 text-slate-300 dark:text-zinc-600 mx-auto mb-2" />
+              <p className="text-xs text-slate-600 dark:text-zinc-400">Nenhuma doação registrada nesta conta.</p>
+              <p className="text-[11px] text-slate-400 dark:text-zinc-500 mt-0.5">
+                Você pode votar e doar a partir de R$ 1,00 para impulsionar ferramentas abertas.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {donations.map((d) => (
+                <div
+                  key={d.id}
+                  className="p-4 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-800/30 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-slate-900 dark:text-white text-sm">
+                        {d.targetProject || 'Geral / Manutenção Comunitária'}
+                      </span>
+                      {d.status === 'PAID' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                          Pagamento Reconhecido
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                          <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                          Aguardando Pagamento
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 font-mono">
+                      Ref: {d.referenceId} • {new Date(d.createdAt).toLocaleDateString('pt-BR')} às {new Date(d.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      {d.paidAt && ` • Reconhecido em: ${new Date(d.paidAt).toLocaleDateString('pt-BR')} às ${new Date(d.paidAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`}
+                    </p>
+                    {d.message && (
+                      <p className="text-xs text-slate-600 dark:text-zinc-400 italic bg-white dark:bg-zinc-800 p-2 rounded mt-1">
+                        "{d.message}"
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-[11px] text-slate-500 dark:text-zinc-400">Valor</p>
+                      <p className="text-lg font-bold text-slate-900 dark:text-white">
+                        {formatBRL(d.amount)}
+                      </p>
+                    </div>
+
+                    {d.status === 'PENDING' && (
+                      <a
+                        href="/doacoes"
+                        className="px-3 py-1.5 text-xs font-semibold bg-sky-600 hover:bg-sky-700 text-white rounded-lg transition"
+                      >
+                        Ver QR Code
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
         {showAlteracaoModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-white/10 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">

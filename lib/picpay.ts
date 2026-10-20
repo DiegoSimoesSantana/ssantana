@@ -225,7 +225,10 @@ export class PicPayClient {
   /**
    * Consulta o status de um pagamento pelo referenceId ou paymentLinkId
    */
-  async getPaymentStatus(referenceId: string): Promise<{ status: string; authorizationId?: string }> {
+  async getPaymentStatus(
+    referenceId: string,
+    explicitPaymentLinkId?: string | null
+  ): Promise<{ status: string; authorizationId?: string }> {
     const creds = await this.getCredentials()
     if (!creds.clientSecret) {
       return { status: 'pending' }
@@ -233,7 +236,7 @@ export class PicPayClient {
 
     try {
       const token = await this.getAccessToken()
-      const paymentLinkId = this.linkIdMap.get(referenceId)
+      const paymentLinkId = explicitPaymentLinkId || this.linkIdMap.get(referenceId)
 
       if (token && paymentLinkId) {
         // 1. Consultar transações efetuadas no link de pagamento
@@ -246,10 +249,14 @@ export class PicPayClient {
 
         if (txRes.ok) {
           const txData = await txRes.json()
-          const txList = txData.transactions || []
-          const paidTx = txList.find((t: any) =>
-            ['PAID', 'CONFIRMED', 'APPROVED', 'paid', 'completed'].includes(t.status)
-          )
+          const txList = txData.transactions || txData.data || []
+          const paidTx = Array.isArray(txList)
+            ? txList.find((t: any) =>
+                ['PAYED', 'PAID', 'CONFIRMED', 'APPROVED', 'paid', 'payed', 'completed', 'settled'].includes(
+                  t.status || t.state
+                )
+              )
+            : null
           if (paidTx) {
             return { status: 'completed', authorizationId: paidTx.id || paidTx.transactionId }
           }
@@ -265,8 +272,8 @@ export class PicPayClient {
 
         if (linkRes.ok) {
           const linkData = await linkRes.json()
-          if (linkData?.details?.charge?.totalSales > 0) {
-            return { status: 'completed', authorizationId: linkData.uuid }
+          if (linkData?.details?.charge?.totalSales > 0 || linkData?.status === 'PAID' || linkData?.status === 'PAYED') {
+            return { status: 'completed', authorizationId: linkData.uuid || linkData.paymentLinkId }
           }
         }
       }

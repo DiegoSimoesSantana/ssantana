@@ -13,15 +13,62 @@ export async function POST(request: NextRequest) {
 
     console.log(`[PicPay Webhook] Recebido status para ref: ${referenceId}, authId: ${authorizationId}`)
 
-    // Consulta status real na API do PicPay para certificar segurança
-    const statusData = await picpay.getPaymentStatus(referenceId)
-    const isPaid = statusData.status === 'completed' || statusData.status === 'paid'
+    // 1. Se for Doação (DOA-)
+    if (referenceId.startsWith('DOA-')) {
+      const donation = await prisma.donation.findFirst({
+        where: { referenceId },
+      })
 
-    if (!isPaid) {
-      return NextResponse.json({ message: `Status recebido: ${statusData.status}` }, { status: 200 })
+      if (donation) {
+        const statusData = await picpay.getPaymentStatus(referenceId, donation.paymentLinkId)
+        const isPaid = statusData.status === 'completed' || statusData.status === 'paid'
+
+        if (isPaid || authorizationId) {
+          await prisma.donation.update({
+            where: { id: donation.id },
+            data: {
+              status: 'PAID',
+              paidAt: new Date(),
+            },
+          })
+          console.log(`[PicPay Webhook] Doação ${referenceId} reconhecida como PAGA!`)
+          return NextResponse.json({ success: true, type: 'DONATION', referenceId, status: 'PAID' })
+        }
+        return NextResponse.json({ message: `Doação ${referenceId} status: ${statusData.status}` }, { status: 200 })
+      }
     }
 
-    // Localizar contrato ou pagamento pelo contractNumber / referenceId
+    // 2. Se for Agendamento de Reunião (REU- ou MEET-)
+    if (referenceId.startsWith('REU-') || referenceId.startsWith('MEET-')) {
+      const meeting = await prisma.meetingSchedule.findFirst({
+        where: {
+          OR: [
+            { id: referenceId },
+            { paymentLinkId: referenceId },
+          ],
+        },
+      })
+
+      if (meeting) {
+        const statusData = await picpay.getPaymentStatus(referenceId, meeting.paymentLinkId)
+        const isPaid = statusData.status === 'completed' || statusData.status === 'paid'
+
+        if (isPaid || authorizationId) {
+          await prisma.meetingSchedule.update({
+            where: { id: meeting.id },
+            data: {
+              status: 'CONFIRMED',
+              paymentRequired: false,
+            },
+          })
+          console.log(`[PicPay Webhook] Agendamento ${referenceId} reconhecido como CONFIRMADO!`)
+          return NextResponse.json({ success: true, type: 'MEETING', referenceId, status: 'CONFIRMED' })
+        }
+        return NextResponse.json({ message: `Agendamento ${referenceId} status: ${statusData.status}` }, { status: 200 })
+      }
+    }
+
+    // 3. Localizar contrato ou pagamento pelo contractNumber / referenceId
     const contract = await prisma.contract.findFirst({
       where: {
         OR: [
@@ -43,8 +90,16 @@ export async function POST(request: NextRequest) {
     })
 
     if (!contract) {
-      console.warn(`[PicPay Webhook] Contrato não encontrado para referenceId: ${referenceId}`)
-      return NextResponse.json({ message: 'Contrato não encontrado, registrado em log' }, { status: 200 })
+      console.warn(`[PicPay Webhook] Nenhuma entidade encontrada para referenceId: ${referenceId}`)
+      return NextResponse.json({ message: 'Entidade não encontrada, registrado em log' }, { status: 200 })
+    }
+
+    // Consulta status real na API do PicPay para certificar segurança
+    const statusData = await picpay.getPaymentStatus(referenceId)
+    const isPaid = statusData.status === 'completed' || statusData.status === 'paid'
+
+    if (!isPaid && !authorizationId) {
+      return NextResponse.json({ message: `Status recebido: ${statusData.status}` }, { status: 200 })
     }
 
     // Criar ou atualizar registro de pagamento

@@ -45,3 +45,10 @@ A SSantana Tecnologia & Infraestrutura é especializada em desenvolvimento ágil
 ## 4. Segurança Jurídica e Protocolo Anti-MED
 - Todo contrato comercial gera um número identificador único (SS-2026-XXXX).
 - A assinatura eletrônica é validada através de código descartável de 6 dígitos enviado por e-mail com registro auditado de IP, User-Agent, documento do titular e timestamp conforme a Lei Federal 14.063/2020.
+
+## 5. Projetos Comunitários Gratuitos & Doações (https://ssantana.com.br/doacoes)
+- Aplicativos e ferramentas de utilidade pública 100% gratuitos, sem anúncios e com foco absoluto na privacidade.
+- Aplicativo Liberado: Bloqueador de Chamadas de Não Contatos (Android APK Livre) — filtragem 100% local no dispositivo contra golpes telefônicos e telemarketing.
+- Esteira de Votação Participativa: Os usuários podem votar em novas ferramentas e submeter ideias de ferramentas públicas.
+- Apoio Voluntário: Doações a partir de R$ 1,00 via PIX ou Cartão de Crédito para custear servidores e manutenção de software aberto.
+

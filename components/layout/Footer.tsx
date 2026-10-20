@@ -36,7 +36,6 @@ export default function Footer() {
               <li><Link href="/#about" className="transition hover:text-primary-400">Sobre Nós</Link></li>
               <li><Link href="/#projects" className="transition hover:text-primary-400">Projetos</Link></li>
               <li><Link href="/blog" className="transition hover:text-primary-400">Blog</Link></li>
-              <li><Link href="/partners" className="transition hover:text-primary-400">Programa de Parceiros</Link></li>
               <li><Link href="/doacoes" className="transition hover:text-rose-400 text-rose-400 font-medium">Projetos Gratuitos & Doações</Link></li>
               <li><Link href="/#contact" className="transition hover:text-primary-400">Contato</Link></li>
             </ul>

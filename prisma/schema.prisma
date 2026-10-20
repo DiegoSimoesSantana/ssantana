@@ -729,3 +729,60 @@ model Settings {
 
   @@index([key])
 }
+
+// ============= PROJETOS GRATUITOS & DOAÇÕES DA COMUNIDADE =============
+
+model CommunityProjectIdea {
+  id                String                 @id @default(cuid())
+  title             String
+  description       String                 @db.Text
+  beneficiary       String?                // Quem se beneficia / público atendido
+  category          String                 @default("Utilidade Pública") // "Android", "Web", "Segurança", "Acessibilidade", "Outro"
+  status            String                 @default("VOTACAO") // "VOTACAO", "ANALISE", "EM_DESENVOLVIMENTO", "CONCLUIDO"
+  votesCount        Int                    @default(1)
+  targetUrl         String?                // URL se já estiver publicado (ex: Google Play ou APK)
+  suggestedByName   String?
+  suggestedByEmail  String?
+  
+  votes             CommunityProjectVote[]
+
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+
+  @@index([status])
+  @@index([votesCount])
+}
+
+model CommunityProjectVote {
+  id                String               @id @default(cuid())
+  ideaId            String
+  idea              CommunityProjectIdea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  voterIdentifier   String               // Hash de IP/Cookie para evitar votos repetidos
+  createdAt         DateTime             @default(now())
+
+  @@unique([ideaId, voterIdentifier])
+  @@index([ideaId])
+}
+
+model Donation {
+  id                String               @id @default(cuid())
+  donorName         String?
+  donorEmail        String?
+  donorDocument     String?
+  amount            Float                // Valor livre a partir de R$ 1,00
+  message           String?              @db.Text
+  targetProject     String?              @default("Geral") // ex: "Bloqueador de Chamadas" ou "Geral"
+  
+  paymentLinkId     String?
+  referenceId       String               @unique
+  status            String               @default("PENDING") // "PENDING", "PAID", "CANCELLED"
+  paymentUrl        String?
+  paidAt            DateTime?
+
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}
+

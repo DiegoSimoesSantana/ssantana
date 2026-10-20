@@ -45,11 +45,11 @@ export default function BloqueadorDeChamadasPage() {
                 Baixar no Google Play
               </a>
               <a
-                href="#doacoes"
+                href="/doacoes"
                 className="inline-flex items-center gap-2 rounded-lg border border-zinc-300 px-6 py-3 font-semibold text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:text-white dark:hover:bg-zinc-900 transition-colors"
               >
                 <Heart className="h-5 w-5" />
-                Apoiar o Projeto
+                Apoiar com Doação (PIX / Cartão)
               </a>
             </div>
           </div>
@@ -165,11 +165,11 @@ export default function BloqueadorDeChamadasPage() {
 
             <div className="flex justify-center pt-4">
               <a
-                href="https://buy.stripe.com/sua-url-de-doacao"
-                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors text-lg"
+                href="/doacoes"
+                className="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-8 py-4 font-semibold text-white hover:bg-rose-700 transition-colors text-lg shadow-lg shadow-rose-600/25"
               >
-                <Heart className="h-5 w-5" />
-                Apoiar o Projeto
+                <Heart className="h-5 w-5 fill-white" />
+                Apoiar ou Votar em Projetos Comunitários
               </a>
             </div>
           </div>

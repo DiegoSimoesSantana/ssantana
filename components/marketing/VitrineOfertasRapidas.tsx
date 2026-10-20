@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import {
   Sparkles,
   Wrench,
@@ -19,7 +19,8 @@ import {
   ExternalLink,
   Copy,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Heart
 } from 'lucide-react'
 import { DynamicPricingConfig, DEFAULT_DYNAMIC_PRICING } from '@/lib/dynamic-pricing'
 
@@ -190,32 +191,36 @@ export default function VitrineOfertasRapidas({
   const formatBRL = (val: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val)
 
-  // Abrir Modal de Checkout Seguro com Trava "Pague Primeiro, Agende Depois"
+  const [, startTransition] = useTransition()
+
+  // Abrir Modal de Checkout Seguro com Alinhamento Técnico Direto
   const handleOpenCheckoutModal = (
     key: ServiceTypeKey,
     title: string,
     price: number,
     subtitle: string
   ) => {
-    setSelectedService({ key, title, price, subtitle })
-    setOrderResult(null)
-    setIsPaymentPaid(false)
-    setOrderError(null)
+    startTransition(() => {
+      setSelectedService({ key, title, price, subtitle })
+      setOrderResult(null)
+      setIsPaymentPaid(false)
+      setOrderError(null)
 
-    // Atualiza com os dados salvos mais recentes
-    const saved = getSavedClientData()
-    if (saved && (saved.name || saved.email || saved.phone || saved.document)) {
-      setClientData((prev) => ({
-        ...prev,
-        name: saved.name || prev.name,
-        email: saved.email || prev.email,
-        phone: saved.phone || prev.phone,
-        document: saved.document || prev.document,
-      }))
-      setIsPreFilled(true)
-    }
+      // Atualiza com os dados salvos mais recentes de forma segura
+      const saved = getSavedClientData()
+      if (saved && (saved.name || saved.email || saved.phone || saved.document)) {
+        setClientData((prev) => ({
+          ...prev,
+          name: saved.name || prev.name,
+          email: saved.email || prev.email,
+          phone: saved.phone || prev.phone,
+          document: saved.document || prev.document,
+        }))
+        setIsPreFilled(true)
+      }
 
-    setModalOpen(true)
+      setModalOpen(true)
+    })
   }
 
   // Submissão do Formulário para gerar cobrança PicPay
@@ -642,10 +647,10 @@ export default function VitrineOfertasRapidas({
               </div>
 
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                E-mail Corporativo Profissional
+                E-mail Corporativo Profissional Blindado
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 mb-6 leading-relaxed">
-                Passe autoridade com @suaempresa.com.br. Servidor próprio econômico ou Google Workspace/Microsoft 365.
+                Módulo de instalação e setup inicial de e-mail. Após a contratação, você seleciona a quantidade de caixas postais adicionais e define as configurações avançadas diretamente no Portal Interno do Cliente.
               </p>
 
               {/* Preço */}
@@ -657,10 +662,10 @@ export default function VitrineOfertasRapidas({
                   <span className="text-3xl font-black text-indigo-600 dark:text-indigo-400">
                     {formatBRL(pricing.emailMensalPorContaPrice)}/mês
                   </span>
-                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">por conta de 5GB</span>
+                  <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">por conta adicional</span>
                 </div>
                 <span className="text-xs text-slate-500 dark:text-zinc-400 mt-1 block">
-                  Setup promocional sob medida a partir de {formatBRL(pricing.emailSetupPromocionalPrice)}.
+                  Setup inicial promocional a partir de {formatBRL(pricing.emailSetupPromocionalPrice)}.
                 </span>
               </div>
 
@@ -700,7 +705,7 @@ export default function VitrineOfertasRapidas({
                   'EMAIL',
                   'E-mail Corporativo Profissional Blindado',
                   pricing.emailSetupPromocionalPrice,
-                  'Setup de implantação antispam e configuração DNS'
+                  'Módulo de setup inicial e blindagem DNS. Caixas adicionais gerenciadas no painel.'
                 )
               }
               className="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 active:scale-95"
@@ -708,6 +713,34 @@ export default function VitrineOfertasRapidas({
               <CreditCard className="w-4 h-4" />
               Configurar E-mail Profissional
             </button>
+          </div>
+
+          {/* OFERTA 5: Apoio a Projetos Gratuitos & Apps Livres */}
+          <div className="md:col-span-2 rounded-3xl border border-rose-300 dark:border-rose-900/60 bg-gradient-to-r from-rose-50/80 via-white to-amber-50/60 dark:from-rose-950/30 dark:via-zinc-900/60 dark:to-zinc-900/60 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm hover:shadow-md transition">
+            <div className="space-y-2 text-left">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 fill-rose-500 text-rose-500" />
+                  Iniciativa Solidária • A partir de R$ 1,00
+                </span>
+                <span className="text-xs text-slate-500 dark:text-zinc-400">100% Livre de Anúncios</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+                Apoie o Desenvolvimento de Apps Gratuitos para a Comunidade
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 max-w-2xl leading-relaxed">
+                Desenvolvemos ferramentas de utilidade pública como o <strong>Bloqueador de Chamadas de Não Contatos</strong> (Android).
+                Na página de doações, você pode contribuir com qualquer valor voluntário a partir de R$ 1,00, votar nas próximas ferramentas da esteira ou sugerir novas ideias para ajudar quem precisa.
+              </p>
+            </div>
+
+            <a
+              href="/doacoes"
+              className="px-6 py-4 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm text-center transition flex items-center justify-center gap-2 shadow-lg shadow-rose-600/25 active:scale-95 shrink-0 w-full md:w-auto"
+            >
+              <Heart className="w-4 h-4 fill-white" />
+              Apoiar ou Votar em Projetos
+            </a>
           </div>
 
         </div>
@@ -727,11 +760,11 @@ export default function VitrineOfertasRapidas({
               ✕
             </button>
 
-            {/* Cabeçalho do Modal com Trava */}
+            {/* Cabeçalho do Modal com Foco em Alinhamento Técnico */}
             <div className="mb-6">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 mb-2">
-                <Lock className="w-3.5 h-3.5" />
-                <span>Trava Obrigatória: Pague Primeiro, Agende Depois</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Atendimento & Configuração com Decisor Técnico</span>
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
                 {selectedService.title}
@@ -741,11 +774,11 @@ export default function VitrineOfertasRapidas({
               </p>
             </div>
 
-            {/* FASE 1: FORMULÁRIO DO CLIENTE & TERMO DE RETENÇÃO */}
+            {/* FASE 1: FORMULÁRIO DO CLIENTE & TERMO */}
             {!orderResult && (
               <form onSubmit={handleGeneratePayment} className="space-y-4">
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700 flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-zinc-400">Total a Pagar (PicPay / PIX):</span>
+                  <span className="text-xs font-semibold text-slate-600 dark:text-zinc-400">Total a Pagar (PIX ou Cartão de Crédito):</span>
                   <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
                     {formatBRL(selectedService.price)}
                   </span>
@@ -819,7 +852,7 @@ export default function VitrineOfertasRapidas({
 
                 <div>
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-1">
-                    CPF ou CNPJ (Obrigatório para Emissão PicPay) *
+                    CPF ou CNPJ (Obrigatório para Emissão da Cobrança) *
                   </label>
                   <input
                     type="text"
@@ -831,8 +864,8 @@ export default function VitrineOfertasRapidas({
                   />
                 </div>
 
-                {/* CHECKBOX DO TERMO DE RETENÇÃO E POLÍTICA DE CANCELAMENTO */}
-                <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/60">
+                {/* CHECKBOX DO TERMO DE ALINHAMENTO TÉCNICO */}
+                <div className="p-3.5 rounded-2xl bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900/60">
                   <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-700 dark:text-zinc-300 leading-relaxed">
                     <input
                       type="checkbox"
@@ -842,7 +875,7 @@ export default function VitrineOfertasRapidas({
                       className="mt-0.5 w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 shrink-0"
                     />
                     <span>
-                      <strong>Termo de Reserva da Agenda:</strong> Estou ciente de que o horário será reservado exclusivamente para meu atendimento. Em caso de cancelamento com menos de 24h de antecedência ou não comparecimento (no-show), haverá retenção da taxa técnica para cobrir a reserva do especialista. O link da agenda só será liberado após a confirmação do pagamento.
+                      <strong>Alinhamento e Ativação do Serviço:</strong> Ao confirmar o pagamento, seu atendimento técnico é reservado com prioridade. Após a confirmação, você se torna cliente ativo e terá direito imediato a chamada de reunião ou ligação direta com nosso decisor técnico para alinhar e configurar tudo sob medida.
                     </span>
                   </label>
                 </div>
@@ -853,26 +886,26 @@ export default function VitrineOfertasRapidas({
                   className="w-full py-4 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-2xl text-sm transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <CreditCard className="w-4 h-4" />
-                  {generatingOrder ? 'Gerando Cobrança PicPay...' : 'Gerar Cobrança e Liberar Agenda'}
+                  {generatingOrder ? 'Gerando Cobrança...' : 'Confirmar e Gerar PIX / Cartão'}
                 </button>
               </form>
             )}
 
-            {/* FASE 2: COBRANÇA GERADA (PIX / QR CODE PICPAY) & TRAVA DE AGENDAMENTO */}
+            {/* FASE 2: COBRANÇA GERADA (PIX / QR CODE & CARTÃO DE CRÉDITO) */}
             {orderResult && !isPaymentPaid && (
               <div className="space-y-5 animate-fade-in text-center">
                 
-                {/* Status da Trava */}
-                <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center gap-3 text-left">
-                  <div className="p-2.5 rounded-xl bg-amber-500 text-slate-950 shrink-0 font-bold">
-                    <Lock className="w-5 h-5" />
+                {/* Alinhamento Técnico & Próximo Passo */}
+                <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800 flex items-center gap-3 text-left">
+                  <div className="p-2.5 rounded-xl bg-sky-600 text-white shrink-0 font-bold">
+                    <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                      Agenda Temporariamente Bloqueada
+                      Ativação do Serviço & Reunião Técnica
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-zinc-400">
-                      Realize o pagamento no PicPay abaixo. Assim que compensar, a agenda com o Google Calendar será destravada automaticamente nesta tela.
+                      Realize o pagamento via PIX ou Cartão de Crédito abaixo. Assim que compensar, você se torna cliente com serviço ativo e poderá agendar sua chamada de reunião ou ligação técnica direta com nosso especialista para configurar o serviço.
                     </p>
                   </div>
                 </div>
@@ -892,7 +925,7 @@ export default function VitrineOfertasRapidas({
                     <div className="p-3 bg-white rounded-2xl shadow-md border border-slate-200">
                       <img
                         src={orderResult.qrcode.base64Image}
-                        alt="QR Code PIX PicPay Oficial"
+                        alt="QR Code PIX Oficial"
                         className="w-52 h-52 object-contain"
                       />
                     </div>
@@ -927,7 +960,7 @@ export default function VitrineOfertasRapidas({
                   </div>
                 )}
 
-                {/* Botão para Checkout direto no PicPay */}
+                {/* Botão para Pagamento via Cartão ou PIX */}
                 {orderResult.paymentUrl && (
                   <a
                     href={orderResult.paymentUrl}
@@ -935,8 +968,8 @@ export default function VitrineOfertasRapidas({
                     rel="noopener noreferrer"
                     className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-md transition"
                   >
-                    <ExternalLink className="w-4 h-4" />
-                    Pagar no App do PicPay / Cartão de Crédito
+                    <CreditCard className="w-4 h-4" />
+                    Pagar com Cartão de Crédito ou PIX
                   </a>
                 )}
 

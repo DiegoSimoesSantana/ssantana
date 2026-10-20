@@ -40,6 +40,9 @@ export default function Header() {
                 <Link href="/#contact" className="text-slate-700 dark:text-zinc-300 hover:text-sky-600 dark:hover:text-sky-400 transition">
                   Contato
                 </Link>
+                <Link href="/doacoes" className="text-rose-600 dark:text-rose-400 hover:text-rose-500 transition font-semibold">
+                  Projetos Gratuitos
+                </Link>
               </div>
 
               {/* CTA Buttons & Theme Toggle */}
@@ -98,6 +101,13 @@ export default function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Contato
+                </Link>
+                <Link
+                  href="/doacoes"
+                  className="block py-2 text-rose-600 dark:text-rose-400 font-bold hover:text-rose-500 transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Projetos Gratuitos & Doações
                 </Link>
                 <div className="pt-2">
                   <AccountLauncher />

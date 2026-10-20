@@ -11,6 +11,7 @@ const quickOrderSchema = z.object({
   phone: z.string().min(10, 'Telefone com DDD é obrigatório'),
   document: z.string().min(11, 'CPF ou CNPJ válido é obrigatório'),
   acceptedTerms: z.boolean().optional(),
+  couponCode: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -74,6 +75,23 @@ export async function POST(request: NextRequest) {
         description = 'Assinatura mensal para estudo estatístico com rastreador no Telegram (Zero OTC: Forex, Cripto, Commodities, Ações). Mais de 15 estratégias filtradas simultaneamente em M5 (até Gale 2 sem proteção). Fins educacionais e analíticos.'
         amount = 50.0 // R$ 50,00 no primeiro mês de boas-vindas (depois R$ 150/mês)
         break
+    }
+
+    // Aplicar desconto de cupom promocional se informado
+    if (parsed.couponCode) {
+      const cleanCode = parsed.couponCode.trim().toUpperCase()
+      let discount = 0
+      if (cleanCode === 'VIP20' || cleanCode === 'QUANT20') {
+        discount = 20.0
+      } else if (cleanCode === 'VIP10' || cleanCode === 'QUANT10') {
+        discount = 10.0
+      } else if (cleanCode === 'VIP30' || cleanCode === 'QUANT30') {
+        discount = 30.0
+      }
+      if (discount > 0) {
+        amount = Math.max(1.0, amount - discount)
+        description += ` (Cupom ${cleanCode} aplicado com abatimento de R$ ${discount.toFixed(2)})`
+      }
     }
 
     // 1. Localizar ou criar o usuário cliente
